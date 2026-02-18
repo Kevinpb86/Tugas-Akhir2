@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'beranda.dart';
 import 'edukasi.dart'; // Import for navigation consistency if needed
+import 'gempa.dart';
 
 class CuacaPage extends StatelessWidget {
   const CuacaPage({super.key});
@@ -98,8 +99,6 @@ class CuacaPage extends StatelessWidget {
       ),
       // Use existing bottom nav structure or similar look
       bottomNavigationBar: _buildBottomNavigationBar(context),
-      floatingActionButton: _buildFloatingActionButton(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 
@@ -376,8 +375,13 @@ class CuacaPage extends StatelessWidget {
             children: [
               _buildNavItem(Icons.home_outlined, 'Beranda', false, () => Navigator.pop(context)),
               _buildNavItem(Icons.cloud, 'Cuaca', true, () {}),
-              const SizedBox(width: 60), // Space for FAB
-              _buildNavItem(Icons.language, 'Gempa', false, () {}),
+              _buildNavItem(Icons.grid_view_rounded, 'Fitur', false, () {}),
+              _buildNavItem(Icons.language, 'Gempa', false, () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const GempaPage()),
+                );
+              }),
               _buildNavItem(Icons.school_outlined, 'Edukasi', false, () {
                 Navigator.pushReplacement(
                   context,
@@ -420,42 +424,4 @@ class CuacaPage extends StatelessWidget {
     );
   }
 
-  Widget _buildFloatingActionButton() {
-    return Container(
-      width: 64,
-      height: 64,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF00BCD4),
-            Color(0xFF00ACC1),
-          ],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF00BCD4).withOpacity(0.4),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {},
-          borderRadius: BorderRadius.circular(32),
-          child: const Center(
-            child: Icon(
-              Icons.location_on,
-              color: Colors.white,
-              size: 28,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 }

@@ -5,6 +5,9 @@ import 'dart:io' show Platform;
 import 'gempa_detail.dart';
 import 'cuaca.dart';
 import 'edukasi.dart';
+import 'gempa.dart';
+import 'akun.dart';
+import 'utils/localization.dart';
 
 class BerandaPage extends StatefulWidget {
   const BerandaPage({super.key});
@@ -123,8 +126,47 @@ class _BerandaPageState extends State<BerandaPage> {
         ),
       ),
       bottomNavigationBar: _buildBottomNavigationBar(),
-      floatingActionButton: _buildFloatingActionButton(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+    );
+  }
+
+  Widget _buildMenuGrid() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        _buildMenuItem(Icons.report_problem_outlined, Localization.of(context).get('home_menu_report'), const Color(0xFFFFEBEE), const Color(0xFFEF5350)),
+        _buildMenuItem(Icons.volunteer_activism_outlined, Localization.of(context).get('home_menu_donate'), const Color(0xFFE8F5E9), const Color(0xFF66BB6A)),
+        _buildMenuItem(Icons.check_circle_outline, Localization.of(context).get('home_menu_safe'), const Color(0xFFE3F2FD), const Color(0xFF42A5F5)),
+        _buildMenuItem(Icons.map_outlined, Localization.of(context).get('home_menu_map'), const Color(0xFFFFF3E0), const Color(0xFFFFCA28)),
+      ],
+    );
+  }
+
+  Widget _buildMenuItem(IconData icon, String label, Color bgColor, Color iconColor) {
+    return Column(
+      children: [
+        Container(
+          width: 64,
+          height: 64,
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Icon(
+            icon,
+            color: iconColor,
+            size: 28,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            color: Color(0xFF424242),
+          ),
+        ),
+      ],
     );
   }
 
@@ -146,11 +188,11 @@ class _BerandaPageState extends State<BerandaPage> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildNavItem(Icons.home, 'Beranda', true),
-              _buildNavItem(Icons.cloud_outlined, 'Cuaca', false),
-              const SizedBox(width: 60), // Space for FAB
-              _buildNavItem(Icons.language, 'Gempa', false),
-              _buildNavItem(Icons.school_outlined, 'Edukasi', false),
+              _buildNavItem(Icons.home, Localization.of(context).get('nav_home'), true),
+              _buildNavItem(Icons.cloud_outlined, Localization.of(context).get('nav_weather'), false),
+              _buildNavItem(Icons.grid_view_rounded, Localization.of(context).get('nav_features'), false),
+              _buildNavItem(Icons.language, Localization.of(context).get('nav_quake'), false),
+              _buildNavItem(Icons.school_outlined, Localization.of(context).get('nav_education'), false),
             ],
           ),
         ),
@@ -162,15 +204,21 @@ class _BerandaPageState extends State<BerandaPage> {
     return InkWell(
       onTap: () {
         // Handle navigation
-        if (label == 'Cuaca') {
+        if (label == Localization.of(context).get('nav_weather')) {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const CuacaPage()),
           );
-        } else if (label == 'Edukasi') {
+        } else if (label == Localization.of(context).get('nav_education')) {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const EdukasiPage()),
+          );
+
+        } else if (label == Localization.of(context).get('nav_quake')) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const GempaPage()),
           );
         }
       },
@@ -200,46 +248,12 @@ class _BerandaPageState extends State<BerandaPage> {
     );
   }
 
-  Widget _buildFloatingActionButton() {
-    return Container(
-      width: 64,
-      height: 64,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF00BCD4),
-            Color(0xFF00ACC1),
-          ],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF00BCD4).withOpacity(0.4),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            // Handle location action
-          },
-          borderRadius: BorderRadius.circular(32),
-          child: const Center(
-            child: Icon(
-              Icons.location_on,
-              color: Colors.white,
-              size: 28,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  // Helper method for News Section (needed to be moved/created if not existing in view, but assuming it exists or needs replacement)
+  // Since the original view didn't show _buildNewsSection content in detail, I will target the known functions above first.
+  // Wait, I need to check if _buildNewsSection is available in the file.
+
+
+
 
   Widget _buildHeader() {
     return Row(
@@ -248,9 +262,9 @@ class _BerandaPageState extends State<BerandaPage> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Siaga Bencana',
-              style: TextStyle(
+            Text(
+              Localization.of(context).get('home_header_title'),
+              style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF1A1A1A),
@@ -258,16 +272,16 @@ class _BerandaPageState extends State<BerandaPage> {
             ),
             const SizedBox(height: 4),
             Row(
-              children: const [
-                Icon(
+              children: [
+                const Icon(
                   Icons.location_on,
                   color: Color(0xFF00BCD4),
                   size: 16,
                 ),
-                SizedBox(width: 4),
+                const SizedBox(width: 4),
                 Text(
-                  'Jakarta Pusat',
-                  style: TextStyle(
+                  Localization.of(context).get('home_location'),
+                  style: const TextStyle(
                     fontSize: 14,
                     color: Color(0xFF00BCD4),
                     fontWeight: FontWeight.w500,
@@ -334,13 +348,22 @@ class _BerandaPageState extends State<BerandaPage> {
                   ),
                 ],
               ),
-              child: const Center(
-                child: Icon(
-                  Icons.person_outline,
-                  color: Color(0xFF1A1A1A),
-                  size: 24,
+                child: InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const AkunPage()),
+                    );
+                  },
+                  borderRadius: BorderRadius.circular(12),
+                  child: const Center(
+                    child: Icon(
+                      Icons.person_outline,
+                      color: Color(0xFF1A1A1A),
+                      size: 24,
+                    ),
+                  ),
                 ),
-              ),
             ),
           ],
         ),
@@ -360,9 +383,9 @@ class _BerandaPageState extends State<BerandaPage> {
           ),
         ),
         const SizedBox(width: 8),
-        const Text(
-          'Gempabumi Terkini',
-          style: TextStyle(
+        Text(
+          Localization.of(context).get('home_quake_status_danger'),
+          style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
             color: Color(0xFF1A1A1A),
@@ -906,9 +929,9 @@ class _BerandaPageState extends State<BerandaPage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'Berita Terkini',
-              style: TextStyle(
+             Text(
+              Localization.of(context).get('home_news_title'),
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF1A1A1A),
@@ -923,9 +946,9 @@ class _BerandaPageState extends State<BerandaPage> {
                 minimumSize: const Size(0, 0),
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
-              child: const Text(
-                'Lihat Semua',
-                style: TextStyle(
+              child: Text(
+                Localization.of(context).get('home_news_more'),
+                style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: Color(0xFF00BCD4),

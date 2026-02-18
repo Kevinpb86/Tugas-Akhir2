@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'beranda.dart';
+import 'gempa.dart';
 import 'cuaca.dart';
 // import 'gempa.dart'; // Future import
 
@@ -173,13 +174,83 @@ class EdukasiPage extends StatelessWidget {
               color: const Color(0xFF1E88E5),
             ),
             
+            const SizedBox(height: 24),
+
+            // Section 4: JENIS BENCANA LAINNYA
+            _buildSectionHeader('JENIS BENCANA LAINNYA', Icons.category_outlined, const Color(0xFF5E35B1)),
+            const SizedBox(height: 12),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              clipBehavior: Clip.none,
+              child: Row(
+                children: [
+                  _buildDisasterTypeCard(
+                    'Tsunami',
+                    'Lari ke tempat tinggi',
+                    Icons.water_rounded,
+                    const Color(0xFF0277BD),
+                  ),
+                  const SizedBox(width: 12),
+                  _buildDisasterTypeCard(
+                    'Banjir',
+                    'Matikan listrik & evakuasi',
+                    Icons.flood_rounded,
+                    const Color(0xFF00838F),
+                  ),
+                  const SizedBox(width: 12),
+                  _buildDisasterTypeCard(
+                    'Longsor',
+                    'Jauhi tebing curam',
+                    Icons.landscape_rounded,
+                    const Color(0xFF5D4037),
+                  ),
+                  const SizedBox(width: 12),
+                  _buildDisasterTypeCard(
+                    'Gunung Api',
+                    'Gunakan masker debu',
+                    Icons.volcano_rounded,
+                    const Color(0xFFD84315),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // Section 5: NOMOR PENTING
+            _buildSectionHeader('NOMOR PENTING', Icons.phone_in_talk_rounded, const Color(0xFFC62828)),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  _buildEmergencyContact('Ambulance / Medis', '118 / 119', Icons.medical_services_rounded),
+                  const Divider(height: 24),
+                  _buildEmergencyContact('Pemadam Kebakaran', '113', Icons.fire_truck),
+                  const Divider(height: 24),
+                  _buildEmergencyContact('Polisi', '110', Icons.local_police_rounded),
+                  const Divider(height: 24),
+                  _buildEmergencyContact('SAR / Basarnas', '115', Icons.support_rounded),
+                ],
+              ),
+            ),
+            
              const SizedBox(height: 80), // Bottom padding
           ],
         ),
       ),
       bottomNavigationBar: _buildBottomNavigationBar(context),
-      floatingActionButton: _buildFloatingActionButton(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 
@@ -292,8 +363,13 @@ class EdukasiPage extends StatelessWidget {
                   MaterialPageRoute(builder: (context) => const CuacaPage()),
                 );
               }),
-              const SizedBox(width: 60), // Space for FAB
-              _buildNavItem(Icons.language, 'Gempa', false, () {}),
+              _buildNavItem(Icons.grid_view_rounded, 'Fitur', false, () {}),
+              _buildNavItem(Icons.language, 'Gempa', false, () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const GempaPage()),
+                  );
+              }),
               _buildNavItem(Icons.school, 'Edukasi', true, () {}),
             ],
           ),
@@ -331,42 +407,101 @@ class EdukasiPage extends StatelessWidget {
     );
   }
 
-  Widget _buildFloatingActionButton() {
+  Widget _buildDisasterTypeCard(String title, String subtitle, IconData icon, Color color) {
     return Container(
-      width: 64,
-      height: 64,
+      width: 140,
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF00BCD4),
-            Color(0xFF00ACC1),
-          ],
-        ),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF00BCD4).withOpacity(0.4),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {},
-          borderRadius: BorderRadius.circular(32),
-          child: const Center(
-            child: Icon(
-              Icons.location_on,
-              color: Colors.white,
-              size: 28,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: color, size: 24),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1A1A1A),
             ),
           ),
-        ),
+          const SizedBox(height: 4),
+          Text(
+            subtitle,
+            style: TextStyle(
+              fontSize: 11,
+              color: Colors.grey[600],
+              height: 1.3,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
       ),
+    );
+  }
+
+  Widget _buildEmergencyContact(String name, String number, IconData icon) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: const Color(0xFFEEEEEE),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, color: const Color(0xFF616161), size: 20),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                name,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF1A1A1A),
+                ),
+              ),
+              Text(
+                number,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFFC62828),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: const Color(0xFFE3F2FD),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Icon(Icons.call, color: Color(0xFF1976D2), size: 20),
+        ),
+      ],
     );
   }
 }
