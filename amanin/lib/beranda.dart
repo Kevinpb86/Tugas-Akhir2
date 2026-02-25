@@ -88,6 +88,7 @@ class _BerandaPageState extends State<BerandaPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       body: SafeArea(
+        bottom: false,
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(20.0),
