@@ -541,7 +541,7 @@ class _BerandaPageState extends State<BerandaPage> {
             ),
           ),
           const SizedBox(height: 12),
-          const Text('*Syarat & Ketentuan berlaku', style: TextStyle(fontSize: 10, color: Color(0xFF9E9E9E))),
+          const Text('Disponsori • S&K berlaku', style: TextStyle(fontSize: 10, color: Color(0xFF9E9E9E))),
         ],
       ),
     );
