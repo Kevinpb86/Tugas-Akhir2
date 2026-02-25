@@ -57,7 +57,7 @@ class _MainScreenState extends State<MainScreen> {
 
   Widget _buildFloatingBottomNavigationBar() {
     return Container(
-      margin: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
+      margin: const EdgeInsets.only(left: 16, right: 16, bottom: 20),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(40),
@@ -71,14 +71,14 @@ class _MainScreenState extends State<MainScreen> {
       ),
       child: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildNavItem(Icons.home, Localization.of(context).get('nav_home'), 0),
+              _buildNavItem(Icons.home_rounded, Localization.of(context).get('nav_home'), 0),
               _buildNavItem(Icons.cloud_outlined, Localization.of(context).get('nav_weather'), 1),
               Transform.translate(
-                offset: const Offset(0, -10),
+                offset: const Offset(0, -16),
                 child: InkWell(
                   onTap: () => _onItemTapped(2),
                   child: Container(
@@ -89,9 +89,10 @@ class _MainScreenState extends State<MainScreen> {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF0088CC).withOpacity(0.4),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
+                          color: const Color(0xFF0088CC).withOpacity(0.3),
+                          blurRadius: 16,
+                          spreadRadius: 2,
+                          offset: const Offset(0, 8),
                         ),
                       ],
                     ),
@@ -110,20 +111,27 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
+
   Widget _buildNavItem(IconData icon, String label, int index) {
     final bool isActive = _selectedIndex == index;
+    
+    // Choose specific icon based on active state if necessary
+    IconData displayIcon = icon;
+    if (index == 0) displayIcon = isActive ? Icons.home_rounded : Icons.home_rounded; 
+    if (index == 1) displayIcon = isActive ? Icons.cloud_outlined : Icons.cloud_outlined;
+    
     return InkWell(
       onTap: () => _onItemTapped(index),
       borderRadius: BorderRadius.circular(12),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              icon,
-              color: isActive ? const Color(0xFF00BCD4) : const Color(0xFF9E9E9E),
-              size: 24,
+              displayIcon,
+              color: isActive ? const Color(0xFF00BCD4) : const Color(0xFFBDBDBD),
+              size: 26,
             ),
             const SizedBox(height: 4),
             Text(
@@ -131,7 +139,7 @@ class _MainScreenState extends State<MainScreen> {
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-                color: isActive ? const Color(0xFF00BCD4) : const Color(0xFF9E9E9E),
+                color: isActive ? const Color(0xFF00BCD4) : const Color(0xFFBDBDBD),
               ),
             ),
           ],
