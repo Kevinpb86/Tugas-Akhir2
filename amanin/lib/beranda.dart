@@ -88,6 +88,7 @@ class _BerandaPageState extends State<BerandaPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       body: SafeArea(
+        bottom: false,
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(20.0),
@@ -168,6 +169,172 @@ class _BerandaPageState extends State<BerandaPage> {
             fontSize: 12,
             fontWeight: FontWeight.w500,
             color: Color(0xFF424242),
+          ),
+        ),
+      ],
+    );
+  }
+
+
+
+  // Helper method for News Section (needed to be moved/created if not existing in view, but assuming it exists or needs replacement)
+  // Since the original view didn't show _buildNewsSection content in detail, I will target the known functions above first.
+  // Wait, I need to check if _buildNewsSection is available in the file.
+
+
+
+
+  Widget _buildHeader() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              Localization.of(context).get('home_header_title'),
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1A1A1A),
+              ),
+            ),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                const Icon(
+                  Icons.location_on,
+                  color: Color(0xFF00BCD4),
+                  size: 16,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  Localization.of(context).get('home_location'),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF00BCD4),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        Row(
+          children: [
+            // Notification Icon
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Stack(
+                children: [
+                  const Center(
+                    child: Icon(
+                      Icons.notifications_outlined,
+                      color: Color(0xFF1A1A1A),
+                      size: 24,
+                    ),
+                  ),
+                  Positioned(
+                    top: 10,
+                    right: 10,
+                    child: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFFF5252),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            // Profile Icon
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+                child: InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const AkunPage()),
+                    );
+                  },
+                  borderRadius: BorderRadius.circular(12),
+                  child: const Center(
+                    child: Icon(
+                      Icons.person_outline,
+                      color: Color(0xFF1A1A1A),
+                      size: 24,
+                    ),
+                  ),
+                ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEarthquakeStatus() {
+    return Row(
+      children: [
+        Container(
+          width: 8,
+          height: 8,
+          decoration: const BoxDecoration(
+            color: Color(0xFFFF5252),
+            shape: BoxShape.circle,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          Localization.of(context).get('home_quake_status_danger'),
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF1A1A1A),
+          ),
+        ),
+        const Spacer(),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFF5252).withOpacity(0.1),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: const Text(
+            'MAJOR ALERT',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFFFF5252),
+              letterSpacing: 0.5,
+            ),
           ),
         ),
       ],
@@ -374,7 +541,7 @@ class _BerandaPageState extends State<BerandaPage> {
             ),
           ),
           const SizedBox(height: 12),
-          const Text('*Syarat & Ketentuan berlaku', style: TextStyle(fontSize: 10, color: Color(0xFF9E9E9E))),
+          const Text('Disponsori • S&K berlaku', style: TextStyle(fontSize: 10, color: Color(0xFF9E9E9E))),
         ],
       ),
     );
