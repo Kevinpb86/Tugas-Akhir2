@@ -231,37 +231,50 @@ class EdukasiPage extends StatelessWidget {
   }
 
   Widget _buildActionGrid() {
-    return GridView.count(
-      crossAxisCount: 2,
-      crossAxisSpacing: 12,
-      mainAxisSpacing: 12,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      childAspectRatio: 0.85,
+    return Column(
       children: [
-        _buildActionCard(
-          title: 'Di Dalam\nRumah',
-          subtitle: 'Lindungi kepala, sembunyi di bawah meja.',
-          icon: Icons.home,
-          color: const Color(0xFFFF9800),
+        Row(
+          children: [
+            Expanded(
+              child: _buildActionCard(
+                title: 'Di Dalam\nRumah',
+                subtitle: 'Lindungi kepala, sembunyi di bawah meja.',
+                icon: Icons.home,
+                color: const Color(0xFFFF9800),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildActionCard(
+                title: 'Di Luar\nRuangan',
+                subtitle: 'Jauhi gedung, tiang listrik, dan pohon.',
+                icon: Icons.park,
+                color: const Color(0xFF4CAF50),
+              ),
+            ),
+          ],
         ),
-        _buildActionCard(
-          title: 'Di Luar\nRuangan',
-          subtitle: 'Jauhi gedung, tiang listrik, dan pohon.',
-          icon: Icons.park,
-          color: const Color(0xFF4CAF50),
-        ),
-        _buildActionCard(
-          title: 'Di Dalam\nMobil',
-          subtitle: 'Menepi di tempat aman, tetap di dalam.',
-          icon: Icons.directions_car,
-          color: const Color(0xFF2196F3),
-        ),
-        _buildActionCard(
-          title: 'Di Gedung\nTinggi',
-          subtitle: 'Jangan gunakan lift, ikuti jalur evakuasi.',
-          icon: Icons.domain,
-          color: const Color(0xFF9C27B0),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _buildActionCard(
+                title: 'Di Dalam\nMobil',
+                subtitle: 'Menepi di tempat aman, tetap di dalam.',
+                icon: Icons.directions_car,
+                color: const Color(0xFF2196F3),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildActionCard(
+                title: 'Di Gedung\nTinggi',
+                subtitle: 'Jangan gunakan lift, ikuti jalur evakuasi.',
+                icon: Icons.domain,
+                color: const Color(0xFF9C27B0),
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -292,11 +305,9 @@ class EdukasiPage extends StatelessWidget {
             style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A), height: 1.2),
           ),
           const SizedBox(height: 8),
-          Expanded(
-            child: Text(
-              subtitle,
-              style: TextStyle(fontSize: 11, color: Colors.grey[600], height: 1.3),
-            ),
+          Text(
+            subtitle,
+            style: TextStyle(fontSize: 11, color: Colors.grey[600], height: 1.3),
           ),
         ],
       ),
