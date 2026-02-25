@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'beranda.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'main_screen.dart';
 import 'utils/localization.dart';
 
 void main() {
@@ -23,7 +24,12 @@ class MyApp extends StatelessWidget {
           theme: ThemeData(
             colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF00BCD4)),
             useMaterial3: true,
-            fontFamily: 'Roboto',
+            textTheme: GoogleFonts.poppinsTextTheme(
+              Theme.of(context).textTheme,
+            ).apply(
+              bodyColor: const Color(0xFF1A1A1A),
+              displayColor: const Color(0xFF1A1A1A),
+            ),
           ),
           locale: locale,
           supportedLocales: const [
@@ -36,7 +42,7 @@ class MyApp extends StatelessWidget {
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
-          home: const BerandaPage(),
+          home: const MainScreen(),
         );
       },
     );
