@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'dart:io' show Platform;
 import 'gempa_detail.dart';
 import 'cuaca.dart';
 import 'edukasi.dart';
 import 'gempa.dart';
 import 'akun.dart';
+import 'fitur.dart';
 import 'utils/localization.dart';
 
 class BerandaPage extends StatefulWidget {
@@ -18,7 +18,7 @@ class BerandaPage extends StatefulWidget {
 
 class _BerandaPageState extends State<BerandaPage> {
   late final WebViewController _controller;
-  
+
   // Earthquake location: 81 Km Barat Daya Kuta Selatan
   final double _latitude = -8.8;
   final double _longitude = 115.0;
@@ -97,27 +97,27 @@ class _BerandaPageState extends State<BerandaPage> {
                 // Header Section
                 _buildHeader(),
                 const SizedBox(height: 24),
-                
+
                 // Earthquake Status Section
                 _buildEarthquakeStatus(),
                 const SizedBox(height: 16),
-                
+
                 // Live Tracking Map
                 _buildLiveTrackingMap(),
                 const SizedBox(height: 16),
-                
+
                 // Earthquake Details Card
                 _buildEarthquakeDetailsCard(),
                 const SizedBox(height: 16),
-                
+
                 // Weather Card
                 _buildWeatherCard(),
                 const SizedBox(height: 16),
-                
+
                 // Early Warning Card
                 _buildEarlyWarningCard(),
                 const SizedBox(height: 24),
-                
+
                 // News Section
                 _buildNewsSection(),
               ],
@@ -133,15 +133,40 @@ class _BerandaPageState extends State<BerandaPage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _buildMenuItem(Icons.report_problem_outlined, Localization.of(context).get('home_menu_report'), const Color(0xFFFFEBEE), const Color(0xFFEF5350)),
-        _buildMenuItem(Icons.volunteer_activism_outlined, Localization.of(context).get('home_menu_donate'), const Color(0xFFE8F5E9), const Color(0xFF66BB6A)),
-        _buildMenuItem(Icons.check_circle_outline, Localization.of(context).get('home_menu_safe'), const Color(0xFFE3F2FD), const Color(0xFF42A5F5)),
-        _buildMenuItem(Icons.map_outlined, Localization.of(context).get('home_menu_map'), const Color(0xFFFFF3E0), const Color(0xFFFFCA28)),
+        _buildMenuItem(
+          Icons.report_problem_outlined,
+          Localization.of(context).get('home_menu_report'),
+          const Color(0xFFFFEBEE),
+          const Color(0xFFEF5350),
+        ),
+        _buildMenuItem(
+          Icons.volunteer_activism_outlined,
+          Localization.of(context).get('home_menu_donate'),
+          const Color(0xFFE8F5E9),
+          const Color(0xFF66BB6A),
+        ),
+        _buildMenuItem(
+          Icons.check_circle_outline,
+          Localization.of(context).get('home_menu_safe'),
+          const Color(0xFFE3F2FD),
+          const Color(0xFF42A5F5),
+        ),
+        _buildMenuItem(
+          Icons.map_outlined,
+          Localization.of(context).get('home_menu_map'),
+          const Color(0xFFFFF3E0),
+          const Color(0xFFFFCA28),
+        ),
       ],
     );
   }
 
-  Widget _buildMenuItem(IconData icon, String label, Color bgColor, Color iconColor) {
+  Widget _buildMenuItem(
+    IconData icon,
+    String label,
+    Color bgColor,
+    Color iconColor,
+  ) {
     return Column(
       children: [
         Container(
@@ -151,11 +176,7 @@ class _BerandaPageState extends State<BerandaPage> {
             color: bgColor,
             borderRadius: BorderRadius.circular(20),
           ),
-          child: Icon(
-            icon,
-            color: iconColor,
-            size: 28,
-          ),
+          child: Icon(icon, color: iconColor, size: 28),
         ),
         const SizedBox(height: 8),
         Text(
@@ -188,11 +209,31 @@ class _BerandaPageState extends State<BerandaPage> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildNavItem(Icons.home, Localization.of(context).get('nav_home'), true),
-              _buildNavItem(Icons.cloud_outlined, Localization.of(context).get('nav_weather'), false),
-              _buildNavItem(Icons.grid_view_rounded, Localization.of(context).get('nav_features'), false),
-              _buildNavItem(Icons.language, Localization.of(context).get('nav_quake'), false),
-              _buildNavItem(Icons.school_outlined, Localization.of(context).get('nav_education'), false),
+              _buildNavItem(
+                Icons.home,
+                Localization.of(context).get('nav_home'),
+                true,
+              ),
+              _buildNavItem(
+                Icons.cloud_outlined,
+                Localization.of(context).get('nav_weather'),
+                false,
+              ),
+              _buildNavItem(
+                Icons.grid_view_rounded,
+                Localization.of(context).get('nav_features'),
+                false,
+              ),
+              _buildNavItem(
+                Icons.language,
+                Localization.of(context).get('nav_quake'),
+                false,
+              ),
+              _buildNavItem(
+                Icons.school_outlined,
+                Localization.of(context).get('nav_education'),
+                false,
+              ),
             ],
           ),
         ),
@@ -214,11 +255,15 @@ class _BerandaPageState extends State<BerandaPage> {
             context,
             MaterialPageRoute(builder: (context) => const EdukasiPage()),
           );
-
         } else if (label == Localization.of(context).get('nav_quake')) {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const GempaPage()),
+          );
+        } else if (label == Localization.of(context).get('nav_features')) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const FiturPage()),
           );
         }
       },
@@ -230,7 +275,9 @@ class _BerandaPageState extends State<BerandaPage> {
           children: [
             Icon(
               icon,
-              color: isActive ? const Color(0xFF00BCD4) : const Color(0xFF9E9E9E),
+              color: isActive
+                  ? const Color(0xFF00BCD4)
+                  : const Color(0xFF9E9E9E),
               size: 24,
             ),
             const SizedBox(height: 4),
@@ -239,7 +286,9 @@ class _BerandaPageState extends State<BerandaPage> {
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-                color: isActive ? const Color(0xFF00BCD4) : const Color(0xFF9E9E9E),
+                color: isActive
+                    ? const Color(0xFF00BCD4)
+                    : const Color(0xFF9E9E9E),
               ),
             ),
           ],
@@ -251,9 +300,6 @@ class _BerandaPageState extends State<BerandaPage> {
   // Helper method for News Section (needed to be moved/created if not existing in view, but assuming it exists or needs replacement)
   // Since the original view didn't show _buildNewsSection content in detail, I will target the known functions above first.
   // Wait, I need to check if _buildNewsSection is available in the file.
-
-
-
 
   Widget _buildHeader() {
     return Row(
@@ -348,22 +394,22 @@ class _BerandaPageState extends State<BerandaPage> {
                   ),
                 ],
               ),
-                child: InkWell(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const AkunPage()),
-                    );
-                  },
-                  borderRadius: BorderRadius.circular(12),
-                  child: const Center(
-                    child: Icon(
-                      Icons.person_outline,
-                      color: Color(0xFF1A1A1A),
-                      size: 24,
-                    ),
+              child: InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const AkunPage()),
+                  );
+                },
+                borderRadius: BorderRadius.circular(12),
+                child: const Center(
+                  child: Icon(
+                    Icons.person_outline,
+                    color: Color(0xFF1A1A1A),
+                    size: 24,
                   ),
                 ),
+              ),
             ),
           ],
         ),
@@ -439,11 +485,7 @@ class _BerandaPageState extends State<BerandaPage> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        Icons.map,
-                        size: 48,
-                        color: Color(0xFF4CAF50),
-                      ),
+                      Icon(Icons.map, size: 48, color: Color(0xFF4CAF50)),
                       SizedBox(height: 8),
                       Text(
                         'Google Maps',
@@ -472,7 +514,10 @@ class _BerandaPageState extends State<BerandaPage> {
               top: 12,
               left: 12,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFF424242),
                   borderRadius: BorderRadius.circular(6),
@@ -514,10 +559,7 @@ class _BerandaPageState extends State<BerandaPage> {
             padding: const EdgeInsets.all(20),
             decoration: const BoxDecoration(
               border: Border(
-                bottom: BorderSide(
-                  color: Color(0xFFF0F0F0),
-                  width: 1,
-                ),
+                bottom: BorderSide(color: Color(0xFFF0F0F0), width: 1),
               ),
             ),
             child: Row(
@@ -561,11 +603,7 @@ class _BerandaPageState extends State<BerandaPage> {
                     ),
                   ],
                 ),
-                const Icon(
-                  Icons.waves,
-                  color: Color(0xFFFF5252),
-                  size: 32,
-                ),
+                const Icon(Icons.waves, color: Color(0xFFFF5252), size: 32),
               ],
             ),
           ),
@@ -582,19 +620,9 @@ class _BerandaPageState extends State<BerandaPage> {
                 const SizedBox(height: 16),
                 Row(
                   children: [
-                    Expanded(
-                      child: _buildDetailRow(
-                        'KEDALAMAN',
-                        '↓ 37 Km',
-                      ),
-                    ),
+                    Expanded(child: _buildDetailRow('KEDALAMAN', '↓ 37 Km')),
                     const SizedBox(width: 16),
-                    Expanded(
-                      child: _buildDetailRow(
-                        'WAKTU',
-                        '🕐 02:23 WIB',
-                      ),
-                    ),
+                    Expanded(child: _buildDetailRow('WAKTU', '🕐 02:23 WIB')),
                   ],
                 ),
                 const SizedBox(height: 20),
@@ -632,10 +660,7 @@ class _BerandaPageState extends State<BerandaPage> {
                           ),
                         ),
                         SizedBox(width: 8),
-                        Icon(
-                          Icons.arrow_forward,
-                          size: 18,
-                        ),
+                        Icon(Icons.arrow_forward, size: 18),
                       ],
                     ),
                   ),
@@ -680,10 +705,7 @@ class _BerandaPageState extends State<BerandaPage> {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Color(0xFFE3F2FD),
-            Color(0xFFBBDEFB),
-          ],
+          colors: [Color(0xFFE3F2FD), Color(0xFFBBDEFB)],
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
@@ -712,7 +734,10 @@ class _BerandaPageState extends State<BerandaPage> {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFF2196F3),
                     borderRadius: BorderRadius.circular(12),
@@ -748,10 +773,7 @@ class _BerandaPageState extends State<BerandaPage> {
                     const SizedBox(height: 4),
                     const Text(
                       'Terasa seperti 34°C',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF757575),
-                      ),
+                      style: TextStyle(fontSize: 12, color: Color(0xFF757575)),
                     ),
                   ],
                 ),
@@ -828,14 +850,15 @@ class _BerandaPageState extends State<BerandaPage> {
     );
   }
 
-  Widget _buildWeatherDetail(IconData icon, String value, String label, Color color) {
+  Widget _buildWeatherDetail(
+    IconData icon,
+    String value,
+    String label,
+    Color color,
+  ) {
     return Column(
       children: [
-        Icon(
-          icon,
-          color: color,
-          size: 24,
-        ),
+        Icon(icon, color: color, size: 24),
         const SizedBox(height: 4),
         Text(
           value,
@@ -847,10 +870,7 @@ class _BerandaPageState extends State<BerandaPage> {
         ),
         Text(
           label,
-          style: const TextStyle(
-            fontSize: 11,
-            color: Color(0xFF757575),
-          ),
+          style: const TextStyle(fontSize: 11, color: Color(0xFF757575)),
         ),
       ],
     );
@@ -861,10 +881,7 @@ class _BerandaPageState extends State<BerandaPage> {
       decoration: BoxDecoration(
         color: const Color(0xFFFFF3E0),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFFFFB74D),
-          width: 1,
-        ),
+        border: Border.all(color: const Color(0xFFFFB74D), width: 1),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -929,7 +946,7 @@ class _BerandaPageState extends State<BerandaPage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-             Text(
+            Text(
               Localization.of(context).get('home_news_title'),
               style: const TextStyle(
                 fontSize: 18,
@@ -1080,11 +1097,7 @@ class _BerandaPageState extends State<BerandaPage> {
                 Positioned.fill(
                   child: Opacity(
                     opacity: 0.1,
-                    child: Icon(
-                      icon,
-                      size: 120,
-                      color: Colors.white,
-                    ),
+                    child: Icon(icon, size: 120, color: Colors.white),
                   ),
                 ),
                 // Category Badge
@@ -1151,10 +1164,7 @@ class _BerandaPageState extends State<BerandaPage> {
                       const SizedBox(width: 4),
                       Text(
                         time,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
-                        ),
+                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                       ),
                     ],
                   ),
