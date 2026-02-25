@@ -4,12 +4,13 @@ import 'edukasi.dart'; // Import for navigation consistency if needed
 import 'gempa.dart';
 
 class CuacaPage extends StatelessWidget {
-  const CuacaPage({super.key});
+  final VoidCallback? onBack;
+  const CuacaPage({super.key, this.onBack});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
         title: Column(
           children: const [
@@ -40,11 +41,11 @@ class CuacaPage extends StatelessWidget {
           ],
         ),
         centerTitle: true,
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFFF8F9FA),
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1A1A)),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () { if (onBack != null) onBack!(); else Navigator.pop(context); },
         ),
         actions: [
           IconButton(
@@ -92,13 +93,13 @@ class CuacaPage extends StatelessWidget {
               const SizedBox(height: 12),
               // Weekly Forecast List
               _buildWeeklyForecast(),
-              const SizedBox(height: 80), // Bottom padding
+              const SizedBox(height: 24),
+              _buildInsuranceSection(),
+              const SizedBox(height: 100), // Bottom padding for floating nav
             ],
           ),
         ),
       ),
-      // Use existing bottom nav structure or similar look
-      bottomNavigationBar: _buildBottomNavigationBar(context),
     );
   }
 
@@ -107,19 +108,19 @@ class CuacaPage extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFFE3F2FD), // Light blue background
+        color: const Color(0xFFE3F2FD),
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color(0xFFE3F2FD),
-            Colors.white,
+            Color(0xFFE1F5FE),
+            Color(0xFFE1F5FE),
           ],
         ),
         borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF2196F3).withOpacity(0.1),
+            color: Colors.black.withOpacity(0.02),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -147,7 +148,7 @@ class CuacaPage extends StatelessWidget {
           const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -155,13 +156,13 @@ class CuacaPage extends StatelessWidget {
                   Text(
                     '32°',
                     style: TextStyle(
-                      fontSize: 64,
+                      fontSize: 48,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF1A1A1A),
                       height: 1,
                     ),
                   ),
-                  SizedBox(height: 4),
+                  SizedBox(height: 8),
                   Text(
                     'Berawan',
                     style: TextStyle(
@@ -180,19 +181,54 @@ class CuacaPage extends StatelessWidget {
                   ),
                 ],
               ),
-              const Icon(
-                Icons.wb_sunny_rounded, // Replace with cloud/sun mix asset if available
-                size: 80,
-                color: Color(0xFFFFB74D), // Sun color
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                   SizedBox(
+                     height: 80,
+                     width: 80,
+                     child: Stack(
+                       children: [
+                         Positioned(
+                           top: 5,
+                           right: 15,
+                           child: Container(
+                             width: 40,
+                             height: 40,
+                             decoration: const BoxDecoration(
+                               color: Color(0xFFFFC107),
+                               shape: BoxShape.circle,
+                             ),
+                           ),
+                         ),
+                         Positioned(
+                           bottom: 10,
+                           left: 5,
+                           child: Container(
+                             width: 60,
+                             height: 40,
+                             decoration: BoxDecoration(
+                               color: Colors.white,
+                               borderRadius: BorderRadius.circular(20),
+                               boxShadow: [
+                                 BoxShadow(
+                                   color: Colors.black.withOpacity(0.05),
+                                   blurRadius: 10,
+                                   offset: const Offset(0, 4),
+                                 ),
+                               ],
+                             ),
+                           ),
+                         ),
+                       ],
+                     ),
+                   ),
+                  const SizedBox(height: 8),
+                  _buildWeatherStat(Icons.water_drop, 'Kelembapan 65%', const Color(0xFF2196F3)),
+                  const SizedBox(height: 4),
+                  _buildWeatherStat(Icons.air, 'Angin 12 km/j', const Color(0xFF4DB6AC)),
+                ],
               ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          Row(
-            children: [
-              _buildWeatherStat(Icons.water_drop, 'Kelembapan 65%', const Color(0xFF2196F3)),
-              const SizedBox(width: 16),
-              _buildWeatherStat(Icons.air, 'Angin 12 km/j', const Color(0xFF4DB6AC)),
             ],
           ),
         ],
@@ -200,15 +236,16 @@ class CuacaPage extends StatelessWidget {
     );
   }
 
-  Widget _buildWeatherStat(IconData icon, String label, Color color) {
+  static Widget _buildWeatherStat(IconData icon, String label, Color color) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 16, color: color),
-        const SizedBox(width: 6),
+        Icon(icon, size: 14, color: color),
+        const SizedBox(width: 4),
         Text(
           label,
           style: TextStyle(
-            fontSize: 12,
+            fontSize: 11,
             color: Colors.grey[600],
             fontWeight: FontWeight.w500,
           ),
@@ -354,74 +391,48 @@ class CuacaPage extends StatelessWidget {
     );
   }
 
-  // Bottom Nav Elements (Replicated from Beranda for consistency/demo)
-  Widget _buildBottomNavigationBar(BuildContext context) {
+
+  Widget _buildInsuranceSection() {
     return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 20,
-            offset: const Offset(0, -5),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 20, offset: const Offset(0, 4))]),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: const BoxDecoration(color: Color(0xFFE3F2FD), shape: BoxShape.circle),
+            child: const Icon(Icons.security, color: Color(0xFF2196F3), size: 32),
           ),
+          const SizedBox(height: 16),
+          const Text('Asuransi Pro-Siaga', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A))),
+          const SizedBox(height: 8),
+          const Text('Perlindungan aset dan kesehatan keluarga dari dampak bencana alam.', textAlign: TextAlign.center, style: TextStyle(fontSize: 13, color: Color(0xFF757575), height: 1.4)),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(color: const Color(0xFFF8F9FA), borderRadius: BorderRadius.circular(12)),
+            child: Column(
+              children: [
+                Row(children: const [Icon(Icons.check_circle, color: Color(0xFF4CAF50), size: 16), SizedBox(width: 8), Text('Klaim cepat 24 jam', style: TextStyle(fontSize: 12, color: Color(0xFF424242)))]),
+                const SizedBox(height: 8),
+                Row(children: const [Icon(Icons.check_circle, color: Color(0xFF4CAF50), size: 16), SizedBox(width: 8), Text('Cover gempa & banjir', style: TextStyle(fontSize: 12, color: Color(0xFF424242)))]),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: ElevatedButton(
+              onPressed: () {},
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00BCD4), foregroundColor: Colors.white, elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+              child: const Text('Cek Asuransi Sekarang', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+            ),
+          ),
+          const SizedBox(height: 12),
+          const Text('Disponsori • S&K berlaku', style: TextStyle(fontSize: 10, color: Color(0xFF9E9E9E))),
         ],
       ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildNavItem(Icons.home_outlined, 'Beranda', false, () => Navigator.pop(context)),
-              _buildNavItem(Icons.cloud, 'Cuaca', true, () {}),
-              _buildNavItem(Icons.grid_view_rounded, 'Fitur', false, () {}),
-              _buildNavItem(Icons.language, 'Gempa', false, () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const GempaPage()),
-                );
-              }),
-              _buildNavItem(Icons.school_outlined, 'Edukasi', false, () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const EdukasiPage()),
-                );
-              }),
-            ],
-          ),
-        ),
-      ),
     );
   }
-
-  Widget _buildNavItem(IconData icon, String label, bool isActive, VoidCallback onTap) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              color: isActive ? const Color(0xFF00BCD4) : const Color(0xFF9E9E9E),
-              size: 24,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-                color: isActive ? const Color(0xFF00BCD4) : const Color(0xFF9E9E9E),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
 }
