@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
-import 'dart:io' show Platform;
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'gempa_detail.dart';
 import 'cuaca.dart';
 import 'edukasi.dart';
@@ -17,71 +16,8 @@ class BerandaPage extends StatefulWidget {
 }
 
 class _BerandaPageState extends State<BerandaPage> {
-  late final WebViewController _controller;
-  
   // Earthquake location: 81 Km Barat Daya Kuta Selatan
-  final double _latitude = -8.8;
-  final double _longitude = 115.0;
-
-  @override
-  void initState() {
-    super.initState();
-    if (!kIsWeb) {
-      _initializeWebView();
-    }
-  }
-
-  void _initializeWebView() {
-    _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..loadHtmlString(_getMapHtml());
-  }
-
-  String _getMapHtml() {
-    return '''
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <style>
-        body, html { margin: 0; padding: 0; height: 100%; }
-        #map { height: 100%; width: 100%; }
-      </style>
-    </head>
-    <body>
-      <div id="map"></div>
-      <script>
-        function initMap() {
-          const earthquakeLocation = { lat: $_latitude, lng: $_longitude };
-          const map = new google.maps.Map(document.getElementById("map"), {
-            zoom: 8,
-            center: earthquakeLocation,
-            mapTypeId: 'terrain'
-          });
-          
-          const marker = new google.maps.Marker({
-            position: earthquakeLocation,
-            map: map,
-            title: "Gempabumi Terkini",
-            animation: google.maps.Animation.DROP
-          });
-          
-          const infoWindow = new google.maps.InfoWindow({
-            content: '<div style="padding:10px;"><h3>Gempabumi Terkini</h3><p>Magnitudo: 4.3 SR</p><p>Lokasi: 81 Km Barat Daya Kuta Selatan</p></div>'
-          });
-          
-          marker.addListener("click", () => {
-            infoWindow.open(map, marker);
-          });
-        }
-      </script>
-      <script async defer
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBFhfkKjQ9cVl87LYVD8GPJdamlHBCbOOs&callback=initMap">
-      </script>
-    </body>
-    </html>
-    ''';
-  }
+  final LatLng _earthquakeLocation = const LatLng(-8.8, 115.0);
 
   @override
   Widget build(BuildContext context) {
@@ -355,11 +291,66 @@ class _BerandaPageState extends State<BerandaPage> {
           Stack(
             children: [
               ClipRRect(
-                borderRadius: const BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                ),
                 child: SizedBox(
-                  height: 160,
+                  height: 200,
                   width: double.infinity,
-                  child: kIsWeb ? Container(color: const Color(0xFF90EE90).withOpacity(0.3), child: const Center(child: Icon(Icons.map, size: 48, color: Color(0xFF4CAF50)))) : WebViewWidget(controller: _controller),
+                  child: FlutterMap(
+                    options: MapOptions(
+                      initialCenter: _earthquakeLocation,
+                      initialZoom: 8.0,
+                      interactionOptions: const InteractionOptions(
+                        flags: InteractiveFlag.pinchZoom | InteractiveFlag.drag,
+                      ),
+                    ),
+                    children: [
+                      TileLayer(
+                        urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        userAgentPackageName: 'com.example.amanin',
+                      ),
+                      MarkerLayer(
+                        markers: [
+                          Marker(
+                            point: _earthquakeLocation,
+                            width: 60,
+                            height: 60,
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                Container(
+                                  width: 48,
+                                  height: 48,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFF5252).withOpacity(0.2),
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                Container(
+                                  width: 28,
+                                  height: 28,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFF5252).withOpacity(0.5),
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                Container(
+                                  width: 14,
+                                  height: 14,
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFFFF5252),
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
               Positioned(
