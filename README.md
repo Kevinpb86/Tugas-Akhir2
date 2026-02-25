@@ -84,10 +84,4 @@ Ingin mencoba meng-compile antarmuka *Amanin* cantik ini langsung ke HP / Emulat
    flutter run
    ```
 
----
-
-## 🤝 Kontributor Penulis Proyek (Tugas Akhir)
-- **Dava Ihza Bagus S.** ([@Davaihza](https://github.com/Davaihza))
-- **Kevin Patria B.** ([@Kevinpb86](https://github.com/Kevinpb86))
-
-> **Catatan Penting:** Repositori komitmen (branch: `Dava-Ihza`) ini dimanfaatkan khusus sebagai sub-wadah pengembangan (Development Sandbox) **purwarupa purwa (UI/UX prototype)** aplikasi Tugas Akhir akademik. Jika terdapat *dummy text* / placeholder pada simulasi API, maka itu ditujukan untuk keperluan presentasi desain di masa pembangunan aplikasi ini. 
+> **Catatan Penting:** Repositori komitmen (branch: `Dava-Ihza`) ini dimanfaatkan khusus sebagai sub-wadah pengembangan (Development Sandbox) **purwarupa purwa (UI/UX prototype)** aplikasi Tugas Akhir akademik. Jika terdapat *dummy text* / placeholder pada simulasi API, maka itu ditujukan untuk keperluan presentasi desain di masa pembangunan aplikasi ini.
