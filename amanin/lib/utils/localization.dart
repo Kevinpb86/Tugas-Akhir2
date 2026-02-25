@@ -23,10 +23,10 @@ class Localization {
       'nav_education': 'Edukasi',
 
       // Home Page
-      'home_header_title': 'Siaga Bencana',
+      'home_header_title': 'Amanin',
       'home_location': 'Jakarta Pusat',
       'home_quake_status_safe': 'Tidak ada gempa signifikan',
-      'home_quake_status_danger': 'Gempa Baru Saja Terjadi!',
+      'home_quake_status_danger': 'Gempabumi Terkini',
       'home_quake_desc_safe': 'Aman terkendali',
       'home_quake_desc_danger': 'Waspada guncangan susulan',
       'home_menu_report': 'Lapor',
@@ -87,10 +87,10 @@ class Localization {
       'nav_education': 'Education',
 
       // Home Page
-      'home_header_title': 'Disaster Alert',
+      'home_header_title': 'Amanin',
       'home_location': 'Central Jakarta',
       'home_quake_status_safe': 'No significant quake',
-      'home_quake_status_danger': 'Earthquake Just Happened!',
+      'home_quake_status_danger': 'Latest Earthquake',
       'home_quake_desc_safe': 'Safe and controlled',
       'home_quake_desc_danger': 'Beware of aftershocks',
       'home_menu_report': 'Report',
