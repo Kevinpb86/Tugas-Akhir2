@@ -52,12 +52,7 @@ class _AkunPageState extends State<AkunPage> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: Colors.grey[200],
-                image: const DecorationImage(
-                  image: AssetImage(
-                    'assets/images/avatar_placeholder.png',
-                  ), // Ensure this asset exists or handle error
-                  fit: BoxFit.cover,
-                ),
+                // image removed to fallback to Icons.person
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.1),

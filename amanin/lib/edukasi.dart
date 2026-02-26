@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'akun.dart';
+import 'login.dart';
+import 'main.dart';
 
 class EdukasiPage extends StatelessWidget {
   const EdukasiPage({super.key});
@@ -23,7 +25,11 @@ class EdukasiPage extends StatelessWidget {
               const SizedBox(height: 24),
               const Text(
                 'Apa yang harus dilakukan saat gempa?',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A)),
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1A1A1A),
+                ),
               ),
               const SizedBox(height: 16),
               _buildActionGrid(),
@@ -34,7 +40,11 @@ class EdukasiPage extends StatelessWidget {
               const SizedBox(height: 24),
               const Text(
                 'Tas Siaga Bencana (TSB)',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A)),
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1A1A1A),
+                ),
               ),
               const SizedBox(height: 16),
               _buildTsbCard(),
@@ -94,13 +104,23 @@ class EdukasiPage extends StatelessWidget {
               height: 44,
               decoration: BoxDecoration(
                 color: Colors.white,
-                shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFFEEEEEE), width: 1),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
               child: Stack(
                 children: [
                   const Center(
-                    child: Icon(Icons.notifications_outlined, color: Color(0xFF1A1A1A), size: 24),
+                    child: Icon(
+                      Icons.notifications_outlined,
+                      color: Color(0xFF1A1A1A),
+                      size: 24,
+                    ),
                   ),
                   Positioned(
                     top: 10,
@@ -118,22 +138,80 @@ class EdukasiPage extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 12),
-            InkWell(
-              onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const AkunPage()));
+            ValueListenableBuilder<bool>(
+              valueListenable: isLoggedInNotifier,
+              builder: (context, isLoggedIn, _) {
+                return isLoggedIn
+                    ? InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const AkunPage(),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                blurRadius: 10,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: const Center(
+                            child: Icon(
+                              Icons.person_outline,
+                              color: Color(0xFF1A1A1A),
+                              size: 24,
+                            ),
+                          ),
+                        ),
+                      )
+                    : InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const LoginPage(),
+                            ),
+                          );
+                        },
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF00BCD4),
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF00BCD4).withOpacity(0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: const Center(
+                            child: Text(
+                              'Masuk',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
               },
-              child: Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFFEEEEEE), width: 1),
-                ),
-                child: const Center(
-                  child: Icon(Icons.person_outline, color: Color(0xFF1A1A1A), size: 24),
-                ),
-              ),
             ),
           ],
         ),
@@ -169,10 +247,7 @@ class EdukasiPage extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF2196F3),
-            Color(0xFF1E88E5),
-          ],
+          colors: [Color(0xFF2196F3), Color(0xFF1E88E5)],
         ),
         boxShadow: [
           BoxShadow(
@@ -193,18 +268,30 @@ class EdukasiPage extends StatelessWidget {
             ),
             child: const Text(
               'Modul Utama',
-              style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
           const SizedBox(height: 16),
           const Text(
             'Mitigasi Gempa Bumi',
-            style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             'Pelajari langkah-langkah keselamatan sebelum, saat, dan sesudah terjadi gempa bumi untuk melindungi diri dan keluarga.',
-            style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 13, height: 1.4),
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.9),
+              fontSize: 13,
+              height: 1.4,
+            ),
           ),
           const SizedBox(height: 20),
           ElevatedButton(
@@ -213,13 +300,18 @@ class EdukasiPage extends StatelessWidget {
               backgroundColor: Colors.white,
               foregroundColor: const Color(0xFF1E88E5),
               elevation: 0,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: const [
-                Text('Mulai Belajar', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                Text(
+                  'Mulai Belajar',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                ),
                 SizedBox(width: 4),
                 Icon(Icons.arrow_forward, size: 14),
               ],
@@ -280,7 +372,12 @@ class EdukasiPage extends StatelessWidget {
     );
   }
 
-  Widget _buildActionCard({required String title, required String subtitle, required IconData icon, required Color color}) {
+  Widget _buildActionCard({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
+  }) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -302,12 +399,21 @@ class EdukasiPage extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             title,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A), height: 1.2),
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1A1A1A),
+              height: 1.2,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             subtitle,
-            style: TextStyle(fontSize: 11, color: Colors.grey[600], height: 1.3),
+            style: TextStyle(
+              fontSize: 11,
+              color: Colors.grey[600],
+              height: 1.3,
+            ),
           ),
         ],
       ),
@@ -318,8 +424,22 @@ class EdukasiPage extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: const [
-        Text('Video Edukasi', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A))),
-        Text('Lihat Semua', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF2196F3))),
+        Text(
+          'Video Edukasi',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF1A1A1A),
+          ),
+        ),
+        Text(
+          'Lihat Semua',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF2196F3),
+          ),
+        ),
       ],
     );
   }
@@ -340,9 +460,14 @@ class EdukasiPage extends StatelessWidget {
             width: double.infinity,
             decoration: const BoxDecoration(
               color: Color(0xFF757575), // Placeholder color mimicking an image
-              borderRadius: BorderRadius.only(topLeft: Radius.circular(24), topRight: Radius.circular(24)),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(24),
+                topRight: Radius.circular(24),
+              ),
               image: DecorationImage(
-                image: NetworkImage('https://images.unsplash.com/photo-1544717305-2782549b5136?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'), // Beautiful woman placeholder mimicking the illustration
+                image: NetworkImage(
+                  'https://images.unsplash.com/photo-1544717305-2782549b5136?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
+                ), // Beautiful woman placeholder mimicking the illustration
                 fit: BoxFit.cover,
                 colorFilter: ColorFilter.mode(Colors.black26, BlendMode.darken),
               ),
@@ -356,22 +481,39 @@ class EdukasiPage extends StatelessWidget {
                       color: Colors.white,
                       shape: BoxShape.circle,
                       boxShadow: [
-                        BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10),
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 10,
+                        ),
                       ],
                     ),
-                    child: const Icon(Icons.play_arrow, color: Color(0xFF2196F3), size: 32),
+                    child: const Icon(
+                      Icons.play_arrow,
+                      color: Color(0xFF2196F3),
+                      size: 32,
+                    ),
                   ),
                 ),
                 Positioned(
                   bottom: 12,
                   right: 12,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.black.withOpacity(0.7),
                       borderRadius: BorderRadius.circular(6),
                     ),
-                    child: const Text('04:35', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w600)),
+                    child: const Text(
+                      '04:35',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -382,22 +524,39 @@ class EdukasiPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Simulasi Evakuasi Mandiri', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A))),
+                const Text(
+                  'Simulasi Evakuasi Mandiri',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1A1A1A),
+                  ),
+                ),
                 const SizedBox(height: 6),
                 Text(
                   'Panduan visual cara melakukan evakuasi mandiri saat terjadi gempa bumi di area padat penduduk.',
-                  style: TextStyle(fontSize: 12, color: Colors.grey[600], height: 1.4),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                    height: 1.4,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 Row(
                   children: [
                     Icon(Icons.visibility, size: 12, color: Colors.grey[400]),
                     const SizedBox(width: 4),
-                    Text('12.5k views', style: TextStyle(fontSize: 10, color: Colors.grey[500])),
+                    Text(
+                      '12.5k views',
+                      style: TextStyle(fontSize: 10, color: Colors.grey[500]),
+                    ),
                     const SizedBox(width: 16),
                     Icon(Icons.access_time, size: 12, color: Colors.grey[400]),
                     const SizedBox(width: 4),
-                    Text('2 hari lalu', style: TextStyle(fontSize: 10, color: Colors.grey[500])),
+                    Text(
+                      '2 hari lalu',
+                      style: TextStyle(fontSize: 10, color: Colors.grey[500]),
+                    ),
                   ],
                 ),
               ],
@@ -426,16 +585,34 @@ class EdukasiPage extends StatelessWidget {
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.backpack_outlined, color: Color(0xFF2196F3), size: 24),
+                child: const Icon(
+                  Icons.backpack_outlined,
+                  color: Color(0xFF2196F3),
+                  size: 24,
+                ),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Persiapan Tas Siaga', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A))),
+                    const Text(
+                      'Persiapan Tas Siaga',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1A1A1A),
+                      ),
+                    ),
                     const SizedBox(height: 4),
-                    Text('Siapkan tas ini untuk 3 hari pertama pasca bencana.', style: TextStyle(fontSize: 11, color: Colors.grey[600], height: 1.3)),
+                    Text(
+                      'Siapkan tas ini untuk 3 hari pertama pasca bencana.',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey[600],
+                        height: 1.3,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -463,7 +640,10 @@ class EdukasiPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text('Lihat Daftar Lengkap', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+              child: const Text(
+                'Lihat Daftar Lengkap',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              ),
             ),
           ),
         ],
@@ -495,27 +675,88 @@ class EdukasiPage extends StatelessWidget {
   Widget _buildInsuranceSection() {
     return Container(
       padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 20, offset: const Offset(0, 4))]),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Column(
         children: [
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: const BoxDecoration(color: Color(0xFFE3F2FD), shape: BoxShape.circle),
-            child: const Icon(Icons.security, color: Color(0xFF2196F3), size: 32),
+            decoration: const BoxDecoration(
+              color: Color(0xFFE3F2FD),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.security,
+              color: Color(0xFF2196F3),
+              size: 32,
+            ),
           ),
           const SizedBox(height: 16),
-          const Text('Asuransi Pro-Siaga', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A))),
+          const Text(
+            'Asuransi Pro-Siaga',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1A1A1A),
+            ),
+          ),
           const SizedBox(height: 8),
-          const Text('Perlindungan aset dan kesehatan keluarga dari dampak bencana alam.', textAlign: TextAlign.center, style: TextStyle(fontSize: 13, color: Color(0xFF757575), height: 1.4)),
+          const Text(
+            'Perlindungan aset dan kesehatan keluarga dari dampak bencana alam.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 13,
+              color: Color(0xFF757575),
+              height: 1.4,
+            ),
+          ),
           const SizedBox(height: 16),
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(color: const Color(0xFFF8F9FA), borderRadius: BorderRadius.circular(12)),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8F9FA),
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: Column(
               children: [
-                Row(children: const [Icon(Icons.check_circle, color: Color(0xFF4CAF50), size: 16), SizedBox(width: 8), Text('Klaim cepat 24 jam', style: TextStyle(fontSize: 12, color: Color(0xFF424242)))]),
+                Row(
+                  children: const [
+                    Icon(
+                      Icons.check_circle,
+                      color: Color(0xFF4CAF50),
+                      size: 16,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      'Klaim cepat 24 jam',
+                      style: TextStyle(fontSize: 12, color: Color(0xFF424242)),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 8),
-                Row(children: const [Icon(Icons.check_circle, color: Color(0xFF4CAF50), size: 16), SizedBox(width: 8), Text('Cover gempa & banjir', style: TextStyle(fontSize: 12, color: Color(0xFF424242)))]),
+                Row(
+                  children: const [
+                    Icon(
+                      Icons.check_circle,
+                      color: Color(0xFF4CAF50),
+                      size: 16,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      'Cover gempa & banjir',
+                      style: TextStyle(fontSize: 12, color: Color(0xFF424242)),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
@@ -525,12 +766,25 @@ class EdukasiPage extends StatelessWidget {
             height: 48,
             child: ElevatedButton(
               onPressed: () {},
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF03A9F4), foregroundColor: Colors.white, elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-              child: const Text('Cek Asuransi Sekarang', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF03A9F4),
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text(
+                'Cek Asuransi Sekarang',
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+              ),
             ),
           ),
           const SizedBox(height: 12),
-          const Text('Disponsori • S&K berlaku', style: TextStyle(fontSize: 10, color: Color(0xFF9E9E9E))),
+          const Text(
+            'Disponsori • S&K berlaku',
+            style: TextStyle(fontSize: 10, color: Color(0xFF9E9E9E)),
+          ),
         ],
       ),
     );
