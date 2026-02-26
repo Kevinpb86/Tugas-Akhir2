@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'akun.dart';
 import 'login.dart';
 import 'main.dart';
+import 'asuransi.dart';
 
 class EdukasiPage extends StatelessWidget {
   const EdukasiPage({super.key});
@@ -765,7 +766,12 @@ class EdukasiPage extends StatelessWidget {
             width: double.infinity,
             height: 48,
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AsuransiWebPage()),
+                );
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF03A9F4),
                 foregroundColor: Colors.white,

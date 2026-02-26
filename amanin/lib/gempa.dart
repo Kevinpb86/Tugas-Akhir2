@@ -4,6 +4,7 @@ import 'main.dart';
 import 'login.dart';
 import 'gempa_detail.dart';
 import 'utils/localization.dart';
+import 'asuransi.dart';
 
 class GempaPage extends StatelessWidget {
   const GempaPage({super.key});
@@ -835,7 +836,12 @@ class GempaPage extends StatelessWidget {
             width: double.infinity,
             height: 48,
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AsuransiWebPage()),
+                );
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF03A9F4),
                 foregroundColor: Colors.white,
