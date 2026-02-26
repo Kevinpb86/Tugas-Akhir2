@@ -318,16 +318,19 @@ class AsuransiWebPage extends StatelessWidget {
   }
 
   Widget _buildAvatar(Color color) {
-    return Container(
-      width: 32,
-      height: 32,
-      margin: const EdgeInsets.only(left: -8),
-      decoration: BoxDecoration(
-        color: color,
-        shape: BoxShape.circle,
-        border: Border.all(color: Colors.white, width: 2),
+    return Align(
+      widthFactor: 0.75,
+      alignment: Alignment.centerLeft,
+      child: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          color: color,
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.white, width: 2),
+        ),
+        child: const Icon(Icons.person, size: 20, color: Colors.white),
       ),
-      child: const Icon(Icons.person, size: 20, color: Colors.white),
     );
   }
 
