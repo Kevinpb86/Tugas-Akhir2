@@ -22,7 +22,11 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     _pages = [
-      const BerandaPage(),
+      BerandaPage(
+        onNavigateToCuaca: () {
+          _onItemTapped(1);
+        },
+      ),
       CuacaPage(
         onBack: () {
           setState(() {
