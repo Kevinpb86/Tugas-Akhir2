@@ -11,6 +11,7 @@ import 'login.dart';
 import 'utils/localization.dart';
 import 'main.dart'; // For isLoggedInNotifier
 import 'toko.dart';
+import 'asuransi.dart';
 
 class BerandaPage extends StatefulWidget {
   const BerandaPage({super.key});
@@ -957,7 +958,14 @@ class _BerandaPageState extends State<BerandaPage> {
             width: double.infinity,
             height: 48,
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AsuransiWebPage(),
+                  ),
+                );
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF00BCD4),
                 foregroundColor: Colors.white,
