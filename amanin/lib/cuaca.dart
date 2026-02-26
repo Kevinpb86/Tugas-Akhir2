@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'beranda.dart';
 import 'edukasi.dart'; // Import for navigation consistency if needed
 import 'gempa.dart';
+import 'asuransi.dart';
 
 class CuacaPage extends StatelessWidget {
   final VoidCallback? onBack;
@@ -424,7 +425,12 @@ class CuacaPage extends StatelessWidget {
             width: double.infinity,
             height: 48,
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AsuransiWebPage()),
+                );
+              },
               style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00BCD4), foregroundColor: Colors.white, elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
               child: const Text('Cek Asuransi Sekarang', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
             ),
