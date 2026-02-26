@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'hitung_dampak_gempa.dart';
 
 class FiturPage extends StatelessWidget {
   const FiturPage({Key? key}) : super(key: key);
@@ -25,28 +26,42 @@ class FiturPage extends StatelessWidget {
         children: [
           _buildFeatureCard(
             context,
-            icon: Icons.map_outlined,
-            title: 'Peta Evakuasi',
-            description:
-                'Lihat rute evakuasi terdekat dan aman dari lokasi Anda saat ini.',
+            icon: Icons.analytics_outlined,
+            title: 'Hitung Dampak Guncangan Gempa',
+            description: 'Estimasi dampak guncangan gempa pada lokasi Anda.',
             color: const Color(0xFF42A5F5),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const HitungDampakGempaPage(),
+                ),
+              );
+            },
           ),
           const SizedBox(height: 16),
           _buildFeatureCard(
             context,
             icon: Icons.contact_phone_outlined,
-            title: 'Kontak Darurat',
-            description:
-                'Daftar nomor telepon penting yang dapat dihubungi saat keadaan darurat.',
+            title: 'Fitur 2',
+            description: 'Deskripsi untuk Fitur 2.',
             color: const Color(0xFFEF5350),
           ),
           const SizedBox(height: 16),
           _buildFeatureCard(
             context,
             icon: Icons.medical_services_outlined,
-            title: 'Panduan P3K',
-            description: 'Panduan pertolongan pertama pada kecelakaan dasar.',
+            title: 'Fitur 3',
+            description: 'Deskripsi untuk Fitur 3.',
             color: const Color(0xFF66BB6A),
+          ),
+          const SizedBox(height: 16),
+          _buildFeatureCard(
+            context,
+            icon: Icons.info_outline,
+            title: 'Fitur 4',
+            description: 'Deskripsi untuk Fitur 4.',
+            color: const Color(0xFFFFA726),
           ),
         ],
       ),
@@ -59,6 +74,7 @@ class FiturPage extends StatelessWidget {
     required String title,
     required String description,
     required Color color,
+    VoidCallback? onTap,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -75,11 +91,13 @@ class FiturPage extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text('Membuka $title...')));
-          },
+          onTap:
+              onTap ??
+              () {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text('Membuka $title...')));
+              },
           borderRadius: BorderRadius.circular(16),
           child: Padding(
             padding: const EdgeInsets.all(20.0),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'login.dart';
 import 'main.dart'; // For isLoggedInNotifier
+import 'akun.dart';
 
 class BerandaPageSimple extends StatelessWidget {
   const BerandaPageSimple({super.key});
@@ -131,11 +132,22 @@ class BerandaPageSimple extends StatelessWidget {
                             ),
                           ],
                         ),
-                        child: const Center(
-                          child: Icon(
-                            Icons.person_outline,
-                            color: Color(0xFF1A1A1A),
-                            size: 24,
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const AkunPage(),
+                              ),
+                            );
+                          },
+                          borderRadius: BorderRadius.circular(12),
+                          child: const Center(
+                            child: Icon(
+                              Icons.person_outline,
+                              color: Color(0xFF1A1A1A),
+                              size: 24,
+                            ),
                           ),
                         ),
                       )
