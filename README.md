@@ -17,90 +17,97 @@ Aplikasi ini dirancang khusus dengan antarmuka (UI/UX) yang sangat modern, bersi
 
 ---
 
-## ✨ Fitur-Fitur Utama (Core Features)
+## ✨ Ikhtisar Halaman & Fitur Aplikasi Utama (Core Features)
 
-🚨 **1. Peringatan & Informasi Gempa Real-Time**
-- Pantau data gempabumi yang baru saja terjadi berdasarkan filter cerdas (Terkini, Mangitudo ≥ 5.0, Dirasakan, Real-Time).
-- Tampilan detail berupa **Peta Guncangan** (interaktif), titik koordinat (Lintang/Bujur), magnitudo, dan kedalaman gempa.
-- Opsi pelaporan instan dengan tombol cepat *"Saya juga merasakannya"*.
-- Dilengkapi dengan daftar riwayat gempa yang rapi dan detail historis.
+Aplikasi *Amanin* memuat berbagai *screen* utama yang menyediakan integrasi layanan komplit, mencakup:
 
-🌤️ **2. Pemantauan Cuaca Berbasis Titik Lokasi**
-- Integrasi cerdas untuk memantau prakiraan "Cuaca Mingguan" secara presisi berdasarkan posisi pengguna (Misal: Jakarta Pusat).
-- Laporan suhu harian (Celcius) lengkap dengan indeks kelembaban, tekanan udara, kecepatan angin, hingga jarak pandang.
-- Rekomendasi aktivitas harian berdasar pergerakan matahari.
+🏠 **1. Beranda Terpadu & Interaktif (Dashboard/Home)**
+Halaman utama (*Beranda*) menghadirkan segala informasi vital secara *at-a-glance* (sekilas) kepada pengguna:
+- **Peringatan Dini (Early Warning):** Notifikasi guncangan darurat beserta status aman pada zona pengguna.
+- **Card Gempa Terkini:** Ringkasan peristiwa gempa sonder *detail* dengan ikon peringatan darurat.
+- **Ringkasan Cuaca Lokal:** Terdapat indikator visibilitas, cuaca harian, dan rekomendasi aktivitas cerdas dalam format UI modern.
+- **Berita Kebencanaan & Section Survival:** Pusat berita terbaru serta pengingat mengenai *Survival Kit* (Tas Siaga Bencana).
 
-📚 **3. Pusat Edukasi Mitigasi Bencana**
-- Modul "Mitigasi Gempa Bumi" komprehensif (Pra-bencana, saat bencana, pasca-bencana).
-- Tampilan grid responsif untuk langkah keselamatan di berbagai tempat: Di dalam rumah, di luar ruangan, di dalam mobil, dan di gedung tinggi.
-- Integrasi **Video Edukasi** (misal: Simulasi evakuasi mandiri) agar masyarakat mudah memahaminya lewat simulasi visual.
-- Fasilitas panduan merakit komponen krusial **Tas Siaga Bencana (TSB)** berwujud _checklist_ (dokumen, p3k, senter, dsb).
-- Standar operasional keselamatan multi-bencana lainnya (Tsunami, Longsor, Banjir, Gunung Api).
+🚨 **2. Peringatan & Informasi Gempa Real-Time**
+Pusat kontrol pemantauan data gempabumi untuk meningkatkan respon siaga pengguna:
+- Peta *interaktif* Guncangan.
+- Filter cerdas (Gempa Terkini, Mangitudo ≥ 5.0, Gempa Dirasakan).
+- Tampilan riwayat riil dan detail seperti koordinat lokasi, kedalaman episenter, dan intensitas skala *MMI*.
+- *Call to Action* instan ("Saya juga merasakannya").
 
-📞 **4. Akses Cepat Bantuan Darurat (Emergency Call)**
-- Nomor telepon vital terpusat (Ambulans/Medis: 118, Pemadam Kebakaran: 113, Polisi: 110, dan SAR/Basarnas: 115) dapat dihubungi langsung dalam *1-tap call*.
+🌤️ **3. Pemantauan Cuaca Berbasis Geofisika**
+Layanan cuaca dinamis yang menyesuaikan dengan geolokasi yang dihidupkan:
+- Prakiraan *"Cuaca Mingguan"* secara presisi per hari/jam.
+- Status iklim komplit mulai dari suhu Celsius, Kelembaban relatif udara, Tekanan udara per hPa, jarak pandang, hingga kecepataan angin dalam km/jam.
 
-🛡️ **5. Edukasi Perlindungan Aset & Keluarga**
-- Banner terintegrasi program "Asuransi Pro-Siaga" untuk memberi pengarahan proteksi finansial dari dampak bencana.
+📚 **4. Pusat Edukasi Bencana Edukatif & Multimedia**
+Lebih tanggap dan siap untuk menyelamatkan diri, fasilitas penunjang edukasi merangkap:
+- **Video Edukasi Interaktif**: Pemutaran video penanggulangan prabencana, saat bencana darurat, hingga pascabencana langsung dalam *interface* aplikasi.
+- **Filter Chip Cerdas**: Materi bacaan komprehensif terkait gempa, tsunami, kebakaran, tanah longsor, yang dihias dengan UI *Glassmorphism*.
+- **Panduan Standar Keselamatan Ruang**: Tips mitigasi khusus (di luar atau dalam rumah, di gedung, atau berkendara).
 
-🧠 **6. Klasifikasi Tingkat Kerentanan Seismik (Model SVM)**
-- Implementasi *(mockup)* fitur tugas akhir berbasis model *Machine Learning* Support Vector Machine untuk memetakan zonasi risiko gempa secara otomatis.
-- Mampu memprediksi dan memberikan klasifikasi kerentanan seismik dengan tingkatan: **Rendah**, **Sedang**, dan **Tinggi**.
-- Menerima dan memproses *input* parameter gempa kunci, meliputi: Magnitudo, Kedalaman, Lintang, dan Bujur episenter gempa.
-- Membantu proses pengambilan keputusan dalam sistem peringatan mitigasi bencana secara lebih efektif, responsif, dan elegan.
+🧠 **5. Klasifikasi Tingkat Kerentanan Seismik (Model Machine Learning)**
+Fitur *eksklusif* pengembangan Tugas Akhir:
+- Implementasi *(mockup)* fitur klasifikasi berbasis **Support Vector Machine (SVM)** untuk memetakan zonasi risiko gempa secara otomatis (menggantikan *Fitur 2* awal).
+- Sistem memprediksi skor risko dengan tingkatan: **Rendah**, **Sedang**, dan **Tinggi**.
+- Pengolahan berbasis *input parameter gempa kunci* (Magnitudo, Kedalaman, Lintang, Bujur Episenter).
+- Turut serta dibekali utilitas **Hitung Dampak Guncangan Gempa** berbekal algoritma parameter pendukung *rule-based*.
+
+🛡️ **6. Edukasi Perlindungan Aset & Peralatan Survival Kritis**
+- **Asuransi "Pro-Siaga":** Integrasi panel proteksi finansial agar kerugian asuransial pascabencana dapat ditanggulangi sedini mungkin.
+- **Toko Mitigasi (*Toko Shop*)**: Menjual beragam produk krusial untuk bencana seperti P3K Darurat, Helm SNI Kevlar, Peluit Survival, Jaket Anti Dingin, sampai Filter Air yang menunjang penyiapan *Tas Siaga*.
 
 ---
 
-## 🛠️ Teknologi yang Digunakan
-Proyek ini dibangun menggunakan arsitektur modern untuk *mobile application* *cross-platform* (bisa jalan di Android maupun iOS dalam satu *codebase*!):
+## 🛠️ Arsitektur & Teknologi
 
-- **Framework:** [Flutter](https://flutter.dev/) (UI Toolkit by Google)
+Proyek ini dibangun menggunakan landasan modern pada pengembangan *mobile cross-platform* :
+
+- **Framework:** [Flutter](https://flutter.dev/) 
 - **Bahasa Pemrograman:** [Dart](https://dart.dev/)
-- **UI/UX:** *Material Design & Custom Styling* (Micro-interactions, Navigation Bar Melayang, Gradient & Shadow UI, dsb)
-- **Komponen Spesifik:**
-  - `webview_flutter`: Render fungsionalitas peta (Map) dan penampil peringatan dini cuaca guncangan.
-  - Implementasi *Font* Khusus (Custom Typography) untuk menciptakan nuansa yang elegan dan mudah terbaca.
-- **Workflow & Version Control:** Git, Visual Studio Code / Android Studio, dan GitHub repositori.
+- **Paradigma Antarmuka UI/UX:** *Material Design & Custom Styling* bertemakan minimalis-futuristik. Dilengkapi bayangan (*Drop & Inner Shadows*), mikro-interaksi responsif, dan efek grafikal bergradien yang elok.
+- **Dependencies Kunci:** Pemanggilan Webview & Modul rendering Peta / API.
+- **Sistem *Development & Version Control*:** Lingkungan terkendali penuh dengan *Git* dan pelacakan dari *GitHub*.
 
 ---
 
-## 🚀 Cara Menjalankan Proyek Secara Lokal
+## 🚀 Eksekusi dan Penjalanan Simulasi Lokal
 
-Ingin mencoba meng-compile antarmuka *Amanin* cantik ini langsung ke HP / Emulator-mu? Ikuti panduan singkat berikut:
+Ingin mencoba meng-compile dan meng-run antarmuka *Amanin* memukau ini di emulator secara independen? 
 
-1. **Clone repositori ini:**
-   Buka terminal/Command Prompt dan jalankan:
+1. **Clone Repositori:**
    ```bash
    git clone https://github.com/Kevinpb86/Tugas-Akhir2.git
    ```
 
-2. **Masuk ke direktori utama aplikasi:**
+2. **Masuk ke Direktori Kerja Utama:**
    ```bash
    cd Tugas-Akhir2/amanin
    ```
 
-3. **Install seluruh dependensi *package*:**
+3. **Sinkronisasi Dependensi (Packages):**
    ```bash
    flutter pub get
    ```
 
-4. **Jalankan Aplikasi:**
-   Koneksikan *device* atau emulator Anda, lalu lakukan eksekusi:
+4. **Kompilasi dan Pengoperasian:**
+   Pastikan emulator atau perangkat USB Mode *Debugging* Anda sudah tercantol sukses.
    ```bash
    flutter run
    ```
 
 ---
 
-## 📈 Pembaruan Terkini (Changelog)
+## 📈 Pembaruan Terkini (*Changelog*)
 
-Berikut adalah rekapitulasi penambahan fitur dan perbaikan (*bug fixes*) yang telah berhasil diimplementasikan pada versi pengembangan saat ini:
+Berikut adalah jejak historis pemutakhiran layanan dan perbaikan (*bug fixes*) terpenting yang sukses tereksekusi di lintasan rilis *branch* ini:
 
-*   **Fitur Machine Learning (Simulasi):** Menambahkan halaman "Klasifikasi Kerentanan Seismik (SVM)" sebagai *mockup* fitur klasifikasi berbasis model *Support Vector Machine* yang memanfaatkan parameter Magnitudo, Kedalaman, dan Episenter Gempa untuk menentukan zonasi risiko (Rendah/Sedang/Tinggi).
-*   **Perbaikan Navigasi Iklan Asuransi:** Memperbaiki seluruh tata letak dan navigasi panel Iklan Asuransi di seluruh halaman utama aplikasi (Cuaca, Gempa, Edukasi, dan Beranda) agar secara konsisten mengarahkan pengguna ke destinasi promosi dengan tepat.
-*   **Redesain Halaman Edukasi:** Peningkatan total pada desain UI halaman Edukasi. Menghadirkan komponen *header* yang lebih menarik, panel filter *chips* yang modern, penyempurnaan pada kartu gempa bumi utama, serta tata letak daftar gempa terkini.
-*   **Update Fitur Toko & Perbaikan UI Lainnya:** Pembenahan berbagai masalah *margin* di beberapa komponen halaman untuk memastikan konsistensi *padding*, serta menambahkan *update* terkait fitur Toko untuk keperluan pengembangan lebih lanjut.
+*   **Integrasi Model Machine Learning Klasifikasi SVM:** Penerapan layar simulasi inovatif yang membaca kondisi magnitudo dan kedalaman dengan kaidah SVM guna menentukan risiko Rendah, Sedang, hingga Tinggi.
+*   **Pemutakhiran Infrastruktur Edukasi:** Merombak besar-besaran tata letak halaman **Edukasi** dengan penyisipan tombol akses media *(Video Edukasi)*, *filter chips* responsif, serta *card* materi.
+*   **Optimalisasi Toko & Perdagangan Bencana:** Penyertaan navigasi khusus untuk mengakses kelengkapan keselamatan P3K di *widget* produk.
+*   **Resinchronisasi Tombol Asuransi:** Memperbaiki sistem laluan URL/Iklan Asuransi "Pro-Siaga" yang tadinya rawan rusak, dan sekarang beroperasi mulus pada Cuaca, Beranda, serta Gempa.
+*   **Tuning Sensibilitas Navigasi:** Perbaikan *margin*, *text bounds layout*, juga peningkatan estetika agar konsistensi ruang putih (*whitespace*) terjaga.
 
 ---
 
-> **Catatan Penting:** Repositori komitmen (branch: `Dava-Ihza`) ini dimanfaatkan khusus sebagai sub-wadah pengembangan (Development Sandbox) **purwarupa purwa (UI/UX prototype)** aplikasi Tugas Akhir akademik. Jika terdapat *dummy text* / placeholder pada simulasi API, maka itu ditujukan untuk keperluan presentasi desain di masa pembangunan aplikasi ini.
+> **⚠️ Catatan Ekstra (Academic Context):** Repositori pada komitmen (`branch: Dava-Ihza`) ini dimanfaatkan sebagai sub-wadah *Development Sandbox* / **Prototipe Purwarupa UI/UX** dari penelitian dan perancangan Akademik Tugas Akhir. Jika Anda mendapati penempatan statis (*dummy text*) ataupun integrasi API bersimulasi, hal tersebut bertujuan mengimplementasikan kaidah visualnya terlebih dahulu sesuai dengan gagasan metodologi penelitian.
