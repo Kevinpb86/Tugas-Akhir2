@@ -1052,8 +1052,15 @@ class _BerandaPageState extends State<BerandaPage> {
           ],
         ),
         const SizedBox(height: 12),
-        Container(
-          decoration: BoxDecoration(
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const CuacaPage()),
+            );
+          },
+          child: Container(
+            decoration: BoxDecoration(
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -1194,6 +1201,7 @@ class _BerandaPageState extends State<BerandaPage> {
               ],
             ),
           ),
+        ),
         ),
       ],
     );
