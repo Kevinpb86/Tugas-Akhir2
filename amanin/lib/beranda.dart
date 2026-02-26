@@ -14,7 +14,8 @@ import 'toko.dart';
 import 'asuransi.dart';
 
 class BerandaPage extends StatefulWidget {
-  const BerandaPage({super.key});
+  final VoidCallback? onNavigateToCuaca;
+  const BerandaPage({super.key, this.onNavigateToCuaca});
 
   @override
   State<BerandaPage> createState() => _BerandaPageState();
@@ -1054,10 +1055,14 @@ class _BerandaPageState extends State<BerandaPage> {
         const SizedBox(height: 12),
         GestureDetector(
           onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const CuacaPage()),
-            );
+            if (widget.onNavigateToCuaca != null) {
+              widget.onNavigateToCuaca!();
+            } else {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const CuacaPage()),
+              );
+            }
           },
           child: Container(
             decoration: BoxDecoration(
