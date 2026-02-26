@@ -30,7 +30,7 @@ class GempaPage extends StatelessWidget {
               const SizedBox(height: 16),
               _buildRecentEarthquakes(context),
               const SizedBox(height: 24),
-              _buildInsuranceSection(),
+              _buildInsuranceSection(context),
               const SizedBox(height: 100), // padding for floating bottom nav
             ],
           ),
@@ -743,7 +743,7 @@ class GempaPage extends StatelessWidget {
     );
   }
 
-  Widget _buildInsuranceSection() {
+  Widget _buildInsuranceSection(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
