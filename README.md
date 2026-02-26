@@ -43,6 +43,12 @@ Aplikasi ini dirancang khusus dengan antarmuka (UI/UX) yang sangat modern, bersi
 🛡️ **5. Edukasi Perlindungan Aset & Keluarga**
 - Banner terintegrasi program "Asuransi Pro-Siaga" untuk memberi pengarahan proteksi finansial dari dampak bencana.
 
+🧠 **6. Klasifikasi Tingkat Kerentanan Seismik (Model SVM)**
+- Implementasi *(mockup)* fitur tugas akhir berbasis model *Machine Learning* Support Vector Machine untuk memetakan zonasi risiko gempa secara otomatis.
+- Mampu memprediksi dan memberikan klasifikasi kerentanan seismik dengan tingkatan: **Rendah**, **Sedang**, dan **Tinggi**.
+- Menerima dan memproses *input* parameter gempa kunci, meliputi: Magnitudo, Kedalaman, Lintang, dan Bujur episenter gempa.
+- Membantu proses pengambilan keputusan dalam sistem peringatan mitigasi bencana secara lebih efektif, responsif, dan elegan.
+
 ---
 
 ## 🛠️ Teknologi yang Digunakan
