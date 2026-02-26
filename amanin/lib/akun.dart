@@ -11,9 +11,6 @@ class AkunPage extends StatefulWidget {
 }
 
 class _AkunPageState extends State<AkunPage> {
-  // Mock login state
-  final bool _isLoggedIn = true;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -56,7 +53,9 @@ class _AkunPageState extends State<AkunPage> {
                 shape: BoxShape.circle,
                 color: Colors.grey[200],
                 image: const DecorationImage(
-                  image: AssetImage('assets/images/avatar_placeholder.png'), // Ensure this asset exists or handle error
+                  image: AssetImage(
+                    'assets/images/avatar_placeholder.png',
+                  ), // Ensure this asset exists or handle error
                   fit: BoxFit.cover,
                 ),
                 boxShadow: [
@@ -67,7 +66,11 @@ class _AkunPageState extends State<AkunPage> {
                   ),
                 ],
               ),
-              child: const Icon(Icons.person, size: 50, color: Colors.grey), // Fallback
+              child: const Icon(
+                Icons.person,
+                size: 50,
+                color: Colors.grey,
+              ), // Fallback
             ),
             Positioned(
               bottom: 0,
@@ -80,11 +83,7 @@ class _AkunPageState extends State<AkunPage> {
                   shape: BoxShape.circle,
                   border: Border.all(color: Colors.white, width: 2),
                 ),
-                child: const Icon(
-                  Icons.edit,
-                  color: Colors.white,
-                  size: 16,
-                ),
+                child: const Icon(Icons.edit, color: Colors.white, size: 16),
               ),
             ),
           ],
@@ -101,10 +100,7 @@ class _AkunPageState extends State<AkunPage> {
         const SizedBox(height: 4),
         Text(
           'johndoe@example.com',
-          style: TextStyle(
-            fontSize: 14,
-            color: Colors.grey[600],
-          ),
+          style: TextStyle(fontSize: 14, color: Colors.grey[600]),
         ),
       ],
     );
@@ -124,30 +120,34 @@ class _AkunPageState extends State<AkunPage> {
           ),
         ),
         const SizedBox(height: 16),
-        _buildSettingsItem(Icons.person_outline, 'Ubah Profil'), // "Ubah Profil" might not be in localization keys, using raw string for now based on walkthrough
         _buildSettingsItem(
-          Icons.notifications_outlined, 
-          Localization.of(context).get('account_menu_notif')
+          Icons.person_outline,
+          'Ubah Profil',
+        ), // "Ubah Profil" might not be in localization keys, using raw string for now based on walkthrough
+        _buildSettingsItem(
+          Icons.notifications_outlined,
+          Localization.of(context).get('account_menu_notif'),
         ),
         _buildSettingsItem(
-          Icons.language, 
+          Icons.language,
           Localization.of(context).get('account_menu_lang'),
           onTap: () => _showLanguageSelector(context),
         ),
         _buildSettingsItem(
-          Icons.help_outline, 
-          Localization.of(context).get('account_menu_help')
+          Icons.help_outline,
+          Localization.of(context).get('account_menu_help'),
         ),
         _buildSettingsItem(
-          Icons.info_outline, 
-          Localization.of(context).get('account_menu_about')
+          Icons.info_outline,
+          Localization.of(context).get('account_menu_about'),
         ),
         const SizedBox(height: 32),
         _buildSettingsItem(
-          Icons.logout, 
+          Icons.logout,
           'Keluar', // "Keluar" might not be in localization keys
           isDestructive: true,
           onTap: () {
+            isLoggedInNotifier.value = false;
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const LoginPage()),
@@ -158,7 +158,12 @@ class _AkunPageState extends State<AkunPage> {
     );
   }
 
-  Widget _buildSettingsItem(IconData icon, String title, {bool isDestructive = false, VoidCallback? onTap}) {
+  Widget _buildSettingsItem(
+    IconData icon,
+    String title, {
+    bool isDestructive = false,
+    VoidCallback? onTap,
+  }) {
     return ListTile(
       onTap: onTap,
       contentPadding: EdgeInsets.zero,
@@ -171,7 +176,9 @@ class _AkunPageState extends State<AkunPage> {
         ),
         child: Icon(
           icon,
-          color: isDestructive ? const Color(0xFFEF5350) : const Color(0xFF1A1A1A),
+          color: isDestructive
+              ? const Color(0xFFEF5350)
+              : const Color(0xFF1A1A1A),
           size: 20,
         ),
       ),
@@ -180,7 +187,9 @@ class _AkunPageState extends State<AkunPage> {
         style: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w500,
-          color: isDestructive ? const Color(0xFFEF5350) : const Color(0xFF1A1A1A),
+          color: isDestructive
+              ? const Color(0xFFEF5350)
+              : const Color(0xFF1A1A1A),
         ),
       ),
       trailing: const Icon(
@@ -237,14 +246,16 @@ class _AkunPageState extends State<AkunPage> {
 
   Widget _buildLanguageOption(BuildContext context, String label, String code) {
     final isSelected = localeNotifier.value.languageCode == code;
-    
+
     return InkWell(
       onTap: () {
         localeNotifier.value = Locale(code);
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${Localization.of(context).get('account_lang_changed')} $label'),
+            content: Text(
+              '${Localization.of(context).get('account_lang_changed')} $label',
+            ),
             backgroundColor: const Color(0xFF1A1A1A),
             behavior: SnackBarBehavior.floating,
           ),
@@ -269,7 +280,9 @@ class _AkunPageState extends State<AkunPage> {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                color: isSelected ? const Color(0xFF00BCD4) : const Color(0xFF1A1A1A),
+                color: isSelected
+                    ? const Color(0xFF00BCD4)
+                    : const Color(0xFF1A1A1A),
               ),
             ),
             if (isSelected)

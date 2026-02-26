@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'login.dart';
+import 'main.dart'; // For isLoggedInNotifier
 
 class BerandaPageSimple extends StatelessWidget {
   const BerandaPageSimple({super.key});
@@ -15,17 +17,17 @@ class BerandaPageSimple extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Header Section
-                _buildHeader(),
+                _buildHeader(context),
                 const SizedBox(height: 24),
-                
+
                 // Earthquake Status Section
                 _buildEarthquakeStatus(),
                 const SizedBox(height: 16),
-                
+
                 // Placeholder Map
                 _buildPlaceholderMap(),
                 const SizedBox(height: 16),
-                
+
                 // Earthquake Details Card
                 _buildEarthquakeDetailsCard(),
               ],
@@ -36,7 +38,7 @@ class BerandaPageSimple extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -54,11 +56,7 @@ class BerandaPageSimple extends StatelessWidget {
             const SizedBox(height: 4),
             Row(
               children: const [
-                Icon(
-                  Icons.location_on,
-                  color: Color(0xFF00BCD4),
-                  size: 16,
-                ),
+                Icon(Icons.location_on, color: Color(0xFF00BCD4), size: 16),
                 SizedBox(width: 4),
                 Text(
                   'Jakarta Pusat',
@@ -114,28 +112,71 @@ class BerandaPageSimple extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 12),
-            // Profile Icon
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: const Center(
-                child: Icon(
-                  Icons.person_outline,
-                  color: Color(0xFF1A1A1A),
-                  size: 24,
-                ),
-              ),
+            // Profile Icon or Login Button
+            ValueListenableBuilder<bool>(
+              valueListenable: isLoggedInNotifier,
+              builder: (context, isLoggedIn, _) {
+                return isLoggedIn
+                    ? Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 10,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: const Center(
+                          child: Icon(
+                            Icons.person_outline,
+                            color: Color(0xFF1A1A1A),
+                            size: 24,
+                          ),
+                        ),
+                      )
+                    : InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const LoginPage(),
+                            ),
+                          );
+                        },
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF00BCD4),
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF00BCD4).withOpacity(0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: const Center(
+                            child: Text(
+                              'Masuk',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+              },
             ),
           ],
         ),
@@ -209,11 +250,7 @@ class BerandaPageSimple extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      Icons.map,
-                      size: 48,
-                      color: Color(0xFF4CAF50),
-                    ),
+                    Icon(Icons.map, size: 48, color: Color(0xFF4CAF50)),
                     SizedBox(height: 8),
                     Text(
                       'Google Maps akan muncul di sini',
@@ -231,7 +268,10 @@ class BerandaPageSimple extends StatelessWidget {
               top: 12,
               left: 12,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFF424242),
                   borderRadius: BorderRadius.circular(6),
@@ -273,10 +313,7 @@ class BerandaPageSimple extends StatelessWidget {
             padding: const EdgeInsets.all(20),
             decoration: const BoxDecoration(
               border: Border(
-                bottom: BorderSide(
-                  color: Color(0xFFF0F0F0),
-                  width: 1,
-                ),
+                bottom: BorderSide(color: Color(0xFFF0F0F0), width: 1),
               ),
             ),
             child: Row(
@@ -320,11 +357,7 @@ class BerandaPageSimple extends StatelessWidget {
                     ),
                   ],
                 ),
-                const Icon(
-                  Icons.waves,
-                  color: Color(0xFFFF5252),
-                  size: 32,
-                ),
+                const Icon(Icons.waves, color: Color(0xFFFF5252), size: 32),
               ],
             ),
           ),
@@ -340,19 +373,9 @@ class BerandaPageSimple extends StatelessWidget {
                 const SizedBox(height: 16),
                 Row(
                   children: [
-                    Expanded(
-                      child: _buildDetailRow(
-                        'KEDALAMAN',
-                        '↓ 37 Km',
-                      ),
-                    ),
+                    Expanded(child: _buildDetailRow('KEDALAMAN', '↓ 37 Km')),
                     const SizedBox(width: 16),
-                    Expanded(
-                      child: _buildDetailRow(
-                        'WAKTU',
-                        '🕐 02:23 WIB',
-                      ),
-                    ),
+                    Expanded(child: _buildDetailRow('WAKTU', '🕐 02:23 WIB')),
                   ],
                 ),
                 const SizedBox(height: 20),
@@ -384,10 +407,7 @@ class BerandaPageSimple extends StatelessWidget {
                           ),
                         ),
                         SizedBox(width: 8),
-                        Icon(
-                          Icons.arrow_forward,
-                          size: 18,
-                        ),
+                        Icon(Icons.arrow_forward, size: 18),
                       ],
                     ),
                   ),

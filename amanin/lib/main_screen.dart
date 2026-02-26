@@ -4,6 +4,7 @@ import 'cuaca.dart';
 import 'gempa.dart';
 import 'edukasi.dart';
 import 'utils/localization.dart';
+import 'fitur.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -22,12 +23,16 @@ class _MainScreenState extends State<MainScreen> {
     super.initState();
     _pages = [
       const BerandaPage(),
-      CuacaPage(onBack: () {
-        setState(() {
-          _selectedIndex = 0;
-        });
-      }),
-      const Scaffold(body: Center(child: Text('Map Placeholder'))), // Index 2 is the floating map button
+      CuacaPage(
+        onBack: () {
+          setState(() {
+            _selectedIndex = 0;
+          });
+        },
+      ),
+      const Scaffold(
+        body: Center(child: Text('Map Placeholder')),
+      ), // Index 2 is the floating map button
       const GempaPage(),
       const EdukasiPage(),
     ];
@@ -35,7 +40,10 @@ class _MainScreenState extends State<MainScreen> {
 
   void _onItemTapped(int index) {
     if (index == 2) {
-      // Map button tapped - perhaps do nothing or show map modal/page
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const FiturPage()),
+      );
       return;
     }
     setState(() {
@@ -47,10 +55,7 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBody: true,
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: _pages,
-      ),
+      body: IndexedStack(index: _selectedIndex, children: _pages),
       bottomNavigationBar: _buildFloatingBottomNavigationBar(),
     );
   }
@@ -75,8 +80,16 @@ class _MainScreenState extends State<MainScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildNavItem(Icons.home_rounded, Localization.of(context).get('nav_home'), 0),
-              _buildNavItem(Icons.cloud_outlined, Localization.of(context).get('nav_weather'), 1),
+              _buildNavItem(
+                Icons.home_rounded,
+                Localization.of(context).get('nav_home'),
+                0,
+              ),
+              _buildNavItem(
+                Icons.cloud_outlined,
+                Localization.of(context).get('nav_weather'),
+                1,
+              ),
               Transform.translate(
                 offset: const Offset(0, -16),
                 child: InkWell(
@@ -97,13 +110,25 @@ class _MainScreenState extends State<MainScreen> {
                       ],
                     ),
                     child: const Center(
-                      child: Icon(Icons.location_on, color: Colors.white, size: 28),
+                      child: Icon(
+                        Icons.dashboard_customize_rounded,
+                        color: Colors.white,
+                        size: 28,
+                      ),
                     ),
                   ),
                 ),
               ),
-              _buildNavItem(Icons.public, Localization.of(context).get('nav_quake'), 3),
-              _buildNavItem(Icons.school_outlined, Localization.of(context).get('nav_education'), 4),
+              _buildNavItem(
+                Icons.public,
+                Localization.of(context).get('nav_quake'),
+                3,
+              ),
+              _buildNavItem(
+                Icons.school_outlined,
+                Localization.of(context).get('nav_education'),
+                4,
+              ),
             ],
           ),
         ),
@@ -111,15 +136,16 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-
   Widget _buildNavItem(IconData icon, String label, int index) {
     final bool isActive = _selectedIndex == index;
-    
+
     // Choose specific icon based on active state if necessary
     IconData displayIcon = icon;
-    if (index == 0) displayIcon = isActive ? Icons.home_rounded : Icons.home_rounded; 
-    if (index == 1) displayIcon = isActive ? Icons.cloud_outlined : Icons.cloud_outlined;
-    
+    if (index == 0)
+      displayIcon = isActive ? Icons.home_rounded : Icons.home_rounded;
+    if (index == 1)
+      displayIcon = isActive ? Icons.cloud_outlined : Icons.cloud_outlined;
+
     return InkWell(
       onTap: () => _onItemTapped(index),
       borderRadius: BorderRadius.circular(12),
@@ -130,7 +156,9 @@ class _MainScreenState extends State<MainScreen> {
           children: [
             Icon(
               displayIcon,
-              color: isActive ? const Color(0xFF00BCD4) : const Color(0xFFBDBDBD),
+              color: isActive
+                  ? const Color(0xFF00BCD4)
+                  : const Color(0xFFBDBDBD),
               size: 26,
             ),
             const SizedBox(height: 4),
@@ -139,7 +167,9 @@ class _MainScreenState extends State<MainScreen> {
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-                color: isActive ? const Color(0xFF00BCD4) : const Color(0xFFBDBDBD),
+                color: isActive
+                    ? const Color(0xFF00BCD4)
+                    : const Color(0xFFBDBDBD),
               ),
             ),
           ],
