@@ -95,7 +95,7 @@ class CuacaPage extends StatelessWidget {
               // Weekly Forecast List
               _buildWeeklyForecast(),
               const SizedBox(height: 24),
-              _buildInsuranceSection(),
+              _buildInsuranceSection(context),
               const SizedBox(height: 100), // Bottom padding for floating nav
             ],
           ),
@@ -393,7 +393,7 @@ class CuacaPage extends StatelessWidget {
   }
 
 
-  Widget _buildInsuranceSection() {
+  Widget _buildInsuranceSection(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 20, offset: const Offset(0, 4))]),
