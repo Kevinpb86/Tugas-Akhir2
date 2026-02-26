@@ -3,6 +3,7 @@ import 'akun.dart';
 import 'login.dart';
 import 'main.dart';
 import 'asuransi.dart';
+import 'video_edukasi.dart';
 
 class EdukasiPage extends StatelessWidget {
   const EdukasiPage({super.key});
@@ -37,7 +38,7 @@ class EdukasiPage extends StatelessWidget {
               const SizedBox(height: 24),
               _buildVideoHeader(),
               const SizedBox(height: 16),
-              _buildVideoCard(),
+              _buildVideoCard(context),
               const SizedBox(height: 24),
               const Text(
                 'Tas Siaga Bencana (TSB)',
@@ -445,9 +446,16 @@ class EdukasiPage extends StatelessWidget {
     );
   }
 
-  Widget _buildVideoCard() {
-    return Container(
-      decoration: BoxDecoration(
+  Widget _buildVideoCard(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const VideoEdukasiPage()),
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: const Color(0xFFEEEEEE), width: 1),
@@ -565,8 +573,9 @@ class EdukasiPage extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildTsbCard() {
     return Container(
