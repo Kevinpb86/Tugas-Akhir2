@@ -43,6 +43,12 @@ Aplikasi ini dirancang khusus dengan antarmuka (UI/UX) yang sangat modern, bersi
 🛡️ **5. Edukasi Perlindungan Aset & Keluarga**
 - Banner terintegrasi program "Asuransi Pro-Siaga" untuk memberi pengarahan proteksi finansial dari dampak bencana.
 
+🧠 **6. Klasifikasi Tingkat Kerentanan Seismik (Model SVM)**
+- Implementasi *(mockup)* fitur tugas akhir berbasis model *Machine Learning* Support Vector Machine untuk memetakan zonasi risiko gempa secara otomatis.
+- Mampu memprediksi dan memberikan klasifikasi kerentanan seismik dengan tingkatan: **Rendah**, **Sedang**, dan **Tinggi**.
+- Menerima dan memproses *input* parameter gempa kunci, meliputi: Magnitudo, Kedalaman, Lintang, dan Bujur episenter gempa.
+- Membantu proses pengambilan keputusan dalam sistem peringatan mitigasi bencana secara lebih efektif, responsif, dan elegan.
+
 ---
 
 ## 🛠️ Teknologi yang Digunakan
@@ -83,5 +89,18 @@ Ingin mencoba meng-compile antarmuka *Amanin* cantik ini langsung ke HP / Emulat
    ```bash
    flutter run
    ```
+
+---
+
+## 📈 Pembaruan Terkini (Changelog)
+
+Berikut adalah rekapitulasi penambahan fitur dan perbaikan (*bug fixes*) yang telah berhasil diimplementasikan pada versi pengembangan saat ini:
+
+*   **Fitur Machine Learning (Simulasi):** Menambahkan halaman "Klasifikasi Kerentanan Seismik (SVM)" sebagai *mockup* fitur klasifikasi berbasis model *Support Vector Machine* yang memanfaatkan parameter Magnitudo, Kedalaman, dan Episenter Gempa untuk menentukan zonasi risiko (Rendah/Sedang/Tinggi).
+*   **Perbaikan Navigasi Iklan Asuransi:** Memperbaiki seluruh tata letak dan navigasi panel Iklan Asuransi di seluruh halaman utama aplikasi (Cuaca, Gempa, Edukasi, dan Beranda) agar secara konsisten mengarahkan pengguna ke destinasi promosi dengan tepat.
+*   **Redesain Halaman Edukasi:** Peningkatan total pada desain UI halaman Edukasi. Menghadirkan komponen *header* yang lebih menarik, panel filter *chips* yang modern, penyempurnaan pada kartu gempa bumi utama, serta tata letak daftar gempa terkini.
+*   **Update Fitur Toko & Perbaikan UI Lainnya:** Pembenahan berbagai masalah *margin* di beberapa komponen halaman untuk memastikan konsistensi *padding*, serta menambahkan *update* terkait fitur Toko untuk keperluan pengembangan lebih lanjut.
+
+---
 
 > **Catatan Penting:** Repositori komitmen (branch: `Dava-Ihza`) ini dimanfaatkan khusus sebagai sub-wadah pengembangan (Development Sandbox) **purwarupa purwa (UI/UX prototype)** aplikasi Tugas Akhir akademik. Jika terdapat *dummy text* / placeholder pada simulasi API, maka itu ditujukan untuk keperluan presentasi desain di masa pembangunan aplikasi ini.
