@@ -10,6 +10,7 @@ import 'fitur.dart';
 import 'login.dart';
 import 'utils/localization.dart';
 import 'main.dart'; // For isLoggedInNotifier
+import 'toko.dart';
 
 class BerandaPage extends StatefulWidget {
   const BerandaPage({super.key});
@@ -828,7 +829,14 @@ class _BerandaPageState extends State<BerandaPage> {
                         ),
                         const Spacer(),
                         ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const TokoAmaninPage(),
+                              ),
+                            );
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF00BCD4),
                             foregroundColor: Colors.white,
