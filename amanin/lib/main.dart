@@ -9,6 +9,7 @@ void main() {
 }
 
 final ValueNotifier<Locale> localeNotifier = ValueNotifier(const Locale('id'));
+final ValueNotifier<bool> isLoggedInNotifier = ValueNotifier(false);
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -22,20 +23,18 @@ class MyApp extends StatelessWidget {
           title: 'Amanin - Earthquake Monitoring',
           debugShowCheckedModeBanner: false,
           theme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF00BCD4)),
-            useMaterial3: true,
-            textTheme: GoogleFonts.poppinsTextTheme(
-              Theme.of(context).textTheme,
-            ).apply(
-              bodyColor: const Color(0xFF1A1A1A),
-              displayColor: const Color(0xFF1A1A1A),
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: const Color(0xFF00BCD4),
             ),
+            useMaterial3: true,
+            textTheme: GoogleFonts.poppinsTextTheme(Theme.of(context).textTheme)
+                .apply(
+                  bodyColor: const Color(0xFF1A1A1A),
+                  displayColor: const Color(0xFF1A1A1A),
+                ),
           ),
           locale: locale,
-          supportedLocales: const [
-            Locale('id'),
-            Locale('en'),
-          ],
+          supportedLocales: const [Locale('id'), Locale('en')],
           localizationsDelegates: [
             const LocalizationDelegate(),
             GlobalMaterialLocalizations.delegate,

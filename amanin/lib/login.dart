@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'register.dart'; // For navigation to register
+import 'main.dart'; // For isLoggedInNotifier
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -57,13 +58,10 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 8),
               const Text(
                 'Masuk untuk mengakses semua fitur Amanin.',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Color(0xFF757575),
-                ),
+                style: TextStyle(fontSize: 14, color: Color(0xFF757575)),
               ),
               const SizedBox(height: 32),
-              
+
               // Email Input
               const Text(
                 'Email',
@@ -80,7 +78,10 @@ class _LoginPageState extends State<LoginPage> {
                 decoration: InputDecoration(
                   hintText: 'Masukkan email Anda',
                   hintStyle: const TextStyle(color: Color(0xFFBDBDBD)),
-                  prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFF9E9E9E)),
+                  prefixIcon: const Icon(
+                    Icons.email_outlined,
+                    color: Color(0xFF9E9E9E),
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
@@ -91,14 +92,17 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFF00BCD4), width: 2),
+                    borderSide: const BorderSide(
+                      color: Color(0xFF00BCD4),
+                      width: 2,
+                    ),
                   ),
                   filled: true,
                   fillColor: const Color(0xFFFAFAFA),
                 ),
               ),
               const SizedBox(height: 20),
-              
+
               // Password Input
               const Text(
                 'Kata Sandi',
@@ -115,10 +119,15 @@ class _LoginPageState extends State<LoginPage> {
                 decoration: InputDecoration(
                   hintText: 'Masukkan kata sandi',
                   hintStyle: const TextStyle(color: Color(0xFFBDBDBD)),
-                  prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF9E9E9E)),
+                  prefixIcon: const Icon(
+                    Icons.lock_outline,
+                    color: Color(0xFF9E9E9E),
+                  ),
                   suffixIcon: IconButton(
                     icon: Icon(
-                      _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                      _obscurePassword
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
                       color: const Color(0xFF9E9E9E),
                     ),
                     onPressed: () {
@@ -137,13 +146,16 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFF00BCD4), width: 2),
+                    borderSide: const BorderSide(
+                      color: Color(0xFF00BCD4),
+                      width: 2,
+                    ),
                   ),
                   filled: true,
                   fillColor: const Color(0xFFFAFAFA),
                 ),
               ),
-              
+
               // Forgot Password
               Align(
                 alignment: Alignment.centerRight,
@@ -160,20 +172,25 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 32),
-              
+
               // Login Button
               SizedBox(
                 width: double.infinity,
                 height: 52,
                 child: ElevatedButton(
                   onPressed: () {
+                    isLoggedInNotifier.value = true;
                     // TODO: Login Logic
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Login Berhasil! (Simulasi)')),
+                      const SnackBar(
+                        content: Text('Login Berhasil! (Simulasi)'),
+                      ),
                     );
-                    Navigator.pop(context); // Return to previous screen (likely AkunPage or Home)
+                    Navigator.pop(
+                      context,
+                    ); // Return to previous screen (likely AkunPage or Home)
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF00BCD4),
@@ -185,14 +202,11 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   child: const Text(
                     'Masuk',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 24),
               Row(
                 children: const [
@@ -201,17 +215,14 @@ class _LoginPageState extends State<LoginPage> {
                     padding: EdgeInsets.symmetric(horizontal: 16),
                     child: Text(
                       'atau masuk dengan',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF9E9E9E),
-                      ),
+                      style: TextStyle(fontSize: 12, color: Color(0xFF9E9E9E)),
                     ),
                   ),
                   Expanded(child: Divider(color: Color(0xFFE0E0E0))),
                 ],
               ),
               const SizedBox(height: 24),
-              
+
               // Social Login Buttons (Placeholder)
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -221,24 +232,24 @@ class _LoginPageState extends State<LoginPage> {
                   _buildSocialButton(Icons.apple, 'Apple'),
                 ],
               ),
-              
+
               const SizedBox(height: 40),
-              
+
               // Register Link
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Text(
                     'Belum punya akun? ',
-                    style: TextStyle(
-                      color: Color(0xFF757575),
-                    ),
+                    style: TextStyle(color: Color(0xFF757575)),
                   ),
                   GestureDetector(
                     onTap: () {
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(builder: (context) => const RegisterPage()),
+                        MaterialPageRoute(
+                          builder: (context) => const RegisterPage(),
+                        ),
                       );
                     },
                     child: const Text(
@@ -268,11 +279,7 @@ class _LoginPageState extends State<LoginPage> {
         border: Border.all(color: const Color(0xFFE0E0E0)),
       ),
       child: Center(
-        child: Icon(
-          icon,
-          size: 32,
-          color: const Color(0xFF1A1A1A),
-        ),
+        child: Icon(icon, size: 32, color: const Color(0xFF1A1A1A)),
       ),
     );
   }

@@ -7,7 +7,9 @@ import 'edukasi.dart';
 import 'gempa.dart';
 import 'akun.dart';
 import 'fitur.dart';
+import 'login.dart';
 import 'utils/localization.dart';
+import 'main.dart'; // For isLoggedInNotifier
 
 class BerandaPage extends StatefulWidget {
   const BerandaPage({super.key});
@@ -39,15 +41,15 @@ class _BerandaPageState extends State<BerandaPage> {
                 // Earthquake Status Section
                 _buildEarthquakeStatus(),
                 const SizedBox(height: 16),
-                
+
                 // Merged Earthquake Card
                 _buildEarthquakeCard(),
                 const SizedBox(height: 16),
-                
+
                 // Survival Kit Card
                 _buildSurvivalKitSection(),
                 const SizedBox(height: 24),
-                
+
                 // Weather Card
                 _buildWeatherCard(),
                 const SizedBox(height: 16),
@@ -62,6 +64,10 @@ class _BerandaPageState extends State<BerandaPage> {
 
                 // Asuransi Section
                 _buildInsuranceSection(),
+                const SizedBox(height: 24),
+
+                // Fitur Section (Di Bawah)
+                _buildFiturTambahanSection(),
                 const SizedBox(height: 100), // padding for floating bottom nav
               ],
             ),
@@ -109,31 +115,143 @@ class _BerandaPageState extends State<BerandaPage> {
     Color bgColor,
     Color iconColor,
   ) {
-    return Column(
-      children: [
-        Container(
-          width: 64,
-          height: 64,
-          decoration: BoxDecoration(
-            color: bgColor,
-            borderRadius: BorderRadius.circular(20),
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const FiturPage()),
+        );
+      },
+      borderRadius: BorderRadius.circular(20),
+      child: Column(
+        children: [
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: bgColor,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Icon(icon, color: iconColor, size: 28),
           ),
-          child: Icon(icon, color: iconColor, size: 28),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF424242),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFiturTambahanSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Fitur Lainnya',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1A1A1A),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const FiturPage()),
+                );
+              },
+              child: const Text(
+                'Lihat Semua',
+                style: TextStyle(
+                  color: Color(0xFF00BCD4),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-            color: Color(0xFF424242),
+        const SizedBox(height: 16),
+        InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const FiturPage()),
+            );
+          },
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 20,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE3F2FD),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.dashboard_customize_outlined,
+                    color: Color(0xFF2196F3),
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      Text(
+                        'Jelajahi Semua Fitur',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1A1A1A),
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'Lihat Peta Evakuasi, Panduan P3K, dan fitur darurat lainnya.',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF757575),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.arrow_forward_ios,
+                  size: 16,
+                  color: Color(0xFF9E9E9E),
+                ),
+              ],
+            ),
           ),
         ),
       ],
     );
   }
-
-
 
   // Helper method for News Section (needed to be moved/created if not existing in view, but assuming it exists or needs replacement)
   // Since the original view didn't show _buildNewsSection content in detail, I will target the known functions above first.
@@ -217,37 +335,82 @@ class _BerandaPageState extends State<BerandaPage> {
               ),
             ),
             const SizedBox(width: 12),
-            // Profile Icon
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: InkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const AkunPage()),
-                  );
-                },
-                borderRadius: BorderRadius.circular(12),
-                child: const Center(
-                  child: Icon(
-                    Icons.person_outline,
-                    color: Color(0xFF1A1A1A),
-                    size: 24,
-                  ),
-                ),
-              ),
+            // Profile Icon or Login Button
+            ValueListenableBuilder<bool>(
+              valueListenable: isLoggedInNotifier,
+              builder: (context, isLoggedIn, _) {
+                return isLoggedIn
+                    ? Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 10,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const AkunPage(),
+                              ),
+                            );
+                          },
+                          borderRadius: BorderRadius.circular(12),
+                          child: const Center(
+                            child: Icon(
+                              Icons.person_outline,
+                              color: Color(0xFF1A1A1A),
+                              size: 24,
+                            ),
+                          ),
+                        ),
+                      )
+                    : InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const LoginPage(),
+                            ),
+                          );
+                        },
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF00BCD4),
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF00BCD4).withOpacity(0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: const Center(
+                            child: Text(
+                              'Masuk',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+              },
             ),
           ],
         ),
@@ -302,7 +465,11 @@ class _BerandaPageState extends State<BerandaPage> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 20, offset: const Offset(0, 4)),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
       child: Column(
@@ -327,7 +494,8 @@ class _BerandaPageState extends State<BerandaPage> {
                     ),
                     children: [
                       TileLayer(
-                        urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        urlTemplate:
+                            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                         userAgentPackageName: 'com.example.amanin',
                       ),
                       MarkerLayer(
@@ -343,7 +511,9 @@ class _BerandaPageState extends State<BerandaPage> {
                                   width: 48,
                                   height: 48,
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFFF5252).withOpacity(0.2),
+                                    color: const Color(
+                                      0xFFFF5252,
+                                    ).withOpacity(0.2),
                                     shape: BoxShape.circle,
                                   ),
                                 ),
@@ -351,7 +521,9 @@ class _BerandaPageState extends State<BerandaPage> {
                                   width: 28,
                                   height: 28,
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFFF5252).withOpacity(0.5),
+                                    color: const Color(
+                                      0xFFFF5252,
+                                    ).withOpacity(0.5),
                                     shape: BoxShape.circle,
                                   ),
                                 ),
@@ -373,33 +545,89 @@ class _BerandaPageState extends State<BerandaPage> {
                 ),
               ),
               Positioned(
-                top: 12, left: 12,
+                top: 12,
+                left: 12,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(color: Colors.black.withOpacity(0.6), borderRadius: BorderRadius.circular(6)),
-                  child: const Text('LIVE TRACKING', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 0.5)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.6),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: const Text(
+                    'LIVE TRACKING',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
                 ),
               ),
             ],
           ),
           Container(
             padding: const EdgeInsets.all(20),
-            decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: Color(0xFFF0F0F0), width: 1))),
+            decoration: const BoxDecoration(
+              border: Border(
+                bottom: BorderSide(color: Color(0xFFF0F0F0), width: 1),
+              ),
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('MAGNITUDO', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF9E9E9E), letterSpacing: 0.5)),
+                    const Text(
+                      'MAGNITUDO',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF9E9E9E),
+                        letterSpacing: 0.5,
+                      ),
+                    ),
                     const SizedBox(height: 4),
-                    RichText(text: const TextSpan(children: [TextSpan(text: '4.3', style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A), height: 1.2)), TextSpan(text: ' SR', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF9E9E9E)))])),
+                    RichText(
+                      text: const TextSpan(
+                        children: [
+                          TextSpan(
+                            text: '4.3',
+                            style: TextStyle(
+                              fontSize: 40,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1A1A1A),
+                              height: 1.2,
+                            ),
+                          ),
+                          TextSpan(
+                            text: ' SR',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF9E9E9E),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
                 Container(
                   padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(color: const Color(0xFFFFEAEA), borderRadius: BorderRadius.circular(10)),
-                  child: const Icon(Icons.waves, color: Color(0xFFFF5252), size: 30),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFEAEA),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.waves,
+                    color: Color(0xFFFF5252),
+                    size: 30,
+                  ),
                 ),
               ],
             ),
@@ -409,7 +637,10 @@ class _BerandaPageState extends State<BerandaPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildDetailRow('LOKASI PUSAT', '81 Km Barat Daya Kuta Selatan'),
+                _buildDetailRow(
+                  'LOKASI PUSAT',
+                  '81 Km Barat Daya Kuta Selatan',
+                ),
                 const SizedBox(height: 16),
                 Row(
                   children: [
@@ -420,13 +651,40 @@ class _BerandaPageState extends State<BerandaPage> {
                 ),
                 const SizedBox(height: 20),
                 SizedBox(
-                  width: double.infinity, height: 48,
+                  width: double.infinity,
+                  height: 48,
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => const GempaDetailPage()));
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const GempaDetailPage(),
+                        ),
+                      );
                     },
-                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0F172A), foregroundColor: Colors.white, elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                    child: Row(mainAxisAlignment: MainAxisAlignment.center, children: const [Text('DETAIL LENGKAP', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, letterSpacing: 0.5)), SizedBox(width: 8), Icon(Icons.arrow_forward, size: 16)]),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF0F172A),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        Text(
+                          'DETAIL LENGKAP',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        SizedBox(width: 8),
+                        Icon(Icons.arrow_forward, size: 16),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -448,31 +706,77 @@ class _BerandaPageState extends State<BerandaPage> {
               children: const [
                 Icon(Icons.shopping_bag, color: Color(0xFF0088CC), size: 24),
                 SizedBox(width: 8),
-                Text('Perlengkapan Siaga', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A))),
+                Text(
+                  'Perlengkapan Siaga',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1A1A1A),
+                  ),
+                ),
               ],
             ),
-            const Text('Diskon Spesial', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF00BCD4))),
+            const Text(
+              'Diskon Spesial',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF00BCD4),
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 16),
         Container(
           padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 20, offset: const Offset(0, 4))]),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 20,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
           child: Row(
             children: [
               Stack(
                 children: [
                   Container(
-                    width: 80, height: 80,
-                    decoration: BoxDecoration(color: const Color(0xFFE8F5E9), borderRadius: BorderRadius.circular(12)),
-                    child: const Icon(Icons.backpack, color: Color(0xFF4CAF50), size: 40),
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE8F5E9),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.backpack,
+                      color: Color(0xFF4CAF50),
+                      size: 40,
+                    ),
                   ),
                   Positioned(
-                    top: 8, left: 8,
+                    top: 8,
+                    left: 8,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(color: const Color(0xFFFF5252), borderRadius: BorderRadius.circular(4)),
-                      child: const Text('30%', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFF5252),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Text(
+                        '30%',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -482,24 +786,67 @@ class _BerandaPageState extends State<BerandaPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Sedia Payung Sebelum Gempa!', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A))),
+                    const Text(
+                      'Sedia Payung Sebelum Gempa!',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1A1A1A),
+                      ),
+                    ),
                     const SizedBox(height: 4),
-                    const Text('Paket survival kit lengkap untuk 3 hari darurat. Tas anti-air & senter', style: TextStyle(fontSize: 11, color: Color(0xFF757575)), maxLines: 2, overflow: TextOverflow.ellipsis),
+                    const Text(
+                      'Paket survival kit lengkap untuk 3 hari darurat. Tas anti-air & senter',
+                      style: TextStyle(fontSize: 11, color: Color(0xFF757575)),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                     const SizedBox(height: 8),
                     Row(
                       children: [
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: const [
-                            Text('Rp 450.000', style: TextStyle(fontSize: 11, color: Color(0xFF9E9E9E), decoration: TextDecoration.lineThrough)),
-                            Text('Rp 315.000', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFFFF5252), height: 1.1)),
+                            Text(
+                              'Rp 450.000',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Color(0xFF9E9E9E),
+                                decoration: TextDecoration.lineThrough,
+                              ),
+                            ),
+                            Text(
+                              'Rp 315.000',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFFFF5252),
+                                height: 1.1,
+                              ),
+                            ),
                           ],
                         ),
                         const Spacer(),
                         ElevatedButton(
                           onPressed: () {},
-                          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00BCD4), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                          child: const Text('Beli Sekarang', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF00BCD4),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: const Text(
+                            'Beli Sekarang',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -516,27 +863,84 @@ class _BerandaPageState extends State<BerandaPage> {
   Widget _buildInsuranceSection() {
     return Container(
       padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 20, offset: const Offset(0, 4))]),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Column(
         children: [
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: const BoxDecoration(color: Color(0xFFE3F2FD), shape: BoxShape.circle),
-            child: const Icon(Icons.security, color: Color(0xFF2196F3), size: 32),
+            decoration: const BoxDecoration(
+              color: Color(0xFFE3F2FD),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.security,
+              color: Color(0xFF2196F3),
+              size: 32,
+            ),
           ),
           const SizedBox(height: 16),
-          const Text('Asuransi Pro-Siaga', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A))),
+          const Text(
+            'Asuransi Pro-Siaga',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1A1A1A),
+            ),
+          ),
           const SizedBox(height: 8),
-          const Text('Perlindungan aset dan kesehatan keluarga dari dampak bencana alam.', textAlign: TextAlign.center, style: TextStyle(fontSize: 13, color: Color(0xFF757575))),
+          const Text(
+            'Perlindungan aset dan kesehatan keluarga dari dampak bencana alam.',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 13, color: Color(0xFF757575)),
+          ),
           const SizedBox(height: 16),
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(color: const Color(0xFFF5F5F5), borderRadius: BorderRadius.circular(12)),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF5F5F5),
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: Column(
               children: [
-                Row(children: const [Icon(Icons.check_circle, color: Color(0xFF4CAF50), size: 16), SizedBox(width: 8), Text('Klaim cepat 24 jam', style: TextStyle(fontSize: 12, color: Color(0xFF424242)))]),
+                Row(
+                  children: const [
+                    Icon(
+                      Icons.check_circle,
+                      color: Color(0xFF4CAF50),
+                      size: 16,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      'Klaim cepat 24 jam',
+                      style: TextStyle(fontSize: 12, color: Color(0xFF424242)),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 8),
-                Row(children: const [Icon(Icons.check_circle, color: Color(0xFF4CAF50), size: 16), SizedBox(width: 8), Text('Cover gempa & banjir', style: TextStyle(fontSize: 12, color: Color(0xFF424242)))]),
+                Row(
+                  children: const [
+                    Icon(
+                      Icons.check_circle,
+                      color: Color(0xFF4CAF50),
+                      size: 16,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      'Cover gempa & banjir',
+                      style: TextStyle(fontSize: 12, color: Color(0xFF424242)),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
@@ -546,12 +950,25 @@ class _BerandaPageState extends State<BerandaPage> {
             height: 48,
             child: ElevatedButton(
               onPressed: () {},
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00BCD4), foregroundColor: Colors.white, elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-              child: const Text('Cek Asuransi Sekarang', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF00BCD4),
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text(
+                'Cek Asuransi Sekarang',
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+              ),
             ),
           ),
           const SizedBox(height: 12),
-          const Text('Disponsori • S&K berlaku', style: TextStyle(fontSize: 10, color: Color(0xFF9E9E9E))),
+          const Text(
+            'Disponsori • S&K berlaku',
+            style: TextStyle(fontSize: 10, color: Color(0xFF9E9E9E)),
+          ),
         ],
       ),
     );
@@ -651,7 +1068,10 @@ class _BerandaPageState extends State<BerandaPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFF2196F3),
                             borderRadius: BorderRadius.circular(12),
@@ -763,7 +1183,12 @@ class _BerandaPageState extends State<BerandaPage> {
     );
   }
 
-  Widget _buildWeatherDetail(IconData icon, String value, String label, Color color) {
+  Widget _buildWeatherDetail(
+    IconData icon,
+    String value,
+    String label,
+    Color color,
+  ) {
     return Expanded(
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -774,11 +1199,7 @@ class _BerandaPageState extends State<BerandaPage> {
         ),
         child: Column(
           children: [
-            Icon(
-              icon,
-              color: color,
-              size: 24,
-            ),
+            Icon(icon, color: color, size: 24),
             const SizedBox(height: 8),
             Text(
               value,
@@ -791,10 +1212,7 @@ class _BerandaPageState extends State<BerandaPage> {
             const SizedBox(height: 2),
             Text(
               label,
-              style: const TextStyle(
-                fontSize: 10,
-                color: Color(0xFF757575),
-              ),
+              style: const TextStyle(fontSize: 10, color: Color(0xFF757575)),
             ),
           ],
         ),
