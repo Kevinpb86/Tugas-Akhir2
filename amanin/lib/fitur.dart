@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'hitung_dampak_gempa.dart';
+import 'klasifikasi_seismik.dart';
 
 class FiturPage extends StatelessWidget {
   const FiturPage({Key? key}) : super(key: key);
@@ -42,10 +43,18 @@ class FiturPage extends StatelessWidget {
           const SizedBox(height: 16),
           _buildFeatureCard(
             context,
-            icon: Icons.contact_phone_outlined,
-            title: 'Fitur 2',
-            description: 'Deskripsi untuk Fitur 2.',
+            icon: Icons.memory,
+            title: 'Klasifikasi Kerentanan Seismik (SVM)',
+            description: 'Klasifikasi tingkat kerentanan seismik secara otomatis menggunakan Machine Learning.',
             color: const Color(0xFFEF5350),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const KlasifikasiSeismikPage(),
+                ),
+              );
+            },
           ),
           const SizedBox(height: 16),
           _buildFeatureCard(
