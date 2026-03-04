@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+import 'services/bmkg_service.dart';
 
 class GempaDetailPage extends StatelessWidget {
-  const GempaDetailPage({super.key});
+  final GempaModel? gempa;
+  
+  const GempaDetailPage({super.key, this.gempa});
 
   @override
   Widget build(BuildContext context) {
@@ -158,9 +163,9 @@ class GempaDetailPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                '4.3',
-                style: TextStyle(
+              Text(
+                gempa?.magnitude ?? '4.3',
+                style: const TextStyle(
                   fontSize: 72,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
@@ -272,9 +277,9 @@ class GempaDetailPage extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          const Text(
-            '81 Km Barat Daya Kuta Selatan',
-            style: TextStyle(
+          Text(
+            gempa?.wilayah ?? '81 Km Barat Daya Kuta Selatan',
+            style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
               color: Color(0xFF1A1A1A),
@@ -357,17 +362,17 @@ class GempaDetailPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
-                    '02:23',
-                    style: TextStyle(
+                  Text(
+                    gempa?.jam.split(' ').first ?? '02:23',
+                    style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF1A1A1A),
                     ),
                   ),
-                  const Text(
-                    'WIB',
-                    style: TextStyle(
+                  Text(
+                    gempa?.jam.split(' ').length == 2 ? gempa!.jam.split(' ')[1] : 'WIB',
+                    style: const TextStyle(
                       fontSize: 12,
                       color: Color(0xFF9E9E9E),
                     ),
@@ -417,9 +422,9 @@ class GempaDetailPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
-                    '37',
-                    style: TextStyle(
+                  Text(
+                    (gempa?.kedalaman ?? '37 km').split(' ').first,
+                    style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF1A1A1A),
@@ -460,7 +465,36 @@ class GempaDetailPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         child: Stack(
           children: [
-            Container(
+            gempa?.coordinates.isNotEmpty == true 
+              ? FlutterMap(
+                  options: MapOptions(
+                    initialCenter: LatLng(
+                        double.parse(gempa!.coordinates.split(',')[0]), 
+                        double.parse(gempa!.coordinates.split(',')[1])
+                    ),
+                    initialZoom: 8.0,
+                  ),
+                  children: [
+                    TileLayer(
+                      urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      userAgentPackageName: 'com.example.amanin',
+                    ),
+                    MarkerLayer(
+                      markers: [
+                        Marker(
+                          point: LatLng(
+                            double.parse(gempa!.coordinates.split(',')[0]), 
+                            double.parse(gempa!.coordinates.split(',')[1])
+                          ),
+                          width: 60,
+                          height: 60,
+                          child: const Icon(Icons.location_on, color: Colors.red, size: 40,),
+                        ),
+                      ],
+                    ),
+                  ],
+                )
+              : Container(
               color: const Color(0xFF90EE90).withOpacity(0.3),
               child: const Center(
                 child: Column(

@@ -12,6 +12,7 @@ import 'utils/localization.dart';
 import 'main.dart'; // For isLoggedInNotifier
 import 'toko.dart';
 import 'asuransi.dart';
+import 'services/bmkg_service.dart';
 
 class BerandaPage extends StatefulWidget {
   final VoidCallback? onNavigateToCuaca;
@@ -23,7 +24,40 @@ class BerandaPage extends StatefulWidget {
 
 class _BerandaPageState extends State<BerandaPage> {
   // Earthquake location: 81 Km Barat Daya Kuta Selatan
-  final LatLng _earthquakeLocation = const LatLng(-8.8, 115.0);
+  LatLng _earthquakeLocation = const LatLng(-8.8, 115.0);
+  GempaModel? _latestQuake;
+  bool _isLoadingQuake = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchEarthquakeData();
+  }
+
+  Future<void> _fetchEarthquakeData() async {
+    try {
+      final quake = await BmkgService.fetchLatestEarthquake();
+      if (mounted) {
+        setState(() {
+          _latestQuake = quake;
+          if (_latestQuake!.coordinates.isNotEmpty) {
+            final coords = _latestQuake!.coordinates.split(',');
+            if (coords.length == 2) {
+              _earthquakeLocation = LatLng(double.parse(coords[0]), double.parse(coords[1]));
+            }
+          }
+          _isLoadingQuake = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingQuake = false;
+        });
+        print("Error fetching earthquake: $e");
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -488,6 +522,7 @@ class _BerandaPageState extends State<BerandaPage> {
                   height: 200,
                   width: double.infinity,
                   child: FlutterMap(
+                    key: ValueKey(_earthquakeLocation),
                     options: MapOptions(
                       initialCenter: _earthquakeLocation,
                       initialZoom: 8.0,
@@ -595,29 +630,31 @@ class _BerandaPageState extends State<BerandaPage> {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    RichText(
-                      text: const TextSpan(
-                        children: [
-                          TextSpan(
-                            text: '4.3',
-                            style: TextStyle(
-                              fontSize: 40,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF1A1A1A),
-                              height: 1.2,
+                    _isLoadingQuake 
+                        ? const CircularProgressIndicator() 
+                        : RichText(
+                            text: TextSpan(
+                              children: [
+                                TextSpan(
+                                  text: _latestQuake?.magnitude ?? '4.3',
+                                  style: const TextStyle(
+                                    fontSize: 40,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF1A1A1A),
+                                    height: 1.2,
+                                  ),
+                                ),
+                                const TextSpan(
+                                  text: ' SR',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF9E9E9E),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          TextSpan(
-                            text: ' SR',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF9E9E9E),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
                   ],
                 ),
                 Container(
@@ -642,14 +679,14 @@ class _BerandaPageState extends State<BerandaPage> {
               children: [
                 _buildDetailRow(
                   'LOKASI PUSAT',
-                  '81 Km Barat Daya Kuta Selatan',
+                  _isLoadingQuake ? 'Memuat data...' : (_latestQuake?.wilayah ?? '81 Km Barat Daya Kuta Selatan'),
                 ),
                 const SizedBox(height: 16),
                 Row(
                   children: [
-                    Expanded(child: _buildDetailRow('KEDALAMAN', ' 37 Km')),
+                    Expanded(child: _buildDetailRow('KEDALAMAN', _isLoadingQuake ? '...' : (_latestQuake?.kedalaman ?? ' 37 Km'))),
                     const SizedBox(width: 16),
-                    Expanded(child: _buildDetailRow('WAKTU', ' 02:23 WIB')),
+                    Expanded(child: _buildDetailRow('WAKTU', _isLoadingQuake ? '...' : ('${_latestQuake?.jam ?? '02:23 WIB'}'))),
                   ],
                 ),
                 const SizedBox(height: 20),
@@ -661,7 +698,7 @@ class _BerandaPageState extends State<BerandaPage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const GempaDetailPage(),
+                          builder: (context) => GempaDetailPage(gempa: _latestQuake),
                         ),
                       );
                     },
