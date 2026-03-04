@@ -28,10 +28,14 @@ class _BerandaPageState extends State<BerandaPage> {
   GempaModel? _latestQuake;
   bool _isLoadingQuake = true;
 
+  CuacaModel? _latestCuaca;
+  bool _isLoadingCuaca = true;
+
   @override
   void initState() {
     super.initState();
     _fetchEarthquakeData();
+    _fetchWeatherData();
   }
 
   Future<void> _fetchEarthquakeData() async {
@@ -55,6 +59,25 @@ class _BerandaPageState extends State<BerandaPage> {
           _isLoadingQuake = false;
         });
         print("Error fetching earthquake: $e");
+      }
+    }
+  }
+
+  Future<void> _fetchWeatherData() async {
+    try {
+      final cuaca = await BmkgService.fetchCurrentWeather('31.71.01.1001'); // Jakarta Pusat, Gambir
+      if (mounted) {
+        setState(() {
+          _latestCuaca = cuaca;
+          _isLoadingCuaca = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingCuaca = false;
+        });
+        print("Error fetching weather: $e");
       }
     }
   }
@@ -1070,16 +1093,16 @@ class _BerandaPageState extends State<BerandaPage> {
               ),
             ),
             Row(
-              children: const [
-                Icon(
+              children: [
+                const Icon(
                   Icons.location_on_outlined,
                   size: 16,
                   color: Color(0xFF757575),
                 ),
-                SizedBox(width: 4),
+                const SizedBox(width: 4),
                 Text(
-                  'Cilacap',
-                  style: TextStyle(
+                  _isLoadingCuaca ? '...' : (_latestCuaca?.kota ?? 'Cilacap'),
+                  style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFF757575),
@@ -1152,18 +1175,18 @@ class _BerandaPageState extends State<BerandaPage> {
                           ),
                         ),
                         const SizedBox(height: 12),
-                        const Text(
-                          'Berawan',
-                          style: TextStyle(
+                        Text(
+                          _isLoadingCuaca ? '...' : (_latestCuaca?.cuaca.isNotEmpty == true ? _latestCuaca!.cuaca : 'Berawan'),
+                          style: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF1A1A1A),
                           ),
                         ),
                         const SizedBox(height: 4),
-                        const Text(
-                          'Terasa seperti 34°C',
-                          style: TextStyle(
+                        Text(
+                          'Terasa seperti ${_isLoadingCuaca ? "..." : (_latestCuaca != null ? _latestCuaca!.suhu + 2 : 34)}°C', // Simple feel logic
+                          style: const TextStyle(
                             fontSize: 12,
                             color: Color(0xFF757575),
                           ),
@@ -1173,9 +1196,9 @@ class _BerandaPageState extends State<BerandaPage> {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          '32',
-                          style: TextStyle(
+                        Text(
+                          _isLoadingCuaca ? '--' : (_latestCuaca?.suhu.toString() ?? '32'),
+                          style: const TextStyle(
                             fontSize: 48,
                             fontWeight: FontWeight.w300,
                             color: Color(0xFF1A1A1A),
@@ -1203,11 +1226,27 @@ class _BerandaPageState extends State<BerandaPage> {
                                 color: Colors.black.withOpacity(0.4),
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: const Icon(
-                                Icons.cloud,
-                                color: Colors.white,
-                                size: 24,
-                              ),
+                              child: _isLoadingCuaca 
+                                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                                  : (_latestCuaca != null && _latestCuaca!.image.isNotEmpty 
+                                      ? Center(
+                                          child: Image.network(
+                                            _latestCuaca!.image,
+                                            width: 24,
+                                            height: 24,
+                                            // Handle network image failure gracefully
+                                            errorBuilder: (context, error, stackTrace) => const Icon(
+                                              Icons.cloud,
+                                              color: Colors.white,
+                                              size: 24,
+                                            ),
+                                          ),
+                                        )
+                                      : const Icon(
+                                          Icons.cloud,
+                                          color: Colors.white,
+                                          size: 24,
+                                        )),
                             ),
                           ],
                         ),
@@ -1222,18 +1261,19 @@ class _BerandaPageState extends State<BerandaPage> {
                   children: [
                     _buildWeatherDetail(
                       Icons.water_drop,
-                      '94%',
+                      _isLoadingCuaca ? '--%' : '${_latestCuaca?.kelembapan ?? 94}%',
                       'Air',
                       const Color(0xFF2196F3),
                     ),
                     _buildWeatherDetail(
                       Icons.air,
-                      '3.6',
+                      _isLoadingCuaca ? '--' : (_latestCuaca?.kecAngin.toString() ?? '3.6'),
                       'km/h',
                       const Color(0xFF4CAF50),
                     ),
                     _buildWeatherDetail(
                       Icons.wb_sunny,
+                      // UV index API nya gaada ya, kita hide kalo gaada data / kasi default Sedang
                       'UV 6',
                       'Sedang',
                       const Color(0xFFFF9800),

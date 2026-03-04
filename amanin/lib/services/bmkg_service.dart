@@ -1,6 +1,35 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
+class CuacaModel {
+  final int suhu;
+  final String cuaca;
+  final String image;
+  final int kelembapan;
+  final double kecAngin;
+  final String kota;
+
+  CuacaModel({
+    required this.suhu,
+    required this.cuaca,
+    required this.image,
+    required this.kelembapan,
+    required this.kecAngin,
+    required this.kota,
+  });
+
+  factory CuacaModel.fromJson(Map<String, dynamic> jsonCuaca, String namaKota) {
+    return CuacaModel(
+      suhu: jsonCuaca['t'] ?? 0,
+      cuaca: jsonCuaca['weather_desc'] ?? '',
+      image: jsonCuaca['image'] ?? '',
+      kelembapan: jsonCuaca['hu'] ?? 0,
+      kecAngin: (jsonCuaca['ws'] ?? 0).toDouble(),
+      kota: namaKota,
+    );
+  }
+}
+
 class GempaModel {
   final String tanggal;
   final String jam;
@@ -95,6 +124,46 @@ class BmkgService {
       }
     } catch (e) {
       throw Exception('Terjadi kesalahan: $e');
+    }
+  }
+
+  static const String _cuacaUrl = 'https://api.bmkg.go.id/publik/prakiraan-cuaca';
+
+  // Mendapatkan cuaca (default Jakarta Pusat - Gambir: 31.71.01.1001)
+  // Bisa diganti adm4 cilacap jika dibutuhkan
+  static Future<CuacaModel> fetchCurrentWeather([String adm4 = '31.71.01.1001']) async {
+    try {
+      final response = await http.get(Uri.parse('$_cuacaUrl?adm4=$adm4'));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final namaKota = data['lokasi']['kotkab'] ?? data['lokasi']['provinsi'] ?? 'Kota Tidak Diketahui';
+        
+        final List<dynamic> days = data['data'][0]['cuaca'];
+        List<dynamic> allIntervals = [];
+        for (var day in days) {
+          allIntervals.addAll(day);
+        }
+        
+        DateTime now = DateTime.now();
+        Map<String, dynamic>? currentCuaca;
+        
+        for (var cuaca in allIntervals) {
+          DateTime dt = DateTime.parse(cuaca['local_datetime'].replaceAll(' ', 'T'));
+          // Cari interval terdekat yang ada di masa depan atau sekarang
+          if (dt.isAfter(now.subtract(const Duration(hours: 2)))) {
+            currentCuaca = cuaca;
+            break;
+          }
+        }
+        
+        currentCuaca ??= allIntervals[0];
+        
+        return CuacaModel.fromJson(currentCuaca!, namaKota.toString());
+      } else {
+        throw Exception('Gagal memuat data cuaca: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Terjadi kesalahan cuaca: $e');
     }
   }
 }
