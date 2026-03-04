@@ -1327,11 +1327,17 @@ class _BerandaPageState extends State<BerandaPage> {
   }
 
   Widget _buildEarlyWarningCard() {
+    final String warningMsg = _isLoadingCuaca 
+        ? "Memeriksa peringatan cuaca..." 
+        : (_latestCuaca?.peringatanDini ?? "Sedang tidak ada peringatan cuaca yang signifikan untuk saat ini.");
+        
+    final bool hasWarning = warningMsg.contains("Waspada");
+
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF3E0),
+        color: hasWarning ? const Color(0xFFFFF3E0) : const Color(0xFFE8F5E9),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFFFB74D), width: 1),
+        border: Border.all(color: hasWarning ? const Color(0xFFFFB74D) : const Color(0xFF81C784), width: 1),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -1348,11 +1354,11 @@ class _BerandaPageState extends State<BerandaPage> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: const Color(0xFFFF9800),
+                color: hasWarning ? const Color(0xFFFF9800) : const Color(0xFF4CAF50),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(
-                Icons.warning_rounded,
+              child: Icon(
+                hasWarning ? Icons.warning_rounded : Icons.check_circle_rounded,
                 color: Colors.white,
                 size: 24,
               ),
@@ -1362,20 +1368,20 @@ class _BerandaPageState extends State<BerandaPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Peringatan Dini',
+                  Text(
+                    hasWarning ? 'Peringatan Dini' : 'Cuaca Aman',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF1A1A1A),
+                      color: hasWarning ? const Color(0xFF1A1A1A) : const Color(0xFF2E7D32),
                     ),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
-                    'Waspada potensi hujan disertai kilat/petir dan angin kencang di sebagian wilayah Jakarta dan Jaktim pada sore hari.',
+                  Text(
+                    warningMsg,
                     style: TextStyle(
                       fontSize: 12,
-                      color: Color(0xFF424242),
+                      color: hasWarning ? const Color(0xFF424242) : const Color(0xFF388E3C),
                       height: 1.4,
                     ),
                   ),
