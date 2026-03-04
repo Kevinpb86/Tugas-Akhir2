@@ -1,13 +1,71 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'akun.dart';
 import 'main.dart';
 import 'login.dart';
 import 'gempa_detail.dart';
 import 'utils/localization.dart';
 import 'asuransi.dart';
+import 'services/bmkg_service.dart';
 
-class GempaPage extends StatelessWidget {
+class GempaPage extends StatefulWidget {
   const GempaPage({super.key});
+
+  @override
+  State<GempaPage> createState() => _GempaPageState();
+}
+
+class _GempaPageState extends State<GempaPage> {
+  GempaModel? _latestQuake;
+  List<GempaModel> _recentQuakes = [];
+  bool _isLoadingQuake = true;
+  bool _isLoadingRecentQuakes = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchEarthquakeData();
+    _fetchRecentEarthquakeData();
+  }
+
+  Future<void> _fetchEarthquakeData() async {
+    try {
+      final quake = await BmkgService.fetchLatestEarthquake();
+      if (mounted) {
+        setState(() {
+          _latestQuake = quake;
+          _isLoadingQuake = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingQuake = false;
+        });
+        print("Error fetching earthquake: $e");
+      }
+    }
+  }
+
+  Future<void> _fetchRecentEarthquakeData() async {
+    try {
+      final quakes = await BmkgService.fetchEarthquakeList();
+      if (mounted) {
+        setState(() {
+          _recentQuakes = quakes.take(5).toList();
+          _isLoadingRecentQuakes = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingRecentQuakes = false;
+        });
+        print("Error fetching recent earthquakes: $e");
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -253,93 +311,117 @@ class GempaPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Map Placeholder Area
-          Container(
-            height: 180,
-            width: double.infinity,
-            decoration: const BoxDecoration(
-              color: Color(0xFFF1F5F9),
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(24),
-                topRight: Radius.circular(24),
-              ),
+          // Map Area
+          ClipRRect(
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(24),
+              topRight: Radius.circular(24),
             ),
-            child: Stack(
-              children: [
-                Center(
-                  child: Icon(
-                    Icons.map,
-                    size: 80,
-                    color: const Color(0xFFCBD5E1),
-                  ),
-                ),
-                Positioned(
-                  top: 16,
-                  left: 16,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      children: const [
-                        Icon(
-                          Icons.map_outlined,
-                          color: Color(0xFF1E40AF),
-                          size: 16,
-                        ),
-                        SizedBox(width: 4),
-                        Text(
-                          'Peta Guncangan',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
+            child: SizedBox(
+              height: 180,
+              width: double.infinity,
+              child: Stack(
+                children: [
+                  _latestQuake?.coordinates.isNotEmpty == true
+                      ? FlutterMap(
+                          key: ValueKey(_latestQuake!.coordinates),
+                          options: MapOptions(
+                            initialCenter: LatLng(
+                                double.parse(_latestQuake!.coordinates.split(',')[0]),
+                                double.parse(_latestQuake!.coordinates.split(',')[1])),
+                            initialZoom: 8.0,
+                          ),
+                          children: [
+                            TileLayer(
+                              urlTemplate:
+                                  'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                              userAgentPackageName: 'com.example.amanin',
+                            ),
+                            MarkerLayer(
+                              markers: [
+                                Marker(
+                                  point: LatLng(
+                                      double.parse(_latestQuake!.coordinates.split(',')[0]),
+                                      double.parse(_latestQuake!.coordinates.split(',')[1])),
+                                  width: 60,
+                                  height: 60,
+                                  child: const Icon(Icons.location_on, color: Colors.red, size: 40,),
+                                ),
+                              ],
+                            ),
+                          ],
+                        )
+                      : Container(
+                          color: const Color(0xFFF1F5F9),
+                          child: const Center(
+                            child: Icon(
+                              Icons.map,
+                              size: 80,
+                              color: Color(0xFFCBD5E1),
+                            ),
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                ),
-                Positioned(
-                  top: 16,
-                  right: 16,
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.share,
-                      size: 16,
-                      color: Color(0xFF475569),
-                    ),
-                  ),
-                ),
-                Center(
-                  child: Container(
-                    width: 30,
-                    height: 30,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEF4444).withOpacity(0.2),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: Container(
-                        width: 15,
-                        height: 15,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFEF4444),
-                          shape: BoxShape.circle,
-                        ),
+                  Positioned(
+                    top: 16,
+                    left: 16,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 10,
+                          )
+                        ],
+                      ),
+                      child: Row(
+                        children: const [
+                          Icon(
+                            Icons.map_outlined,
+                            color: Color(0xFF1E40AF),
+                            size: 16,
+                          ),
+                          SizedBox(width: 4),
+                          Text(
+                            'Peta Guncangan',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                ),
-              ],
+                  Positioned(
+                    top: 16,
+                    right: 16,
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 10,
+                          )
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.share,
+                        size: 16,
+                        color: Color(0xFF475569),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           Padding(
@@ -383,7 +465,7 @@ class GempaPage extends StatelessWidget {
                   children: [
                     Expanded(
                       child: _buildInfoBox(
-                        '≈ 5.7',
+                        _isLoadingQuake ? '...' : (_latestQuake?.magnitude ?? '≈ 5.7'),
                         'Magnitudo',
                         const Color(0xFFF44336),
                       ),
@@ -391,7 +473,7 @@ class GempaPage extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: _buildInfoBox(
-                        '10 Km',
+                        _isLoadingQuake ? '...' : (_latestQuake?.kedalaman ?? '10 Km'),
                         'Kedalaman',
                         const Color(0xFF4CAF50),
                       ),
@@ -399,7 +481,7 @@ class GempaPage extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: _buildInfoBox(
-                        '1.54 LU',
+                        _isLoadingQuake ? '...' : (_latestQuake?.lintang ?? '1.54 LU'),
                         'Lokasi',
                         const Color(0xFF2196F3),
                       ),
@@ -409,21 +491,21 @@ class GempaPage extends StatelessWidget {
                 const SizedBox(height: 20),
                 _buildDetailRow(
                   Icons.access_time,
-                  '19 Februari 2026, 07:26:15 WIB',
+                  _isLoadingQuake ? 'Memuat data...' : '${_latestQuake?.tanggal ?? ''}, ${_latestQuake?.jam ?? ''}',
                   'Waktu Gempa',
                   const Color(0xFFFF9800),
                 ),
                 const SizedBox(height: 16),
                 _buildDetailRow(
                   Icons.track_changes,
-                  'III-IV Buol, III Gorontalo Utara, II-III Gorontalo, II-III Bone Bolango',
+                  _isLoadingQuake ? 'Memuat data...' : (_latestQuake?.dirasakan ?? '-'),
                   'Wilayah Dirasakan (MMI)',
                   const Color(0xFFFF5722),
                 ),
                 const SizedBox(height: 16),
                 _buildDetailRow(
                   Icons.location_on,
-                  'Pusat gempa berada di laut 110 Km Timur Laut Buol',
+                  _isLoadingQuake ? 'Memuat data...' : (_latestQuake?.wilayah ?? '...'),
                   null,
                   const Color(0xFFFF9800),
                 ),
@@ -558,29 +640,30 @@ class GempaPage extends StatelessWidget {
   }
 
   Widget _buildRecentEarthquakes(BuildContext context) {
+    if (_isLoadingRecentQuakes) {
+      return const Center(child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator()));
+    }
+    
+    if (_recentQuakes.isEmpty) {
+      return const Center(child: Padding(padding: EdgeInsets.all(20), child: Text("Tidak ada data riwayat gempa.")));
+    }
+
     return Column(
-      children: [
-        _buildHistoryItem(
+      children: _recentQuakes.map((quake) {
+        final magValue = double.tryParse(quake.magnitude) ?? 0.0;
+        final magColor = magValue >= 5.0 ? const Color(0xFFFFC107) : const Color(0xFF42A5F5);
+
+        return _buildHistoryItem(
           context,
-          '4.9',
-          'Barat Daya Kuta Sel...',
-          'Pusat gempa berada di laut',
-          '19 Feb',
-          '05:12 WIB',
-          '10 km',
-          const Color(0xFFFFC107),
-        ),
-        _buildHistoryItem(
-          context,
-          '3.2',
-          'Tenggara Pacitan',
-          'Tidak berpotensi tsunami',
-          '18 Feb',
-          '23:45 WIB',
-          '15 km',
-          const Color(0xFF42A5F5),
-        ),
-      ],
+          quake.magnitude,
+          quake.wilayah,
+          quake.potensi,
+          quake.tanggal.split(' ').take(2).join(' '), // Contoh: 19 Feb
+          quake.jam.replaceAll(' WIB', ''),
+          quake.kedalaman,
+          magColor,
+        );
+      }).toList(),
     );
   }
 
