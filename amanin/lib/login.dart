@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'register.dart'; // For navigation to register
 import 'main.dart'; // For isLoggedInNotifier
 
@@ -180,17 +182,43 @@ class _LoginPageState extends State<LoginPage> {
                 width: double.infinity,
                 height: 52,
                 child: ElevatedButton(
-                  onPressed: () {
-                    isLoggedInNotifier.value = true;
-                    // TODO: Login Logic
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Login Berhasil! (Simulasi)'),
-                      ),
+                  onPressed: () async {
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (context) => const Center(child: CircularProgressIndicator()),
                     );
-                    Navigator.pop(
-                      context,
-                    ); // Return to previous screen (likely AkunPage or Home)
+
+                    try {
+                      final response = await http.post(
+                        Uri.parse('http://10.0.2.2:8000/login'),
+                        headers: {'Content-Type': 'application/json'},
+                        body: jsonEncode({
+                          'email': _emailController.text,
+                          'password': _passwordController.text,
+                        }),
+                      );
+
+                      Navigator.pop(context); // Tutup loading
+
+                      if (response.statusCode == 200) {
+                        isLoggedInNotifier.value = true;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Login Berhasil!')),
+                        );
+                        Navigator.pop(context);
+                      } else {
+                        final error = jsonDecode(response.body);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(error['detail'] ?? 'Login Gagal')),
+                        );
+                      }
+                    } catch (e) {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Terjadi kesalahan: $e')),
+                      );
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF00BCD4),

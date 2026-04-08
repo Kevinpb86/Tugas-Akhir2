@@ -145,10 +145,12 @@ class _MainScreenState extends State<MainScreen> {
 
     // Choose specific icon based on active state if necessary
     IconData displayIcon = icon;
-    if (index == 0)
+    if (index == 0) {
       displayIcon = isActive ? Icons.home_rounded : Icons.home_rounded;
-    if (index == 1)
+    }
+    if (index == 1) {
       displayIcon = isActive ? Icons.cloud_outlined : Icons.cloud_outlined;
+    }
 
     return InkWell(
       onTap: () => _onItemTapped(index),

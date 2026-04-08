@@ -46,7 +46,11 @@ class CuacaPage extends StatelessWidget {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1A1A)),
-          onPressed: () { if (onBack != null) onBack!(); else Navigator.pop(context); },
+          onPressed: () { if (onBack != null) {
+            onBack!();
+          } else {
+            Navigator.pop(context);
+          } },
         ),
         actions: [
           IconButton(

@@ -46,13 +46,15 @@ class _KlasifikasiSeismikPageState extends State<KlasifikasiSeismikPage> {
       double skorSVM = 0;
       
       // Bobot magnitudo
-      if (magnitudo >= 6.5) skorSVM += 50;
-      else if (magnitudo >= 5.0) skorSVM += 30;
+      if (magnitudo >= 6.5) {
+        skorSVM += 50;
+      } else if (magnitudo >= 5.0) skorSVM += 30;
       else skorSVM += 10;
       
       // Bobot kedalaman (semakin dangkal, semakin berbahaya)
-      if (kedalaman <= 30) skorSVM += 40;
-      else if (kedalaman <= 70) skorSVM += 20;
+      if (kedalaman <= 30) {
+        skorSVM += 40;
+      } else if (kedalaman <= 70) skorSVM += 20;
       else skorSVM += 5;
 
       setState(() {

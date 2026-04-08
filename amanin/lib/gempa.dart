@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'akun.dart';
 import 'main.dart';
 import 'login.dart';
-import 'gempa_detail.dart';
-import 'utils/localization.dart';
 import 'asuransi.dart';
 
 class GempaPage extends StatelessWidget {

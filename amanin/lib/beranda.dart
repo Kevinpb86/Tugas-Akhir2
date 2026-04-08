@@ -3,8 +3,6 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'gempa_detail.dart';
 import 'cuaca.dart';
-import 'edukasi.dart';
-import 'gempa.dart';
 import 'akun.dart';
 import 'fitur.dart';
 import 'login.dart';
@@ -80,7 +78,7 @@ class _BerandaPageState extends State<BerandaPage> {
     );
   }
 
-  Widget _buildMenuGrid() {
+  Widget buildMenuGrid() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [

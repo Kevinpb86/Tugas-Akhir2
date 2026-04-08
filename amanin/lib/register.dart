@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'login.dart'; // For navigation to login
 
 class RegisterPage extends StatefulWidget {
@@ -236,12 +238,53 @@ class _RegisterPageState extends State<RegisterPage> {
                 width: double.infinity,
                 height: 52,
                 child: ElevatedButton(
-                  onPressed: () {
-                    // TODO: Register Logic
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Registrasi Berhasil! (Simulasi)')),
+                  onPressed: () async {
+                    if (_passwordController.text != _confirmPasswordController.text) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Kata sandi tidak cocok!')),
+                      );
+                      return;
+                    }
+
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (context) => const Center(child: CircularProgressIndicator()),
                     );
-                    Navigator.pop(context); // Return to previous screen
+
+                    try {
+                      final response = await http.post(
+                        Uri.parse('http://10.0.2.2:8000/register'), // 10.0.2.2 untuk emulator android ke localhost
+                        headers: {'Content-Type': 'application/json'},
+                        body: jsonEncode({
+                          'full_name': _nameController.text,
+                          'email': _emailController.text,
+                          'password': _passwordController.text,
+                        }),
+                      );
+
+                      Navigator.pop(context); // Tutup loading
+
+                      if (response.statusCode == 200) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Registrasi Berhasil! Silakan Masuk.')),
+                        );
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => const LoginPage()),
+                        );
+                      } else {
+                        final error = jsonDecode(response.body);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(error['detail'] ?? 'Registrasi Gagal')),
+                        );
+                      }
+                    } catch (e) {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Terjadi kesalahan: $e')),
+                      );
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF00BCD4),

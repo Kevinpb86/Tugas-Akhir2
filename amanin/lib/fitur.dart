@@ -3,7 +3,7 @@ import 'hitung_dampak_gempa.dart';
 import 'klasifikasi_seismik.dart';
 
 class FiturPage extends StatelessWidget {
-  const FiturPage({Key? key}) : super(key: key);
+  const FiturPage({super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -202,7 +202,7 @@ class _HitungDampakGempaPageState extends State<HitungDampakGempaPage> {
                       ),
                       const SizedBox(height: 16),
                       DropdownButtonFormField<String>(
-                        value: _jenisTanah,
+                        initialValue: _jenisTanah,
                         decoration: InputDecoration(
                           labelText: 'Kondisi Tanah Sekitar',
                           prefixIcon: const Icon(
