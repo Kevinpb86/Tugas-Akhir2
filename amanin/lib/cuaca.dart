@@ -4,9 +4,44 @@ import 'edukasi.dart'; // Import for navigation consistency if needed
 import 'gempa.dart';
 import 'asuransi.dart';
 
-class CuacaPage extends StatelessWidget {
+import 'services/bmkg_service.dart';
+
+class CuacaPage extends StatefulWidget {
   final VoidCallback? onBack;
   const CuacaPage({super.key, this.onBack});
+
+  @override
+  State<CuacaPage> createState() => _CuacaPageState();
+}
+
+class _CuacaPageState extends State<CuacaPage> {
+  CuacaModel? _latestCuaca;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchWeatherData();
+  }
+
+  Future<void> _fetchWeatherData() async {
+    try {
+      final cuaca = await BmkgService.fetchCurrentWeather('31.71.01.1001'); // Jakarta Pusat, Gambir
+      if (mounted) {
+        setState(() {
+          _latestCuaca = cuaca;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        print("Error fetching cuaca detail: $e");
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,8 +49,8 @@ class CuacaPage extends StatelessWidget {
       backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
         title: Column(
-          children: const [
-             Text(
+          children: [
+             const Text(
               'Cuaca Mingguan',
               style: TextStyle(
                 color: Color(0xFF1A1A1A),
@@ -23,15 +58,15 @@ class CuacaPage extends StatelessWidget {
                 fontSize: 16,
               ),
             ),
-             SizedBox(height: 2),
+             const SizedBox(height: 2),
              Row(
                mainAxisAlignment: MainAxisAlignment.center,
                children: [
-                 Icon(Icons.location_on, size: 12, color: Color(0xFF2196F3)),
-                 SizedBox(width: 4),
+                 const Icon(Icons.location_on, size: 12, color: Color(0xFF2196F3)),
+                 const SizedBox(width: 4),
                  Text(
-                   'Jakarta Pusat',
-                   style: TextStyle(
+                   _isLoading ? '...' : (_latestCuaca?.kota ?? 'Jakarta Pusat'),
+                   style: const TextStyle(
                      color: Color(0xFF2196F3),
                      fontSize: 12,
                      fontWeight: FontWeight.w500,
@@ -51,6 +86,7 @@ class CuacaPage extends StatelessWidget {
           } else {
             Navigator.pop(context);
           } },
+          onPressed: () { if (widget.onBack != null) widget.onBack!(); else Navigator.pop(context); },
         ),
         actions: [
           IconButton(
@@ -157,29 +193,29 @@ class CuacaPage extends StatelessWidget {
             children: [
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
+                children: [
                   Text(
-                    '32°',
-                    style: TextStyle(
+                    _isLoading ? '--' : '${_latestCuaca?.suhu ?? 32}°',
+                    style: const TextStyle(
                       fontSize: 48,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF1A1A1A),
                       height: 1,
                     ),
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Text(
-                    'Berawan',
-                    style: TextStyle(
+                    _isLoading ? '...' : (_latestCuaca?.cuaca.isNotEmpty == true ? _latestCuaca!.cuaca : 'Berawan'),
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                       color: Color(0xFF424242),
                     ),
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Text(
-                    'Terasa seperti 36°C',
-                    style: TextStyle(
+                    'Terasa seperti ${_isLoading ? "..." : (_latestCuaca != null ? _latestCuaca!.suhu + 2 : 36)}°C',
+                    style: const TextStyle(
                       fontSize: 12,
                       color: Color(0xFF757575),
                     ),
@@ -192,46 +228,61 @@ class CuacaPage extends StatelessWidget {
                    SizedBox(
                      height: 80,
                      width: 80,
-                     child: Stack(
-                       children: [
-                         Positioned(
-                           top: 5,
-                           right: 15,
-                           child: Container(
-                             width: 40,
-                             height: 40,
-                             decoration: const BoxDecoration(
-                               color: Color(0xFFFFC107),
-                               shape: BoxShape.circle,
-                             ),
-                           ),
-                         ),
-                         Positioned(
-                           bottom: 10,
-                           left: 5,
-                           child: Container(
-                             width: 60,
-                             height: 40,
-                             decoration: BoxDecoration(
-                               color: Colors.white,
-                               borderRadius: BorderRadius.circular(20),
-                               boxShadow: [
-                                 BoxShadow(
-                                   color: Colors.black.withOpacity(0.05),
-                                   blurRadius: 10,
-                                   offset: const Offset(0, 4),
-                                 ),
-                               ],
-                             ),
-                           ),
-                         ),
-                       ],
-                     ),
+                     child: _isLoading 
+                          ? const Center(child: CircularProgressIndicator()) 
+                          : (_latestCuaca != null && _latestCuaca!.image.isNotEmpty 
+                              ? Center(
+                                  child: Image.network(
+                                    _latestCuaca!.image,
+                                    width: 60,
+                                    height: 60,
+                                    errorBuilder: (context, error, stackTrace) => const Icon(
+                                      Icons.cloud,
+                                      size: 50,
+                                      color: Color(0xFF90A4AE),
+                                    ),
+                                  ),
+                                )
+                              : Stack(
+                                  children: [
+                                    Positioned(
+                                      top: 5,
+                                      right: 15,
+                                      child: Container(
+                                        width: 40,
+                                        height: 40,
+                                        decoration: const BoxDecoration(
+                                          color: Color(0xFFFFC107),
+                                          shape: BoxShape.circle,
+                                        ),
+                                      ),
+                                    ),
+                                    Positioned(
+                                      bottom: 10,
+                                      left: 5,
+                                      child: Container(
+                                        width: 60,
+                                        height: 40,
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(20),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black.withOpacity(0.05),
+                                              blurRadius: 10,
+                                              offset: const Offset(0, 4),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                )),
                    ),
                   const SizedBox(height: 8),
-                  _buildWeatherStat(Icons.water_drop, 'Kelembapan 65%', const Color(0xFF2196F3)),
+                  _buildWeatherStat(Icons.water_drop, 'Kelembapan ${_isLoading ? "--" : _latestCuaca?.kelembapan ?? 65}%', const Color(0xFF2196F3)),
                   const SizedBox(height: 4),
-                  _buildWeatherStat(Icons.air, 'Angin 12 km/j', const Color(0xFF4DB6AC)),
+                  _buildWeatherStat(Icons.air, 'Angin ${_isLoading ? "--" : _latestCuaca?.kecAngin ?? 12} km/j', const Color(0xFF4DB6AC)),
                 ],
               ),
             ],
@@ -260,12 +311,18 @@ class CuacaPage extends StatelessWidget {
   }
 
   Widget _buildEarlyWarningCard() {
+    final String warningMsg = _isLoading 
+        ? "Memeriksa peringatan cuaca..." 
+        : (_latestCuaca?.peringatanDini ?? "Sedang tidak ada peringatan cuaca yang signifikan untuk saat ini.");
+        
+    final bool hasWarning = warningMsg.contains("Waspada");
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF3E0),
+        color: hasWarning ? const Color(0xFFFFF3E0) : const Color(0xFFE8F5E9),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFFFE0B2)),
+        border: Border.all(color: hasWarning ? const Color(0xFFFFE0B2) : const Color(0xFFC8E6C9)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -273,30 +330,34 @@ class CuacaPage extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: const Color(0xFFFF9800),
+              color: hasWarning ? const Color(0xFFFF9800) : const Color(0xFF4CAF50),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(Icons.warning_amber_rounded, color: Colors.white, size: 20),
+            child: Icon(
+              hasWarning ? Icons.warning_amber_rounded : Icons.check_circle_outline_rounded, 
+              color: Colors.white, 
+              size: 20
+            ),
           ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children: [
                 Text(
-                  'Peringatan Dini',
+                  hasWarning ? 'Peringatan Dini' : 'Cuaca Aman',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFFE65100),
+                    color: hasWarning ? const Color(0xFFE65100) : const Color(0xFF2E7D32),
                   ),
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Text(
-                  'Waspada potensi hujan lebat disertai kilat/petir di Jakarta Selatan sore ini.',
+                  warningMsg,
                   style: TextStyle(
                     fontSize: 12,
-                    color: Color(0xFFE65100),
+                    color: hasWarning ? const Color(0xFFE65100) : const Color(0xFF388E3C),
                     height: 1.4,
                   ),
                 ),
@@ -309,32 +370,34 @@ class CuacaPage extends StatelessWidget {
   }
 
   Widget _buildWeeklyForecast() {
-    final List<Map<String, dynamic>> forecasts = [
-      {'day': 'Besok', 'icon': Icons.wb_sunny_rounded, 'cond': 'Cerah', 'max': 33, 'min': 24, 'color': const Color(0xFFFFB74D)},
-      {'day': 'Kamis', 'icon': Icons.cloud_rounded, 'cond': 'Berawan', 'max': 31, 'min': 23, 'color': const Color(0xFF90A4AE)},
-      {'day': 'Jumat', 'icon': Icons.thunderstorm_rounded, 'cond': 'Hujan Petir', 'max': 29, 'min': 22, 'color': const Color(0xFF5C6BC0)},
-      {'day': 'Sabtu', 'icon': Icons.water_drop_rounded, 'cond': 'Hujan Ringan', 'max': 30, 'min': 23, 'color': const Color(0xFF42A5F5)},
-      {'day': 'Minggu', 'icon': Icons.wb_cloudy_rounded, 'cond': 'Cerah Berawan', 'max': 32, 'min': 24, 'color': const Color(0xFFFFB74D)},
-      {'day': 'Senin', 'icon': Icons.wb_sunny_rounded, 'cond': 'Cerah', 'max': 33, 'min': 24, 'color': const Color(0xFFFFB74D)},
-      {'day': 'Selasa', 'icon': Icons.cloud_rounded, 'cond': 'Berawan', 'max': 31, 'min': 23, 'color': const Color(0xFF90A4AE)},
-    ];
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    
+    if (_latestCuaca == null || _latestCuaca!.dailyForecasts.isEmpty) {
+      return const Center(child: Text("Data prakiraan belum tersedia."));
+    }
 
     return Column(
-      children: forecasts.map((f) => _buildForecastItem(f)).toList(),
+      children: _latestCuaca!.dailyForecasts.map((f) => _buildForecastItem(f)).toList(),
     );
   }
 
-  Widget _buildForecastItem(Map<String, dynamic> data) {
+  Widget _buildForecastItem(DailyForecast data) {
+    final isEst = data.isEstimate;
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isEst ? Colors.white.withOpacity(0.6) : Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.withOpacity(0.1)),
+        border: Border.all(
+          color: isEst ? Colors.grey.withOpacity(0.08) : Colors.grey.withOpacity(0.12),
+          style: isEst ? BorderStyle.none : BorderStyle.solid,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withOpacity(isEst ? 0.01 : 0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -344,48 +407,70 @@ class CuacaPage extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           SizedBox(
-            width: 80,
-            child: Text(
-              data['day'],
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF424242),
-              ),
+            width: 90,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  data.dayName,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: isEst ? const Color(0xFF9E9E9E) : const Color(0xFF424242),
+                  ),
+                ),
+                if (isEst)
+                  const Text(
+                    'estimasi',
+                    style: TextStyle(fontSize: 9, color: Color(0xFFBDBDBD), fontStyle: FontStyle.italic),
+                  ),
+              ],
             ),
           ),
-          Column(
-            children: [
-              Icon(data['icon'], color: data['color'], size: 28),
-              const SizedBox(height: 4),
-              Text(
-                data['cond'],
-                style: TextStyle(
-                  fontSize: 10,
-                  color: Colors.grey[400],
+          Opacity(
+            opacity: isEst ? 0.6 : 1.0,
+            child: Column(
+              children: [
+                Image.network(
+                  data.imagePath,
+                  width: 28,
+                  height: 28,
+                  errorBuilder: (context, error, stackTrace) => const Icon(
+                    Icons.cloud,
+                    color: Color(0xFF90A4AE),
+                    size: 28,
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 4),
+                Text(
+                  data.condition,
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: isEst ? Colors.grey[300] : Colors.grey[400],
+                  ),
+                ),
+              ],
+            ),
           ),
           SizedBox(
-            width: 80,
+            width: 70,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Text(
-                  '${data['max']}°',
-                  style: const TextStyle(
+                  '${data.maxTemp}°',
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF1A1A1A),
+                    color: isEst ? const Color(0xFFBDBDBD) : const Color(0xFF1A1A1A),
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 6),
                 Text(
-                  '${data['min']}°',
+                  '${data.minTemp}°',
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.grey[400],
+                    color: isEst ? Colors.grey[300] : Colors.grey[400],
                   ),
                 ),
               ],

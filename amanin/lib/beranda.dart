@@ -10,6 +10,7 @@ import 'utils/localization.dart';
 import 'main.dart'; // For isLoggedInNotifier
 import 'toko.dart';
 import 'asuransi.dart';
+import 'services/bmkg_service.dart';
 
 class BerandaPage extends StatefulWidget {
   final VoidCallback? onNavigateToCuaca;
@@ -21,7 +22,63 @@ class BerandaPage extends StatefulWidget {
 
 class _BerandaPageState extends State<BerandaPage> {
   // Earthquake location: 81 Km Barat Daya Kuta Selatan
-  final LatLng _earthquakeLocation = const LatLng(-8.8, 115.0);
+  LatLng _earthquakeLocation = const LatLng(-8.8, 115.0);
+  GempaModel? _latestQuake;
+  bool _isLoadingQuake = true;
+
+  CuacaModel? _latestCuaca;
+  bool _isLoadingCuaca = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchEarthquakeData();
+    _fetchWeatherData();
+  }
+
+  Future<void> _fetchEarthquakeData() async {
+    try {
+      final quake = await BmkgService.fetchLatestEarthquake();
+      if (mounted) {
+        setState(() {
+          _latestQuake = quake;
+          if (_latestQuake!.coordinates.isNotEmpty) {
+            final coords = _latestQuake!.coordinates.split(',');
+            if (coords.length == 2) {
+              _earthquakeLocation = LatLng(double.parse(coords[0]), double.parse(coords[1]));
+            }
+          }
+          _isLoadingQuake = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingQuake = false;
+        });
+        print("Error fetching earthquake: $e");
+      }
+    }
+  }
+
+  Future<void> _fetchWeatherData() async {
+    try {
+      final cuaca = await BmkgService.fetchCurrentWeather('31.71.01.1001'); // Jakarta Pusat, Gambir
+      if (mounted) {
+        setState(() {
+          _latestCuaca = cuaca;
+          _isLoadingCuaca = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingCuaca = false;
+        });
+        print("Error fetching weather: $e");
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -486,6 +543,7 @@ class _BerandaPageState extends State<BerandaPage> {
                   height: 200,
                   width: double.infinity,
                   child: FlutterMap(
+                    key: ValueKey(_earthquakeLocation),
                     options: MapOptions(
                       initialCenter: _earthquakeLocation,
                       initialZoom: 8.0,
@@ -593,29 +651,31 @@ class _BerandaPageState extends State<BerandaPage> {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    RichText(
-                      text: const TextSpan(
-                        children: [
-                          TextSpan(
-                            text: '4.3',
-                            style: TextStyle(
-                              fontSize: 40,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF1A1A1A),
-                              height: 1.2,
+                    _isLoadingQuake 
+                        ? const CircularProgressIndicator() 
+                        : RichText(
+                            text: TextSpan(
+                              children: [
+                                TextSpan(
+                                  text: _latestQuake?.magnitude ?? '4.3',
+                                  style: const TextStyle(
+                                    fontSize: 40,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF1A1A1A),
+                                    height: 1.2,
+                                  ),
+                                ),
+                                const TextSpan(
+                                  text: ' SR',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF9E9E9E),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          TextSpan(
-                            text: ' SR',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF9E9E9E),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
                   ],
                 ),
                 Container(
@@ -640,14 +700,14 @@ class _BerandaPageState extends State<BerandaPage> {
               children: [
                 _buildDetailRow(
                   'LOKASI PUSAT',
-                  '81 Km Barat Daya Kuta Selatan',
+                  _isLoadingQuake ? 'Memuat data...' : (_latestQuake?.wilayah ?? '81 Km Barat Daya Kuta Selatan'),
                 ),
                 const SizedBox(height: 16),
                 Row(
                   children: [
-                    Expanded(child: _buildDetailRow('KEDALAMAN', ' 37 Km')),
+                    Expanded(child: _buildDetailRow('KEDALAMAN', _isLoadingQuake ? '...' : (_latestQuake?.kedalaman ?? ' 37 Km'))),
                     const SizedBox(width: 16),
-                    Expanded(child: _buildDetailRow('WAKTU', ' 02:23 WIB')),
+                    Expanded(child: _buildDetailRow('WAKTU', _isLoadingQuake ? '...' : ('${_latestQuake?.jam ?? '02:23 WIB'}'))),
                   ],
                 ),
                 const SizedBox(height: 20),
@@ -659,7 +719,7 @@ class _BerandaPageState extends State<BerandaPage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const GempaDetailPage(),
+                          builder: (context) => GempaDetailPage(gempa: _latestQuake),
                         ),
                       );
                     },
@@ -1031,16 +1091,16 @@ class _BerandaPageState extends State<BerandaPage> {
               ),
             ),
             Row(
-              children: const [
-                Icon(
+              children: [
+                const Icon(
                   Icons.location_on_outlined,
                   size: 16,
                   color: Color(0xFF757575),
                 ),
-                SizedBox(width: 4),
+                const SizedBox(width: 4),
                 Text(
-                  'Cilacap',
-                  style: TextStyle(
+                  _isLoadingCuaca ? '...' : (_latestCuaca?.kota ?? 'Cilacap'),
+                  style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFF757575),
@@ -1113,18 +1173,18 @@ class _BerandaPageState extends State<BerandaPage> {
                           ),
                         ),
                         const SizedBox(height: 12),
-                        const Text(
-                          'Berawan',
-                          style: TextStyle(
+                        Text(
+                          _isLoadingCuaca ? '...' : (_latestCuaca?.cuaca.isNotEmpty == true ? _latestCuaca!.cuaca : 'Berawan'),
+                          style: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF1A1A1A),
                           ),
                         ),
                         const SizedBox(height: 4),
-                        const Text(
-                          'Terasa seperti 34°C',
-                          style: TextStyle(
+                        Text(
+                          'Terasa seperti ${_isLoadingCuaca ? "..." : (_latestCuaca != null ? _latestCuaca!.suhu + 2 : 34)}°C', // Simple feel logic
+                          style: const TextStyle(
                             fontSize: 12,
                             color: Color(0xFF757575),
                           ),
@@ -1134,9 +1194,9 @@ class _BerandaPageState extends State<BerandaPage> {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          '32',
-                          style: TextStyle(
+                        Text(
+                          _isLoadingCuaca ? '--' : (_latestCuaca?.suhu.toString() ?? '32'),
+                          style: const TextStyle(
                             fontSize: 48,
                             fontWeight: FontWeight.w300,
                             color: Color(0xFF1A1A1A),
@@ -1164,11 +1224,27 @@ class _BerandaPageState extends State<BerandaPage> {
                                 color: Colors.black.withOpacity(0.4),
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: const Icon(
-                                Icons.cloud,
-                                color: Colors.white,
-                                size: 24,
-                              ),
+                              child: _isLoadingCuaca 
+                                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                                  : (_latestCuaca != null && _latestCuaca!.image.isNotEmpty 
+                                      ? Center(
+                                          child: Image.network(
+                                            _latestCuaca!.image,
+                                            width: 24,
+                                            height: 24,
+                                            // Handle network image failure gracefully
+                                            errorBuilder: (context, error, stackTrace) => const Icon(
+                                              Icons.cloud,
+                                              color: Colors.white,
+                                              size: 24,
+                                            ),
+                                          ),
+                                        )
+                                      : const Icon(
+                                          Icons.cloud,
+                                          color: Colors.white,
+                                          size: 24,
+                                        )),
                             ),
                           ],
                         ),
@@ -1183,18 +1259,19 @@ class _BerandaPageState extends State<BerandaPage> {
                   children: [
                     _buildWeatherDetail(
                       Icons.water_drop,
-                      '94%',
+                      _isLoadingCuaca ? '--%' : '${_latestCuaca?.kelembapan ?? 94}%',
                       'Air',
                       const Color(0xFF2196F3),
                     ),
                     _buildWeatherDetail(
                       Icons.air,
-                      '3.6',
+                      _isLoadingCuaca ? '--' : (_latestCuaca?.kecAngin.toString() ?? '3.6'),
                       'km/h',
                       const Color(0xFF4CAF50),
                     ),
                     _buildWeatherDetail(
                       Icons.wb_sunny,
+                      // UV index API nya gaada ya, kita hide kalo gaada data / kasi default Sedang
                       'UV 6',
                       'Sedang',
                       const Color(0xFFFF9800),
@@ -1248,11 +1325,17 @@ class _BerandaPageState extends State<BerandaPage> {
   }
 
   Widget _buildEarlyWarningCard() {
+    final String warningMsg = _isLoadingCuaca 
+        ? "Memeriksa peringatan cuaca..." 
+        : (_latestCuaca?.peringatanDini ?? "Sedang tidak ada peringatan cuaca yang signifikan untuk saat ini.");
+        
+    final bool hasWarning = warningMsg.contains("Waspada");
+
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF3E0),
+        color: hasWarning ? const Color(0xFFFFF3E0) : const Color(0xFFE8F5E9),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFFFB74D), width: 1),
+        border: Border.all(color: hasWarning ? const Color(0xFFFFB74D) : const Color(0xFF81C784), width: 1),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -1269,11 +1352,11 @@ class _BerandaPageState extends State<BerandaPage> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: const Color(0xFFFF9800),
+                color: hasWarning ? const Color(0xFFFF9800) : const Color(0xFF4CAF50),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(
-                Icons.warning_rounded,
+              child: Icon(
+                hasWarning ? Icons.warning_rounded : Icons.check_circle_rounded,
                 color: Colors.white,
                 size: 24,
               ),
@@ -1283,20 +1366,20 @@ class _BerandaPageState extends State<BerandaPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Peringatan Dini',
+                  Text(
+                    hasWarning ? 'Peringatan Dini' : 'Cuaca Aman',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF1A1A1A),
+                      color: hasWarning ? const Color(0xFF1A1A1A) : const Color(0xFF2E7D32),
                     ),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
-                    'Waspada potensi hujan disertai kilat/petir dan angin kencang di sebagian wilayah Jakarta dan Jaktim pada sore hari.',
+                  Text(
+                    warningMsg,
                     style: TextStyle(
                       fontSize: 12,
-                      color: Color(0xFF424242),
+                      color: hasWarning ? const Color(0xFF424242) : const Color(0xFF388E3C),
                       height: 1.4,
                     ),
                   ),
