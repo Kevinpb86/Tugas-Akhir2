@@ -13,6 +13,9 @@ import 'main.dart'; // For isLoggedInNotifier
 import 'toko.dart';
 import 'asuransi.dart';
 import 'services/bmkg_service.dart';
+import 'services/news_service.dart';
+import 'isi_berita.dart';
+import 'package:intl/intl.dart';
 
 class BerandaPage extends StatefulWidget {
   final VoidCallback? onNavigateToCuaca;
@@ -31,11 +34,15 @@ class _BerandaPageState extends State<BerandaPage> {
   CuacaModel? _latestCuaca;
   bool _isLoadingCuaca = true;
 
+  List<NewsModel> _newsList = [];
+  bool _isLoadingNews = true;
+
   @override
   void initState() {
     super.initState();
     _fetchEarthquakeData();
     _fetchWeatherData();
+    _fetchNewsData();
   }
 
   Future<void> _fetchEarthquakeData() async {
@@ -78,6 +85,25 @@ class _BerandaPageState extends State<BerandaPage> {
           _isLoadingCuaca = false;
         });
         print("Error fetching weather: $e");
+      }
+    }
+  }
+
+  Future<void> _fetchNewsData() async {
+    try {
+      final news = await NewsService.fetchNews();
+      if (mounted) {
+        setState(() {
+          _newsList = news;
+          _isLoadingNews = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingNews = false;
+        });
+        print("Error fetching news: $e");
       }
     }
   }
@@ -1414,201 +1440,165 @@ class _BerandaPageState extends State<BerandaPage> {
         // Horizontal Scrollable News Cards
         SizedBox(
           height: 280,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            children: [
-              _buildNewsCard(
-                'BMKG',
-                'Analisis Dinamika Atmosfer Dasarian II Februari 2026',
-                '1 Jam yang lalu',
-                const Color(0xFF2196F3),
-                Icons.cloud,
-              ),
-              const SizedBox(width: 12),
-              _buildNewsCard(
-                'LHK',
-                'Status Siaga Kebakaran Hutan dan Lahan di Wilayah Sumatera',
-                '3 Jam yang lalu',
-                const Color(0xFF4CAF50),
-                Icons.local_fire_department,
-              ),
-              const SizedBox(width: 12),
-              _buildNewsCard(
-                'BMKG',
-                'Prakiraan Cuaca Ekstrem untuk Wilayah Jawa Barat',
-                '5 Jam yang lalu',
-                const Color(0xFF2196F3),
-                Icons.thunderstorm,
-              ),
-              const SizedBox(width: 12),
-              _buildNewsCard(
-                'BNPB',
-                'Peringatan Dini Tsunami di Pesisir Selatan Jawa',
-                '6 Jam yang lalu',
-                const Color(0xFFFF5252),
-                Icons.tsunami,
-              ),
-              const SizedBox(width: 12),
-              _buildNewsCard(
-                'PVMBG',
-                'Status Aktivitas Gunung Merapi Meningkat ke Level Siaga',
-                '8 Jam yang lalu',
-                const Color(0xFFFF9800),
-                Icons.landscape,
-              ),
-              const SizedBox(width: 12),
-              _buildNewsCard(
-                'BMKG',
-                'Potensi Hujan Lebat dan Angin Kencang di Wilayah Kalimantan',
-                '10 Jam yang lalu',
-                const Color(0xFF2196F3),
-                Icons.water_drop,
-              ),
-              const SizedBox(width: 12),
-              _buildNewsCard(
-                'BNPB',
-                'Update Banjir Bandang di Kabupaten Bogor',
-                '12 Jam yang lalu',
-                const Color(0xFFFF5252),
-                Icons.flood,
-              ),
-              const SizedBox(width: 12),
-              _buildNewsCard(
-                'LHK',
-                'Monitoring Kualitas Udara di Jakarta dan Sekitarnya',
-                '1 Hari yang lalu',
-                const Color(0xFF4CAF50),
-                Icons.air,
-              ),
-            ],
-          ),
+          child: _isLoadingNews
+              ? const Center(child: CircularProgressIndicator())
+              : _newsList.isEmpty
+                  ? const Center(child: Text('Tidak ada berita terbaru.'))
+                  : ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _newsList.length,
+                      itemBuilder: (context, index) {
+                        final news = _newsList[index];
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 12.0),
+                          child: _buildNewsCard(news),
+                        );
+                      },
+                    ),
         ),
       ],
     );
   }
 
-  Widget _buildNewsCard(
-    String category,
-    String title,
-    String time,
-    Color categoryColor,
-    IconData icon,
-  ) {
-    return Container(
-      width: 280,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
+  String _formatNewsTime(String utcString) {
+    try {
+      final date = DateTime.parse(utcString).toLocal();
+      final diff = DateTime.now().difference(date);
+      if (diff.inMinutes < 60) {
+        return '${diff.inMinutes} Menit lalu';
+      } else if (diff.inHours < 24) {
+        return '${diff.inHours} Jam lalu';
+      } else {
+        return '${diff.inDays} Hari lalu';
+      }
+    } catch (e) {
+      return '';
+    }
+  }
+
+  Widget _buildNewsCard(NewsModel news) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => IsiBeritaPage(news: news),
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Image/Icon Section
-          Container(
-            height: 160,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  categoryColor.withOpacity(0.7),
-                  categoryColor.withOpacity(0.9),
-                ],
-              ),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(16),
-                topRight: Radius.circular(16),
-              ),
+        );
+      },
+      child: Container(
+        width: 280,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 20,
+              offset: const Offset(0, 4),
             ),
-            child: Stack(
-              children: [
-                // Background pattern
-                Positioned.fill(
-                  child: Opacity(
-                    opacity: 0.1,
-                    child: Icon(icon, size: 120, color: Colors.white),
-                  ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Image/Icon Section
+            Container(
+              height: 160,
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16),
                 ),
-                // Category Badge
-                Positioned(
-                  top: 12,
-                  left: 12,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: categoryColor,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      category,
-                      style: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ),
-                ),
-                // Main Icon
-                Center(
-                  child: Icon(
-                    icon,
-                    size: 64,
-                    color: Colors.white.withOpacity(0.9),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // Content Section
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              ),
+              child: Stack(
                 children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF1A1A1A),
-                      height: 1.4,
+                  ClipRRect(
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(16),
+                      topRight: Radius.circular(16),
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                    child: Hero(
+                      tag: news.link, // For hero animation
+                      child: Image.network(
+                        news.photoUrl.isNotEmpty 
+                            ? news.photoUrl 
+                            : 'https://via.placeholder.com/280x160?text=No+Image',
+                        width: double.infinity,
+                        height: 160,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => 
+                            const Center(child: Icon(Icons.broken_image, size: 50, color: Colors.grey)),
+                      ),
+                    ),
                   ),
-                  const Spacer(),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.access_time,
-                        size: 14,
-                        color: Colors.grey[600],
+                  // Category Badge (Source Name based)
+                  Positioned(
+                    top: 12,
+                    left: 12,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
                       ),
-                      const SizedBox(width: 4),
-                      Text(
-                        time,
-                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0284C7).withOpacity(0.9),
+                        borderRadius: BorderRadius.circular(6),
                       ),
-                    ],
+                      child: Text(
+                        news.sourceName.toUpperCase(),
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
             ),
-          ),
-        ],
+            // Content Section
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      news.title,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF1A1A1A),
+                        height: 1.4,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const Spacer(),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.access_time,
+                          size: 14,
+                          color: Colors.grey[600],
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          _formatNewsTime(news.publishedDatetimeUtc),
+                          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
