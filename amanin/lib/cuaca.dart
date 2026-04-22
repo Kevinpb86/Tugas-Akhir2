@@ -88,7 +88,6 @@ class _CuacaPageState extends State<CuacaPage> {
               Navigator.pop(context);
             }
           },
-          onPressed: () { if (widget.onBack != null) widget.onBack!(); else Navigator.pop(context); },
         ),
         actions: [
           IconButton(

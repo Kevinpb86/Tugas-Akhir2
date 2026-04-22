@@ -45,8 +45,10 @@ class EarthquakeMap extends StatelessWidget {
       ),
       children: [
         TileLayer(
-          urlTemplate: 'https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}',
+          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
           userAgentPackageName: 'com.example.amanin',
+          maxZoom: 19,
+          maxNativeZoom: 19,
         ),
         MarkerLayer(
           markers: [
