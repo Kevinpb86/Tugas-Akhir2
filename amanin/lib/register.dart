@@ -254,7 +254,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                     try {
                       final response = await http.post(
-                        Uri.parse('http://10.0.2.2:8000/register'), // 10.0.2.2 untuk emulator android ke localhost
+                        Uri.parse('http://localhost:8000/register'), // Ganti ke localhost untuk Web/Chrome
                         headers: {'Content-Type': 'application/json'},
                         body: jsonEncode({
                           'full_name': _nameController.text,

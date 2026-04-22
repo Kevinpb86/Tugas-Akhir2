@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'gempa_detail.dart';
+import 'utils/earthquake_map.dart';
+import 'fullscreen_map.dart';
 import 'cuaca.dart';
 import 'akun.dart';
 import 'fitur.dart';
@@ -542,64 +544,10 @@ class _BerandaPageState extends State<BerandaPage> {
                 child: SizedBox(
                   height: 200,
                   width: double.infinity,
-                  child: FlutterMap(
-                    key: ValueKey(_earthquakeLocation),
-                    options: MapOptions(
-                      initialCenter: _earthquakeLocation,
-                      initialZoom: 8.0,
-                      interactionOptions: const InteractionOptions(
-                        flags: InteractiveFlag.pinchZoom | InteractiveFlag.drag,
-                      ),
-                    ),
-                    children: [
-                      TileLayer(
-                        urlTemplate:
-                            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                        userAgentPackageName: 'com.example.amanin',
-                      ),
-                      MarkerLayer(
-                        markers: [
-                          Marker(
-                            point: _earthquakeLocation,
-                            width: 60,
-                            height: 60,
-                            child: Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                Container(
-                                  width: 48,
-                                  height: 48,
-                                  decoration: BoxDecoration(
-                                    color: const Color(
-                                      0xFFFF5252,
-                                    ).withOpacity(0.2),
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                                Container(
-                                  width: 28,
-                                  height: 28,
-                                  decoration: BoxDecoration(
-                                    color: const Color(
-                                      0xFFFF5252,
-                                    ).withOpacity(0.5),
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                                Container(
-                                  width: 14,
-                                  height: 14,
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFFFF5252),
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                  child: EarthquakeMap(
+                    coordinates: _latestQuake?.coordinates ?? '',
+                    initialZoom: 8.0,
+                    interactive: false,
                   ),
                 ),
               ),
@@ -622,6 +570,40 @@ class _BerandaPageState extends State<BerandaPage> {
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                       letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: 12,
+                right: 12,
+                child: GestureDetector(
+                  onTap: () {
+                    if (_latestQuake != null) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => FullscreenMapPage(gempa: _latestQuake!),
+                        ),
+                      );
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 10,
+                        )
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.open_in_full_rounded,
+                      size: 16,
+                      color: Color(0xFF1A1A1A),
                     ),
                   ),
                 ),
@@ -707,7 +689,7 @@ class _BerandaPageState extends State<BerandaPage> {
                   children: [
                     Expanded(child: _buildDetailRow('KEDALAMAN', _isLoadingQuake ? '...' : (_latestQuake?.kedalaman ?? ' 37 Km'))),
                     const SizedBox(width: 16),
-                    Expanded(child: _buildDetailRow('WAKTU', _isLoadingQuake ? '...' : ('${_latestQuake?.jam ?? '02:23 WIB'}'))),
+                    Expanded(child: _buildDetailRow('WAKTU', _isLoadingQuake ? '...' : (_latestQuake?.jam ?? '02:23 WIB'))),
                   ],
                 ),
                 const SizedBox(height: 20),

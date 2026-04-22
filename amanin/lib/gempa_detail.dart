@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'utils/map_utils.dart';
+import 'utils/earthquake_map.dart';
+import 'fullscreen_map.dart';
 import 'services/bmkg_service.dart';
 
 class GempaDetailPage extends StatelessWidget {
@@ -32,7 +35,7 @@ class GempaDetailPage extends StatelessWidget {
                     _buildTimeDepthCard(),
                     const SizedBox(height: 16),
                     // Map Section
-                    _buildMapSection(),
+                    _buildMapSection(context),
                     const SizedBox(height: 16),
                     // Impact Assessment
                     _buildImpactSection(),
@@ -126,84 +129,60 @@ class GempaDetailPage extends StatelessWidget {
   }
 
   Widget _buildMagnitudeSection() {
+    final mag = double.tryParse(gempa?.magnitude ?? '0');
+    final status = _getMagnitudeStatus(mag);
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(28),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Color(0xFFFF5252),
-            Color(0xFFE53935),
-          ],
+          colors: status.gradient,
         ),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFFF5252).withOpacity(0.3),
+            color: status.color.withOpacity(0.3),
             blurRadius: 20,
-            offset: const Offset(0, 8),
+            offset: const Offset(0, 10),
           ),
         ],
       ),
       child: Column(
         children: [
-          const Text(
-            'MAGNITUDO',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: Colors.white70,
-              letterSpacing: 1,
-            ),
-          ),
-          const SizedBox(height: 8),
           Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                gempa?.magnitude ?? '4.3',
-                style: const TextStyle(
-                  fontSize: 72,
+                'SKALA RICHTER',
+                style: TextStyle(
+                  fontSize: 12,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  height: 1,
+                  color: Colors.white.withOpacity(0.8),
+                  letterSpacing: 2,
                 ),
               ),
-              const SizedBox(width: 8),
-              Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.white.withOpacity(0.3)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text(
-                      'SR',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w600,
+                    Icon(status.icon, color: Colors.white, size: 12),
+                    const SizedBox(width: 6),
+                    Text(
+                      status.label,
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
                         color: Colors.white,
-                      ),
-                    ),
-                    Container(
-                      margin: const EdgeInsets.only(top: 4),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: const Text(
-                        'SEDANG',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          letterSpacing: 0.5,
-                        ),
+                        letterSpacing: 0.5,
                       ),
                     ),
                   ],
@@ -211,21 +190,57 @@ class GempaDetailPage extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          const Row(
+          const SizedBox(height: 24),
+          Row(
             mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.waves, color: Colors.white, size: 20),
-              SizedBox(width: 8),
               Text(
-                'Skala Richter',
-                style: TextStyle(
-                  fontSize: 14,
+                gempa?.magnitude ?? '0.0',
+                style: const TextStyle(
+                  fontSize: 84,
+                  fontWeight: FontWeight.bold,
                   color: Colors.white,
-                  fontWeight: FontWeight.w500,
+                  height: 1,
+                  letterSpacing: -2,
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Padding(
+                padding: EdgeInsets.only(top: 12),
+                child: Text(
+                  'SR',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white70,
+                  ),
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 24),
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.info_outline, color: Colors.white70, size: 16),
+                const SizedBox(width: 8),
+                Text(
+                  _getMagnitudeWarning(mag),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -233,17 +248,235 @@ class GempaDetailPage extends StatelessWidget {
   }
 
   Widget _buildLocationCard() {
+    final wilayah = gempa?.wilayah ?? 'Lokasi tidak diketahui';
+    final isDarat = wilayah.toLowerCase().contains('darat');
+    final isLaut = wilayah.toLowerCase().contains('laut');
+    
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: Stack(
+          children: [
+            // Decorative background element
+            Positioned(
+              top: -20,
+              right: -20,
+              child: Icon(
+                Icons.map_rounded,
+                size: 120,
+                color: const Color(0xFFF1F5F9).withOpacity(0.5),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF00BCD4).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.location_on_rounded,
+                              color: Color(0xFF00BCD4),
+                              size: 20,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          const Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'WILAYAH PUSAT GEMPA',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF94A3B8),
+                                  letterSpacing: 1,
+                                ),
+                              ),
+                              Text(
+                                'Lokasi Terdeteksi',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Color(0xFF64748B),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      if (isDarat || isLaut)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: isDarat ? const Color(0xFF795548).withOpacity(0.1) : const Color(0xFF0288D1).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: isDarat ? const Color(0xFF795548).withOpacity(0.2) : const Color(0xFF0288D1).withOpacity(0.2),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                isDarat ? Icons.landscape_rounded : Icons.waves_rounded,
+                                size: 12,
+                                color: isDarat ? const Color(0xFF795548) : const Color(0xFF0288D1),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                isDarat ? 'DARAT' : 'LAUT',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: isDarat ? const Color(0xFF795548) : const Color(0xFF0288D1),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    wilayah,
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1E293B),
+                      height: 1.3,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFFF1F5F9)),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: _buildCoordinateItem(
+                            'LINTANG',
+                            gempa?.coordinates.split(',').first ?? '-',
+                            Icons.south_rounded,
+                          ),
+                        ),
+                        Container(height: 30, width: 1, color: const Color(0xFFE2E8F0)),
+                        Expanded(
+                          child: _buildCoordinateItem(
+                            'BUJUR',
+                            gempa?.coordinates.split(',').last ?? '-',
+                            Icons.east_rounded,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCoordinateItem(String label, String value, IconData icon) {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 10, color: const Color(0xFF00BCD4)),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 9,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF94A3B8),
+                letterSpacing: 1,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF1E293B),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTimeDepthCard() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildMetricCard(
+              'WAKTU KEJADIAN',
+              gempa?.jam.split(' ').first ?? '00:00',
+              gempa?.jam.split(' ').last ?? 'WIB',
+              Icons.access_time_filled_rounded,
+              const Color(0xFF3B82F6),
+              const Color(0xFFEFF6FF),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: _buildMetricCard(
+              'KEDALAMAN',
+              (gempa?.kedalaman ?? '0 km').split(' ').first,
+              'Kilometer',
+              Icons.straighten_rounded,
+              const Color(0xFFF59E0B),
+              const Color(0xFFFFFBEB),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMetricCard(String label, String value, String unit, IconData icon, Color color, Color bgColor) {
+    return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -255,59 +488,47 @@ class GempaDetailPage extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF00BCD4).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
+                  color: bgColor,
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(
-                  Icons.location_on,
-                  color: Color(0xFF00BCD4),
-                  size: 20,
-                ),
+                child: Icon(icon, color: color, size: 18),
               ),
               const SizedBox(width: 12),
-              const Text(
-                'LOKASI PUSAT GEMPA',
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF9E9E9E),
-                  letterSpacing: 0.5,
+              Expanded(
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF94A3B8),
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          Text(
-            gempa?.wilayah ?? '81 Km Barat Daya Kuta Selatan',
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF1A1A1A),
-              height: 1.4,
-            ),
-          ),
-          const SizedBox(height: 12),
-          const Divider(),
           const SizedBox(height: 12),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
             children: [
-              Expanded(
-                child: _buildInfoItem(
-                  'Lintang',
-                  '-8.8° LS',
-                  Icons.south,
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1E293B),
                 ),
               ),
-              Container(
-                width: 1,
-                height: 40,
-                color: const Color(0xFFF0F0F0),
-              ),
+              const SizedBox(width: 4),
               Expanded(
-                child: _buildInfoItem(
-                  'Bujur',
-                  '115.0° BT',
-                  Icons.east,
+                child: Text(
+                  unit,
+                  style: const TextStyle(
+                    fontSize: 10,
+                    color: Color(0xFF64748B),
+                    fontWeight: FontWeight.w500,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
@@ -317,200 +538,58 @@ class GempaDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildTimeDepthCard() {
+  Widget _buildMapSection(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
-      child: Row(
-        children: [
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF2196F3).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      Icons.access_time,
-                      color: Color(0xFF2196F3),
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'WAKTU',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF9E9E9E),
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    gempa?.jam.split(' ').first ?? '02:23',
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1A1A1A),
-                    ),
-                  ),
-                  Text(
-                    gempa?.jam.split(' ').length == 2 ? gempa!.jam.split(' ')[1] : 'WIB',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFF9E9E9E),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFF9800).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      Icons.arrow_downward,
-                      color: Color(0xFFFF9800),
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'KEDALAMAN',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF9E9E9E),
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    (gempa?.kedalaman ?? '37 km').split(' ').first,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1A1A1A),
-                    ),
-                  ),
-                  const Text(
-                    'Kilometer',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFF9E9E9E),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMapSection() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
-      height: 200,
+      height: 240,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
         ],
+        border: Border.all(color: Colors.white, width: 4),
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         child: Stack(
           children: [
             gempa?.coordinates.isNotEmpty == true 
-              ? FlutterMap(
-                  options: MapOptions(
-                    initialCenter: LatLng(
-                        double.parse(gempa!.coordinates.split(',')[0]), 
-                        double.parse(gempa!.coordinates.split(',')[1])
-                    ),
-                    initialZoom: 8.0,
-                  ),
-                  children: [
-                    TileLayer(
-                      urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                      userAgentPackageName: 'com.example.amanin',
-                    ),
-                    MarkerLayer(
-                      markers: [
-                        Marker(
-                          point: LatLng(
-                            double.parse(gempa!.coordinates.split(',')[0]), 
-                            double.parse(gempa!.coordinates.split(',')[1])
-                          ),
-                          width: 60,
-                          height: 60,
-                          child: const Icon(Icons.location_on, color: Colors.red, size: 40,),
-                        ),
-                      ],
-                    ),
-                  ],
+              ? EarthquakeMap(
+                  coordinates: gempa!.coordinates,
+                  initialZoom: 8.0,
+                  interactive: false,
                 )
               : Container(
-              color: const Color(0xFF90EE90).withOpacity(0.3),
-              child: const Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  color: const Color(0xFFF1F5F9),
+                  child: const Center(
+                    child: Icon(Icons.map_rounded, size: 48, color: Color(0xFFCBD5E1)),
+                  ),
+                ),
+            Positioned(
+              top: 16,
+              left: 16,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B).withOpacity(0.9),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Row(
                   children: [
-                    Icon(
-                      Icons.map,
-                      size: 48,
-                      color: Color(0xFF4CAF50),
-                    ),
-                    SizedBox(height: 8),
+                    Icon(Icons.gps_fixed_rounded, color: Colors.white, size: 12),
+                    SizedBox(width: 6),
                     Text(
-                      'Peta Lokasi Gempa',
+                      'EPISENTRUM',
                       style: TextStyle(
-                        color: Color(0xFF4CAF50),
-                        fontWeight: FontWeight.w600,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        letterSpacing: 1,
                       ),
                     ),
                   ],
@@ -518,32 +597,36 @@ class GempaDetailPage extends StatelessWidget {
               ),
             ),
             Positioned(
-              top: 12,
-              left: 12,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF424242),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: const Row(
-                  children: [
-                    Icon(
-                      Icons.my_location,
-                      color: Colors.white,
-                      size: 14,
-                    ),
-                    SizedBox(width: 4),
-                    Text(
-                      'EPISENTRUM',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        letterSpacing: 0.5,
+              bottom: 12,
+              right: 12,
+              child: GestureDetector(
+                onTap: () {
+                  if (gempa != null) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => FullscreenMapPage(gempa: gempa!),
                       ),
-                    ),
-                  ],
+                    );
+                  }
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 10,
+                      )
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.open_in_full_rounded,
+                    size: 16,
+                    color: Color(0xFF1A1A1A),
+                  ),
                 ),
               ),
             ),
@@ -556,15 +639,15 @@ class GempaDetailPage extends StatelessWidget {
   Widget _buildImpactSection() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -576,12 +659,12 @@ class GempaDetailPage extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFF9800).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
+                  color: const Color(0xFFF1F5F9),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(
-                  Icons.assessment,
-                  color: Color(0xFFFF9800),
+                  Icons.analytics_rounded,
+                  color: Color(0xFF64748B),
                   size: 20,
                 ),
               ),
@@ -589,34 +672,45 @@ class GempaDetailPage extends StatelessWidget {
               const Text(
                 'DAMPAK & POTENSI',
                 style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF9E9E9E),
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1E293B),
                   letterSpacing: 0.5,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
           _buildImpactItem(
-            'Getaran',
-            'Dirasakan di wilayah Bali dan sekitarnya',
-            Icons.vibration,
-            const Color(0xFFFF9800),
+            'INTENSITAS GETARAN',
+            'Dirasakan di wilayah pusat gempa',
+            Icons.vibration_rounded,
+            const Color(0xFF6366F1),
           ),
-          const SizedBox(height: 12),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Divider(color: Color(0xFFF1F5F9)),
+          ),
           _buildImpactItem(
-            'Tsunami',
+            'POTENSI TSUNAMI',
             'Tidak berpotensi tsunami',
-            Icons.waves,
-            const Color(0xFF4CAF50),
+            Icons.waves_rounded,
+            const Color(0xFF10B981),
+            isStatus: true,
+            statusLabel: 'AMAN',
           ),
-          const SizedBox(height: 12),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Divider(color: Color(0xFFF1F5F9)),
+          ),
           _buildImpactItem(
-            'Kerusakan',
-            'Tidak dilaporkan kerusakan signifikan',
-            Icons.home_work,
-            const Color(0xFF4CAF50),
+            'RISIKO KERUSAKAN',
+            'Waspada gempa susulan',
+            Icons.home_work_rounded,
+            const Color(0xFFF59E0B),
+            isStatus: true,
+            statusLabel: 'WASPADA',
+            statusColor: const Color(0xFFF59E0B),
           ),
         ],
       ),
@@ -626,14 +720,24 @@ class GempaDetailPage extends StatelessWidget {
   Widget _buildSafetySection() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF3E0),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFFFFB74D),
-          width: 1,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFF1E293B),
+            const Color(0xFF0F172A),
+          ],
         ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -643,32 +747,32 @@ class GempaDetailPage extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFF9800),
-                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.white.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(
-                  Icons.health_and_safety,
+                  Icons.security_rounded,
                   color: Colors.white,
                   size: 20,
                 ),
               ),
               const SizedBox(width: 12),
               const Text(
-                'REKOMENDASI KESELAMATAN',
+                'PANDUAN KESELAMATAN',
                 style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF9E9E9E),
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
                   letterSpacing: 0.5,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          _buildSafetyItem('Tetap tenang dan waspada terhadap gempa susulan'),
-          _buildSafetyItem('Periksa kondisi bangunan sekitar'),
-          _buildSafetyItem('Siapkan tas darurat bencana'),
-          _buildSafetyItem('Ikuti informasi resmi dari BMKG'),
+          const SizedBox(height: 24),
+          _buildSafetyItem('Hindari bangunan yang retak atau rusak akibat gempa.'),
+          _buildSafetyItem('Waspada terhadap potensi gempa susulan.'),
+          _buildSafetyItem('Pastikan jalur evakuasi di sekitar Anda aman.'),
+          _buildSafetyItem('Pantau selalu informasi resmi dari kanal BMKG.'),
         ],
       ),
     );
@@ -703,20 +807,22 @@ class GempaDetailPage extends StatelessWidget {
     String title,
     String description,
     IconData icon,
-    Color color,
-  ) {
+    Color color, {
+    bool isStatus = false,
+    String? statusLabel,
+    Color? statusColor,
+  }) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          padding: const EdgeInsets.all(6),
+          padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(icon, color: color, size: 16),
+          child: Icon(icon, color: color, size: 20),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 16),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -724,46 +830,70 @@ class GempaDetailPage extends StatelessWidget {
               Text(
                 title,
                 style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF1A1A1A),
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF94A3B8),
+                  letterSpacing: 0.5,
                 ),
               ),
               const SizedBox(height: 2),
               Text(
                 description,
                 style: const TextStyle(
-                  fontSize: 12,
-                  color: Color(0xFF757575),
-                  height: 1.4,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF1E293B),
                 ),
               ),
             ],
           ),
         ),
+        if (isStatus)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: (statusColor ?? const Color(0xFF10B981)).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(
+                color: (statusColor ?? const Color(0xFF10B981)).withOpacity(0.2),
+              ),
+            ),
+            child: Text(
+              statusLabel ?? 'AMAN',
+              style: TextStyle(
+                fontSize: 9,
+                fontWeight: FontWeight.bold,
+                color: statusColor ?? const Color(0xFF10B981),
+              ),
+            ),
+          ),
       ],
     );
   }
 
   Widget _buildSafetyItem(String text) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(
-            Icons.check_circle,
-            color: Color(0xFFFF9800),
-            size: 16,
+          Container(
+            margin: const EdgeInsets.only(top: 2),
+            child: const Icon(
+              Icons.check_circle_rounded,
+              color: Color(0xFF10B981),
+              size: 16,
+            ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 12),
           Expanded(
             child: Text(
               text,
               style: const TextStyle(
                 fontSize: 13,
-                color: Color(0xFF424242),
-                height: 1.4,
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+                height: 1.5,
               ),
             ),
           ),
@@ -771,4 +901,31 @@ class GempaDetailPage extends StatelessWidget {
       ),
     );
   }
+
+  _MagnitudeStatus _getMagnitudeStatus(double? mag) {
+    if (mag == null) return _MagnitudeStatus('MOHON TUNGGU', Colors.grey, [Colors.grey, Colors.blueGrey], Icons.help_outline);
+    if (mag < 4.0) {
+      return _MagnitudeStatus('GEMPA RINGAN', const Color(0xFF4CAF50), [const Color(0xFF66BB6A), const Color(0xFF43A047)], Icons.sentiment_satisfied_rounded);
+    } else if (mag < 6.0) {
+      return _MagnitudeStatus('GEMPA SEDANG', const Color(0xFFFF9800), [const Color(0xFFFFB74D), const Color(0xFFF57C00)], Icons.sentiment_neutral_rounded);
+    } else {
+      return _MagnitudeStatus('GEMPA KUAT', const Color(0xFFF44336), [const Color(0xFFEF5350), const Color(0xFFD32F2F)], Icons.warning_rounded);
+    }
+  }
+
+  String _getMagnitudeWarning(double? mag) {
+    if (mag == null) return 'Data sedang diproses...';
+    if (mag < 4.0) return 'Dirasakan oleh beberapa orang';
+    if (mag < 6.0) return 'Dapat menyebabkan kerusakan ringan';
+    return 'Berpotensi bahaya dan kerusakan luas';
+  }
+}
+
+class _MagnitudeStatus {
+  final String label;
+  final Color color;
+  final List<Color> gradient;
+  final IconData icon;
+
+  _MagnitudeStatus(this.label, this.color, this.gradient, this.icon);
 }

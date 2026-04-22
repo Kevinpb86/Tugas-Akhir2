@@ -209,7 +209,7 @@ class BerandaPageSimple extends StatelessWidget {
         ),
         const SizedBox(width: 8),
         const Text(
-          'Gempabumi Terkini',
+          'Gempa Bumi Terkini',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
