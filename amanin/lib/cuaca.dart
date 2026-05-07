@@ -156,7 +156,7 @@ class _CuacaPageState extends State<CuacaPage> {
         borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -263,7 +263,7 @@ class _CuacaPageState extends State<CuacaPage> {
                                           borderRadius: BorderRadius.circular(20),
                                           boxShadow: [
                                             BoxShadow(
-                                              color: Colors.black.withOpacity(0.05),
+                                              color: Colors.black.withValues(alpha: 0.05),
                                               blurRadius: 10,
                                               offset: const Offset(0, 4),
                                             ),
@@ -384,15 +384,15 @@ class _CuacaPageState extends State<CuacaPage> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
       decoration: BoxDecoration(
-        color: isEst ? Colors.white.withOpacity(0.6) : Colors.white,
+        color: isEst ? Colors.white.withValues(alpha: 0.6) : Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isEst ? Colors.grey.withOpacity(0.08) : Colors.grey.withOpacity(0.12),
+          color: isEst ? Colors.grey.withValues(alpha: 0.08) : Colors.grey.withValues(alpha: 0.12),
           style: isEst ? BorderStyle.none : BorderStyle.solid,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isEst ? 0.01 : 0.02),
+            color: Colors.black.withValues(alpha: isEst ? 0.01 : 0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -480,7 +480,7 @@ class _CuacaPageState extends State<CuacaPage> {
   Widget _buildInsuranceSection(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 20, offset: const Offset(0, 4))]),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 20, offset: const Offset(0, 4))]),
       child: Column(
         children: [
           Container(

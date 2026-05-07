@@ -13,7 +13,6 @@ import 'asuransi.dart';
 import 'services/bmkg_service.dart';
 import 'services/news_service.dart';
 import 'isi_berita.dart';
-import 'package:intl/intl.dart';
 
 class BerandaPage extends StatefulWidget {
   final VoidCallback? onNavigateToCuaca;
@@ -280,7 +279,7 @@ class _BerandaPageState extends State<BerandaPage> {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 20,
                   offset: const Offset(0, 4),
                 ),
@@ -388,7 +387,7 @@ class _BerandaPageState extends State<BerandaPage> {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 10,
                     offset: const Offset(0, 2),
                   ),
@@ -432,7 +431,7 @@ class _BerandaPageState extends State<BerandaPage> {
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
+                              color: Colors.black.withValues(alpha: 0.05),
                               blurRadius: 10,
                               offset: const Offset(0, 2),
                             ),
@@ -477,7 +476,7 @@ class _BerandaPageState extends State<BerandaPage> {
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFF00BCD4).withOpacity(0.3),
+                                color: const Color(0xFF00BCD4).withValues(alpha: 0.3),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
                               ),
@@ -526,7 +525,7 @@ class _BerandaPageState extends State<BerandaPage> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: const Color(0xFFFF5252).withOpacity(0.1),
+            color: const Color(0xFFFF5252).withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(6),
           ),
           child: const Text(
@@ -550,7 +549,7 @@ class _BerandaPageState extends State<BerandaPage> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -598,7 +597,7 @@ class _BerandaPageState extends State<BerandaPage> {
                                   decoration: BoxDecoration(
                                     color: const Color(
                                       0xFFFF5252,
-                                    ).withOpacity(0.2),
+                                    ).withValues(alpha: 0.2),
                                     shape: BoxShape.circle,
                                   ),
                                 ),
@@ -608,7 +607,7 @@ class _BerandaPageState extends State<BerandaPage> {
                                   decoration: BoxDecoration(
                                     color: const Color(
                                       0xFFFF5252,
-                                    ).withOpacity(0.5),
+                                    ).withValues(alpha: 0.5),
                                     shape: BoxShape.circle,
                                   ),
                                 ),
@@ -638,7 +637,7 @@ class _BerandaPageState extends State<BerandaPage> {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.6),
+                    color: Colors.black.withValues(alpha: 0.6),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: const Text(
@@ -733,7 +732,7 @@ class _BerandaPageState extends State<BerandaPage> {
                   children: [
                     Expanded(child: _buildDetailRow('KEDALAMAN', _isLoadingQuake ? '...' : (_latestQuake?.kedalaman ?? ' 37 Km'))),
                     const SizedBox(width: 16),
-                    Expanded(child: _buildDetailRow('WAKTU', _isLoadingQuake ? '...' : ('${_latestQuake?.jam ?? '02:23 WIB'}'))),
+                    Expanded(child: _buildDetailRow('WAKTU', _isLoadingQuake ? '...' : (_latestQuake?.jam ?? '02:23 WIB'))),
                   ],
                 ),
                 const SizedBox(height: 20),
@@ -821,7 +820,7 @@ class _BerandaPageState extends State<BerandaPage> {
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.08),
+                color: Colors.black.withValues(alpha: 0.08),
                 blurRadius: 20,
                 offset: const Offset(0, 4),
               ),
@@ -962,7 +961,7 @@ class _BerandaPageState extends State<BerandaPage> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -1161,7 +1160,7 @@ class _BerandaPageState extends State<BerandaPage> {
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -1247,7 +1246,7 @@ class _BerandaPageState extends State<BerandaPage> {
                               width: 36,
                               height: 36,
                               decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.4),
+                                color: Colors.black.withValues(alpha: 0.4),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: _isLoadingCuaca 
@@ -1324,7 +1323,7 @@ class _BerandaPageState extends State<BerandaPage> {
         margin: const EdgeInsets.symmetric(horizontal: 4),
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.8),
+          color: Colors.white.withValues(alpha: 0.8),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
@@ -1364,7 +1363,7 @@ class _BerandaPageState extends State<BerandaPage> {
         border: Border.all(color: hasWarning ? const Color(0xFFFFB74D) : const Color(0xFF81C784), width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -1511,7 +1510,7 @@ class _BerandaPageState extends State<BerandaPage> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withValues(alpha: 0.08),
               blurRadius: 20,
               offset: const Offset(0, 4),
             ),
@@ -1561,7 +1560,7 @@ class _BerandaPageState extends State<BerandaPage> {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF0284C7).withOpacity(0.9),
+                        color: const Color(0xFF0284C7).withValues(alpha: 0.9),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
