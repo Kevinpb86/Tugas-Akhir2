@@ -48,8 +48,9 @@ Lebih tanggap dan siap untuk menyelamatkan diri, fasilitas penunjang edukasi mer
 
 🧠 **5. Klasifikasi Tingkat Kerentanan Seismik (Model Machine Learning)**
 Fitur *eksklusif* pengembangan Tugas Akhir:
-- Implementasi *(mockup)* fitur klasifikasi berbasis **Support Vector Machine (SVM)** untuk memetakan zonasi risiko gempa secara otomatis (menggantikan *Fitur 2* awal).
-- Sistem memprediksi skor risko dengan tingkatan: **Rendah**, **Sedang**, dan **Tinggi**.
+- **Integrasi Penuh Machine Learning**: Fitur klasifikasi berbasis **Support Vector Machine (SVM)** yang *real-time* terhubung ke backend Python untuk memetakan zonasi risiko gempa secara otomatis.
+- **Dual Model Inference**: Pengguna dapat memilih sumber data prediksi dari model yang dilatih menggunakan dataset **BMKG (Lokal)** atau **USGS (Global)**.
+- Sistem memprediksi skor risiko dengan tingkatan: **Rendah**, **Sedang**, dan **Tinggi** dengan pra-pemrosesan Normalisasi Min-Max.
 - Pengolahan berbasis *input parameter gempa kunci* (Magnitudo, Kedalaman, Lintang, Bujur Episenter).
 - Turut serta dibekali utilitas **Hitung Dampak Guncangan Gempa** berbekal algoritma parameter pendukung *rule-based*.
 
@@ -63,8 +64,8 @@ Fitur *eksklusif* pengembangan Tugas Akhir:
 
 Proyek ini dibangun menggunakan landasan modern pada pengembangan *mobile cross-platform* :
 
-- **Framework:** [Flutter](https://flutter.dev/) 
-- **Bahasa Pemrograman:** [Dart](https://dart.dev/)
+- **Frontend Framework:** [Flutter](https://flutter.dev/) (Dart)
+- **Backend API & ML Engine:** [FastAPI](https://fastapi.tiangolo.com/) (Python) dengan Scikit-Learn (Support Vector Machine) dan Joblib.
 - **Paradigma Antarmuka UI/UX:** *Material Design & Custom Styling* bertemakan minimalis-futuristik. Dilengkapi bayangan (*Drop & Inner Shadows*), mikro-interaksi responsif, dan efek grafikal bergradien yang elok.
 - **Dependencies Kunci:** Pemanggilan Webview & Modul rendering Peta / API.
 - **Sistem *Development & Version Control*:** Lingkungan terkendali penuh dengan *Git* dan pelacakan dari *GitHub*.
@@ -90,7 +91,15 @@ Ingin mencoba meng-compile dan meng-run antarmuka *Amanin* memukau ini di emulat
    flutter pub get
    ```
 
-4. **Kompilasi dan Pengoperasian:**
+4. **Menjalankan Backend Machine Learning (Wajib untuk fitur Klasifikasi):**
+   Buka terminal baru, masuk ke folder backend dan jalankan server FastAPI:
+   ```bash
+   cd Tugas-Akhir2/amanin/backend
+   pip install -r requirements.txt
+   python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+   ```
+
+5. **Kompilasi dan Pengoperasian Aplikasi Flutter:**
    Pastikan emulator atau perangkat USB Mode *Debugging* Anda sudah tercantol sukses.
    ```bash
    flutter run
