@@ -119,7 +119,7 @@ class VideoEdukasiPage extends StatelessWidget {
                       child: Container(
                         height: 2,
                         width: double.infinity,
-                        color: Colors.white.withOpacity(0.3),
+                        color: Colors.white.withValues(alpha: 0.3),
                         alignment: Alignment.centerLeft,
                         child: Container(
                           height: 2,
