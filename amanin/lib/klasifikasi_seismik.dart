@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'services/ml_service.dart';
 
 class KlasifikasiSeismikPage extends StatefulWidget {
   const KlasifikasiSeismikPage({super.key});
@@ -17,6 +18,8 @@ class _KlasifikasiSeismikPageState extends State<KlasifikasiSeismikPage> {
   String? _hasilKlasifikasi;
   Color _warnaKlasifikasi = Colors.grey;
   String _deskripsiKlasifikasi = '';
+  bool _isLoading = false;
+  String _selectedSource = 'bmkg';
 
   @override
   void dispose() {
@@ -27,54 +30,69 @@ class _KlasifikasiSeismikPageState extends State<KlasifikasiSeismikPage> {
     super.dispose();
   }
 
-  void _hitungKlasifikasi() {
+  Future<void> _hitungKlasifikasi() async {
     if (_formKey.currentState!.validate()) {
       FocusScope.of(context).unfocus();
 
-      double magnitudo = double.parse(
-        _magnitudoController.text.replaceAll(',', '.'),
-      );
-      double kedalaman = double.parse(
-        _kedalamanController.text.replaceAll(',', '.'),
-      );
-
-      // Simulasi Model Support Vector Machine (SVM)
-      // Pada implementasi sebenarnya, input (magnitudo, kedalaman, lokasi)
-      // akan diforward ke model machine learning / API Python.
-      // Untuk versi demo, kita gunakan rule-based sederhana mendekati SVM.
-      
-      double skorSVM = 0;
-      
-      // Bobot magnitudo
-      if (magnitudo >= 6.5) {
-        skorSVM += 50;
-      } else if (magnitudo >= 5.0) skorSVM += 30;
-      else skorSVM += 10;
-      
-      // Bobot kedalaman (semakin dangkal, semakin berbahaya)
-      if (kedalaman <= 30) {
-        skorSVM += 40;
-      } else if (kedalaman <= 70) skorSVM += 20;
-      else skorSVM += 5;
-
       setState(() {
-        if (skorSVM >= 80) {
-          _hasilKlasifikasi = 'Tinggi';
-          _warnaKlasifikasi = Colors.red;
-          _deskripsiKlasifikasi =
-              'Kerentanan seismik tinggi. Sangat berpotensi menimbulkan kerusakan struktural bangunan dan membahayakan keselamatan.';
-        } else if (skorSVM >= 50) {
-          _hasilKlasifikasi = 'Sedang';
-          _warnaKlasifikasi = Colors.orange;
-          _deskripsiKlasifikasi =
-              'Kerentanan seismik sedang. Berpotensi menimbulkan kerusakan ringan hingga sedang pada bangunan.';
-        } else {
-          _hasilKlasifikasi = 'Rendah';
-          _warnaKlasifikasi = Colors.green;
-          _deskripsiKlasifikasi =
-              'Kerentanan seismik rendah. Guncangan umumnya tidak menimbulkan kerusakan yang signifikan.';
-        }
+        _isLoading = true;
       });
+
+      try {
+        double magnitudo = double.parse(
+          _magnitudoController.text.replaceAll(',', '.'),
+        );
+        double kedalaman = double.parse(
+          _kedalamanController.text.replaceAll(',', '.'),
+        );
+        double lintang = double.parse(
+          _lintangController.text.replaceAll(',', '.'),
+        );
+        double bujur = double.parse(
+          _bujurController.text.replaceAll(',', '.'),
+        );
+
+        // Panggil Model Machine Learning via Backend API
+        final hasil = await MlService.predictRisk(
+          magnitude: magnitudo,
+          depth: kedalaman,
+          latitude: lintang,
+          longitude: bujur,
+          source: _selectedSource,
+        );
+
+        setState(() {
+          _hasilKlasifikasi = hasil.riskLevel;
+          
+          if (hasil.riskLevel == 'Tinggi' || hasil.predictionCode == 2) {
+            _warnaKlasifikasi = Colors.red;
+            _deskripsiKlasifikasi =
+                'Kerentanan seismik tinggi. Sangat berpotensi menimbulkan kerusakan struktural bangunan dan membahayakan keselamatan.';
+          } else if (hasil.riskLevel == 'Sedang' || hasil.predictionCode == 1) {
+            _warnaKlasifikasi = Colors.orange;
+            _deskripsiKlasifikasi =
+                'Kerentanan seismik sedang. Berpotensi menimbulkan kerusakan ringan hingga sedang pada bangunan.';
+          } else {
+            _warnaKlasifikasi = Colors.green;
+            _deskripsiKlasifikasi =
+                'Kerentanan seismik rendah. Guncangan umumnya tidak menimbulkan kerusakan yang signifikan.';
+          }
+        });
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: Colors.red,
+          ),
+        );
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      }
     }
   }
 
@@ -164,6 +182,44 @@ class _KlasifikasiSeismikPageState extends State<KlasifikasiSeismikPage> {
                           fontWeight: FontWeight.bold,
                           color: Color(0xFF1A1A1A),
                         ),
+                      ),
+                      const SizedBox(height: 16),
+                      DropdownButtonFormField<String>(
+                        value: _selectedSource,
+                        isExpanded: true,
+                        decoration: InputDecoration(
+                          labelText: 'Sumber Data Model',
+                          prefixIcon: const Icon(
+                            Icons.source,
+                            color: Color(0xFF7E57C2),
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        items: const [
+                          DropdownMenuItem(
+                            value: 'bmkg',
+                            child: Text(
+                              'BMKG (Lokal - 99.7%)',
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          DropdownMenuItem(
+                            value: 'usgs',
+                            child: Text(
+                              'USGS (Global - 96.1%)',
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                        onChanged: (value) {
+                          if (value != null) {
+                            setState(() {
+                              _selectedSource = value;
+                            });
+                          }
+                        },
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
@@ -276,14 +332,23 @@ class _KlasifikasiSeismikPageState extends State<KlasifikasiSeismikPage> {
                         width: double.infinity,
                         height: 50,
                         child: ElevatedButton(
-                          onPressed: _hitungKlasifikasi,
+                          onPressed: _isLoading ? null : _hitungKlasifikasi,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF1E88E5),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          child: const Text(
+                          child: _isLoading 
+                            ? const SizedBox(
+                                height: 24,
+                                width: 24,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Text(
                             'Klasifikasikan (SVM)',
                             style: TextStyle(
                               fontSize: 16,
