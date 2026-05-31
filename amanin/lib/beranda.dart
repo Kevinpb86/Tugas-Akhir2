@@ -151,7 +151,7 @@ class _BerandaPageState extends State<BerandaPage> {
 
                 // Fitur Section (Di Bawah)
                 _buildFiturTambahanSection(),
-                const SizedBox(height: 100), // padding for floating bottom nav
+                const SizedBox(height: 140), // padding for floating bottom nav
               ],
             ),
           ),

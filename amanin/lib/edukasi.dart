@@ -4,6 +4,7 @@ import 'login.dart';
 import 'main.dart';
 import 'asuransi.dart';
 import 'video_edukasi.dart';
+import 'mitigasi_gempa.dart';
 
 class EdukasiPage extends StatelessWidget {
   const EdukasiPage({super.key});
@@ -296,27 +297,36 @@ class EdukasiPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: () {},
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: const Color(0xFF1E88E5),
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: const [
-                Text(
-                  'Mulai Belajar',
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+          Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const MitigasiGempaPage(),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: const Color(0xFF1E88E5),
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                SizedBox(width: 4),
-                Icon(Icons.arrow_forward, size: 14),
-              ],
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Text(
+                    'Mulai Belajar',
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(width: 4),
+                  Icon(Icons.arrow_forward, size: 14),
+                ],
+              ),
             ),
           ),
         ],
