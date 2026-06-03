@@ -22,7 +22,8 @@ db_config = {
     "host": "localhost",
     "user": "root",
     "password": "", # Default XAMPP kosong
-    "database": "db_amanin"
+    "database": "db_amanin",
+    "port": 3308
 }
 
 # Setup Password Hashing
@@ -141,6 +142,7 @@ async def login(user: UserLogin):
 async def health_check():
     return {
         "status": "ok", 
+        "model_loaded": (ml_models["bmkg"] is not None) or (ml_models["usgs"] is not None),
         "bmkg_model_loaded": ml_models["bmkg"] is not None,
         "usgs_model_loaded": ml_models["usgs"] is not None
     }

@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'register.dart'; // For navigation to register
 import 'main.dart'; // For isLoggedInNotifier
+import 'services/api_config.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -191,7 +192,7 @@ class _LoginPageState extends State<LoginPage> {
 
                     try {
                       final response = await http.post(
-                        Uri.parse('http://10.0.2.2:8000/login'),
+                        Uri.parse('${ApiConfig.baseUrl}/login'),
                         headers: {'Content-Type': 'application/json'},
                         body: jsonEncode({
                           'email': _emailController.text,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'login.dart'; // For navigation to login
+import 'services/api_config.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -254,7 +255,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                     try {
                       final response = await http.post(
-                        Uri.parse('http://10.0.2.2:8000/register'), // 10.0.2.2 untuk emulator android ke localhost
+                        Uri.parse('${ApiConfig.baseUrl}/register'),
                         headers: {'Content-Type': 'application/json'},
                         body: jsonEncode({
                           'full_name': _nameController.text,
