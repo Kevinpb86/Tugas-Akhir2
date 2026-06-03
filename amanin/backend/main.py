@@ -194,10 +194,21 @@ async def predict_risk(data: EarthquakeData):
         else:
             risk_label = "Rendah"
             
+        # Hitung decision function dan softmax untuk confidence score dinamis
+        try:
+            decision_scores = selected_model.decision_function(features_scaled)[0]
+            exp_scores = np.exp(decision_scores)
+            probabilities = exp_scores / np.sum(exp_scores)
+            class_idx = np.where(selected_model.classes_ == pred_value)[0][0]
+            confidence_val = round(float(probabilities[class_idx]), 4)
+        except Exception as e:
+            print(f"Error calculating confidence score: {e}")
+            confidence_val = 1.0
+            
         return {
             "risk_level": risk_label,
             "prediction_code": pred_value,
-            "confidence": 1.0 # SVM standard di scikit-learn biasanya butuh probability=True untuk confidence
+            "confidence": confidence_val
         }
         
     except Exception as e:
