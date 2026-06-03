@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'api_config.dart';
 
 class MLPredictionModel {
   final String riskLevel;
@@ -22,9 +23,7 @@ class MLPredictionModel {
 }
 
 class MlService {
-  // Gunakan 10.0.2.2 untuk mengakses localhost dari emulator Android.
-  // Jika menggunakan device fisik, ganti dengan IP address laptop (misal: 192.168.1.10)
-  static const String _baseUrl = 'http://10.0.2.2:8000';
+  static const String _baseUrl = ApiConfig.baseUrl;
 
   static Future<bool> checkHealth() async {
     try {
