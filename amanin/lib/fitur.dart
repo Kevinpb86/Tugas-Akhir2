@@ -60,8 +60,8 @@ class FiturPage extends StatelessWidget {
           _buildFeatureCard(
             context,
             icon: Icons.medical_services_outlined,
-            title: 'Fitur 3',
-            description: 'Deskripsi untuk Fitur 3.',
+            title: 'Deteksi Anomali Gempa',
+            description: 'Deteksi pola anomali seismik secara otomatis sebagai indikator awal aktivitas gempa.',
             color: const Color(0xFF66BB6A),
           ),
           const SizedBox(height: 16),
@@ -91,7 +91,7 @@ class FiturPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 15,
             offset: const Offset(0, 4),
           ),
@@ -115,7 +115,7 @@ class FiturPage extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
+                    color: color.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(icon, color: color, size: 32),
@@ -148,7 +148,7 @@ class FiturPage extends StatelessWidget {
                 const SizedBox(width: 12),
                 Icon(
                   Icons.arrow_forward_ios,
-                  color: const Color(0xFF9E9E9E).withOpacity(0.5),
+                  color: const Color(0xFF9E9E9E).withValues(alpha: 0.5),
                   size: 16,
                 ),
               ],

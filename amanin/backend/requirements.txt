@@ -3,5 +3,8 @@ uvicorn[standard]
 mysql-connector-python
 passlib[bcrypt]
 python-multipart
+scikit-learn
+joblib
+email-validator
 google-auth
 requests

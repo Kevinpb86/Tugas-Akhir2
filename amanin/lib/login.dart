@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'register.dart'; // For navigation to register
 import 'main.dart'; // For isLoggedInNotifier
+import 'services/api_config.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 
@@ -381,6 +382,29 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               ),
+
+              const SizedBox(height: 32),
+
+              // Login Button
+              SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (context) => const Center(child: CircularProgressIndicator()),
+                    );
+
+                    try {
+                      final response = await http.post(
+                        Uri.parse('${ApiConfig.baseUrl}/login'),
+                        headers: {'Content-Type': 'application/json'},
+                        body: jsonEncode({
+                          'email': _emailController.text,
+                          'password': _passwordController.text,
+                        }),
             ],
           ),
           actions: [

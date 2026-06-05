@@ -32,6 +32,23 @@ class _AkunPageState extends State<AkunPage> {
     );
   }
 
+  Widget _buildProfileHeader() {
+    return Column(
+      children: [
+        Stack(
+          children: [
+            Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.grey[200],
+                // image removed to fallback to Icons.person
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
   Widget _buildProfileHeader(BuildContext context) {
     return Container(
       width: double.infinity,

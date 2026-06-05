@@ -135,7 +135,7 @@ class _HitungDampakGempaPageState extends State<HitungDampakGempaPage> {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 15,
                       offset: const Offset(0, 4),
                     ),
@@ -256,7 +256,7 @@ class _HitungDampakGempaPageState extends State<HitungDampakGempaPage> {
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: _warnaDampak.withOpacity(0.1),
+                    color: _warnaDampak.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: _warnaDampak, width: 2),
                   ),

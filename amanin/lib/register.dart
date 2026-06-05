@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'login.dart'; // For navigation to login
+import 'services/api_config.dart';
 import 'main.dart'; // For isLoggedInNotifier
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
@@ -362,6 +363,16 @@ class _RegisterPageState extends State<RegisterPage> {
       return;
     }
 
+                    try {
+                      final response = await http.post(
+                        Uri.parse('${ApiConfig.baseUrl}/register'),
+                        headers: {'Content-Type': 'application/json'},
+                        body: jsonEncode({
+                          'full_name': _nameController.text,
+                          'email': _emailController.text,
+                          'password': _passwordController.text,
+                        }),
+                      );
     showDialog(
       context: context,
       barrierDismissible: false,

@@ -35,6 +35,7 @@ class MyApp extends StatelessWidget {
       valueListenable: localeNotifier,
       builder: (context, locale, child) {
         return MaterialApp(
+          scrollBehavior: const ScrollBehavior().copyWith(overscroll: false),
           title: 'Amanin - Earthquake Monitoring',
           debugShowCheckedModeBanner: false,
           theme: ThemeData(
