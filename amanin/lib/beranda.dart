@@ -604,8 +604,6 @@ class _BerandaPageState extends State<BerandaPage> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: const Color(0xFFFF5252).withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(6),
             color: alertColor.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
@@ -715,10 +713,7 @@ class _BerandaPageState extends State<BerandaPage> {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
-            color: const Color(0xFF092C4C).withOpacity(0.06), // Subtle BMKG blue shadow
+            color: const Color(0xFF092C4C).withValues(alpha: 0.06), // Subtle BMKG blue shadow
             blurRadius: 24,
             offset: const Offset(0, 8),
           ),
@@ -794,10 +789,6 @@ class _BerandaPageState extends State<BerandaPage> {
                         ],
                       ),
                     ],
-                  child: EarthquakeMap(
-                    coordinates: _latestQuake?.coordinates ?? '',
-                    initialZoom: 8.0,
-                    interactive: false,
                   ),
                 ),
               ),
@@ -810,13 +801,11 @@ class _BerandaPageState extends State<BerandaPage> {
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.6),
-                    borderRadius: BorderRadius.circular(6),
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -892,26 +881,26 @@ class _BerandaPageState extends State<BerandaPage> {
                       }
                     },
                     child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 10,
-                        )
-                      ],
-                    ),
-                    child: const Icon(
-                      Icons.open_in_full_rounded,
-                      size: 16,
-                      color: Color(0xFF1E293B),
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.1),
+                            blurRadius: 10,
+                          )
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.open_in_full_rounded,
+                        size: 16,
+                        color: Color(0xFF1E293B),
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
             ],
           ),
           Padding(
@@ -928,24 +917,8 @@ class _BerandaPageState extends State<BerandaPage> {
                   ],
                 ),
                 const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => GempaDetailPage(gempa: _latestQuake),
-                        ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0F172A),
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                Row(
+                  children: [
                     Expanded(
                       child: _buildInfoBox(
                         _isLoadingQuake
@@ -1003,6 +976,32 @@ class _BerandaPageState extends State<BerandaPage> {
                       : (_latestQuake?.wilayah ?? '...'),
                   null,
                   const Color(0xFFFF9800),
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      if (_latestQuake != null) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => GempaDetailPage(gempa: _latestQuake),
+                          ),
+                        );
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF0F172A),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text('Lihat Detail', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
                 ),
 
               ],
@@ -1122,7 +1121,10 @@ class _BerandaPageState extends State<BerandaPage> {
                 color: Colors.black.withValues(alpha: 0.08),
                 blurRadius: 20,
                 offset: const Offset(0, 4),
-        SingleChildScrollView(
+              ),
+            ],
+          ),
+          child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           physics: const BouncingScrollPhysics(),
           clipBehavior: Clip.none,
@@ -1180,6 +1182,7 @@ class _BerandaPageState extends State<BerandaPage> {
               ),
             ],
           ),
+        ),
         ),
       ],
     );

@@ -385,26 +385,7 @@ class _LoginPageState extends State<LoginPage> {
 
               const SizedBox(height: 32),
 
-              // Login Button
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: ElevatedButton(
-                  onPressed: () async {
-                    showDialog(
-                      context: context,
-                      barrierDismissible: false,
-                      builder: (context) => const Center(child: CircularProgressIndicator()),
-                    );
 
-                    try {
-                      final response = await http.post(
-                        Uri.parse('${ApiConfig.baseUrl}/login'),
-                        headers: {'Content-Type': 'application/json'},
-                        body: jsonEncode({
-                          'email': _emailController.text,
-                          'password': _passwordController.text,
-                        }),
             ],
           ),
           actions: [
@@ -478,7 +459,7 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:8000/login'),
+        Uri.parse('${ApiConfig.baseUrl}/login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'email': _emailController.text,

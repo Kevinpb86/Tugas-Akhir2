@@ -363,16 +363,7 @@ class _RegisterPageState extends State<RegisterPage> {
       return;
     }
 
-                    try {
-                      final response = await http.post(
-                        Uri.parse('${ApiConfig.baseUrl}/register'),
-                        headers: {'Content-Type': 'application/json'},
-                        body: jsonEncode({
-                          'full_name': _nameController.text,
-                          'email': _emailController.text,
-                          'password': _passwordController.text,
-                        }),
-                      );
+
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -381,7 +372,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:8000/register'),
+        Uri.parse('${ApiConfig.baseUrl}/register'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'name': _nameController.text,
