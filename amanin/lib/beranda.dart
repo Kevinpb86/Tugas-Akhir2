@@ -16,6 +16,11 @@ import 'services/bmkg_service.dart';
 import 'services/news_service.dart';
 import 'isi_berita.dart';
 import 'package:intl/intl.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:share_plus/share_plus.dart';
 
 class BerandaPage extends StatefulWidget {
   final VoidCallback? onNavigateToCuaca;
@@ -37,12 +42,70 @@ class _BerandaPageState extends State<BerandaPage> {
   List<NewsModel> _newsList = [];
   bool _isLoadingNews = true;
 
+  String _currentCityName = 'Jakarta Pusat';
+
   @override
   void initState() {
     super.initState();
+    _requestLocationPermission();
     _fetchEarthquakeData();
     _fetchWeatherData();
     _fetchNewsData();
+  }
+
+  Future<void> _requestLocationPermission() async {
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) return;
+      
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) return;
+      }
+      
+      if (permission == LocationPermission.deniedForever) return;
+      
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.medium,
+      );
+      
+      String cityName = 'Jakarta Pusat';
+      try {
+        List<Placemark> placemarks = await placemarkFromCoordinates(
+          position.latitude,
+          position.longitude,
+        );
+        if (placemarks.isNotEmpty) {
+          Placemark place = placemarks[0];
+          cityName = place.subAdministrativeArea ?? place.locality ?? 'Jakarta Pusat';
+          cityName = cityName.replaceAll('Kabupaten ', '').replaceAll('Kota ', '');
+        }
+      } catch (e) {
+        // Fallback for Web using OpenStreetMap Nominatim API
+        try {
+          final url = Uri.parse('https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.latitude}&lon=${position.longitude}');
+          final response = await http.get(url, headers: {'User-Agent': 'AmaninApp/1.0'});
+          if (response.statusCode == 200) {
+            final data = json.decode(response.body);
+            if (data['address'] != null) {
+              cityName = data['address']['city'] ?? data['address']['town'] ?? data['address']['county'] ?? data['address']['state'] ?? 'Jakarta Pusat';
+              cityName = cityName.replaceAll('Kabupaten ', '').replaceAll('Kota ', '');
+            }
+          }
+        } catch (fallbackError) {
+          print("Nominatim fallback error: $fallbackError");
+        }
+      }
+      
+      if (mounted) {
+        setState(() {
+          _currentCityName = cityName;
+        });
+      }
+    } catch (e) {
+      print("Location permission error: $e");
+    }
   }
 
   Future<void> _fetchEarthquakeData() async {
@@ -359,23 +422,31 @@ class _BerandaPageState extends State<BerandaPage> {
               ),
             ),
             const SizedBox(height: 4),
-            Row(
-              children: [
-                const Icon(
-                  Icons.location_on,
-                  color: Color(0xFF00BCD4),
-                  size: 16,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  Localization.of(context).get('home_location'),
-                  style: const TextStyle(
-                    fontSize: 14,
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE0F7FA), // Light cyan
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.location_on,
                     color: Color(0xFF00BCD4),
-                    fontWeight: FontWeight.w500,
+                    size: 14,
                   ),
-                ),
-              ],
+                  const SizedBox(width: 4),
+                  Text(
+                    _currentCityName,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF00BCD4),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -505,13 +576,18 @@ class _BerandaPageState extends State<BerandaPage> {
   }
 
   Widget _buildEarthquakeStatus() {
+    final double magValue = double.tryParse(_latestQuake?.magnitude ?? '') ?? 0.0;
+    final bool isSignificant = magValue >= 5.0;
+    final Color alertColor = isSignificant ? const Color(0xFFD32F2F) : const Color(0xFF0088CC);
+    final String alertLabel = isSignificant ? 'MAJOR ALERT' : 'INFO GEMPA';
+
     return Row(
       children: [
         Container(
           width: 8,
           height: 8,
-          decoration: const BoxDecoration(
-            color: Color(0xFFFF5252),
+          decoration: BoxDecoration(
+            color: alertColor,
             shape: BoxShape.circle,
           ),
         ),
@@ -520,23 +596,27 @@ class _BerandaPageState extends State<BerandaPage> {
           Localization.of(context).get('home_quake_status_danger'),
           style: const TextStyle(
             fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF1A1A1A),
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF1E293B),
           ),
         ),
         const Spacer(),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: const Color(0xFFFF5252).withOpacity(0.1),
-            borderRadius: BorderRadius.circular(6),
+            color: alertColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: alertColor.withOpacity(0.2),
+              width: 1,
+            ),
           ),
-          child: const Text(
-            'MAJOR ALERT',
+          child: Text(
+            alertLabel,
             style: TextStyle(
-              fontSize: 11,
+              fontSize: 10,
               fontWeight: FontWeight.bold,
-              color: Color(0xFFFF5252),
+              color: alertColor,
               letterSpacing: 0.5,
             ),
           ),
@@ -545,16 +625,97 @@ class _BerandaPageState extends State<BerandaPage> {
     );
   }
 
+  Widget _buildPremiumDetailTile({
+    required IconData icon,
+    required String label,
+    required String value,
+    required Color iconColor,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC), // Slate 50
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFF1F5F9), width: 1), // Slate 100
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: iconColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: iconColor, size: 18),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF94A3B8), // Slate 400
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF1E293B), // Slate 800
+                    height: 1.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildEarthquakeCard() {
+    final double magValue = double.tryParse(_latestQuake?.magnitude ?? '') ?? 0.0;
+    
+    // Determine color coding based on magnitude following standard BMKG style
+    Color magColor;
+    Color magBgColor;
+    IconData alertIcon;
+    
+    if (magValue >= 6.0) {
+      magColor = const Color(0xFFD32F2F); // Red
+      magBgColor = const Color(0xFFFFEBEE);
+      alertIcon = Icons.warning_rounded;
+    } else if (magValue >= 5.0) {
+      magColor = const Color(0xFFE65100); // Orange
+      magBgColor = const Color(0xFFFFF3E0);
+      alertIcon = Icons.error_outline_rounded;
+    } else {
+      magColor = const Color(0xFF092C4C); // Deep BMKG Blue
+      magBgColor = const Color(0xFFE0F2FE);
+      alertIcon = Icons.info_outline_rounded;
+    }
+
+    final bool isTsunami = _latestQuake?.potensi.toLowerCase().contains('potensi tsunami') ?? false;
+    final Color potensiColor = isTsunami ? const Color(0xFFD32F2F) : const Color(0xFF2E7D32);
+    final Color potensiBgColor = isTsunami ? const Color(0xFFFFEBEE) : const Color(0xFFE8F5E9);
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
+            color: const Color(0xFF092C4C).withOpacity(0.06), // Subtle BMKG blue shadow
+            blurRadius: 24,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -564,8 +725,8 @@ class _BerandaPageState extends State<BerandaPage> {
             children: [
               ClipRRect(
                 borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  topRight: Radius.circular(20),
+                  topLeft: Radius.circular(24),
+                  topRight: Radius.circular(24),
                 ),
                 child: SizedBox(
                   height: 200,
@@ -582,20 +743,69 @@ class _BerandaPageState extends State<BerandaPage> {
                 left: 12,
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
+                    horizontal: 12,
+                    vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.6),
-                    borderRadius: BorderRadius.circular(6),
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
-                  child: const Text(
-                    'LIVE TRACKING',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      Icon(
+                        Icons.map_outlined,
+                        color: Color(0xFF3949AB),
+                        size: 16,
+                      ),
+                      SizedBox(width: 6),
+                      Text(
+                        'Peta Guncangan',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF3949AB),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 12,
+                right: 12,
+                child: InkWell(
+                  onTap: () {
+                    if (_latestQuake != null) {
+                      final gempa = _latestQuake!;
+                      final String shareText = 'Info Gempa dirasakan Mag:${gempa.magnitude}, ${gempa.tanggal} ${gempa.jam.replaceAll(' WIB', '')} WIB, Lok:${gempa.lintang}, ${gempa.bujur} (${gempa.wilayah}), Kedlmn:${gempa.kedalaman} ::AMANIN\nInformasi selengkapnya lihat di\nhttps://amanin.app/';
+                      Share.share(shareText);
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
                       color: Colors.white,
-                      letterSpacing: 0.5,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.share_outlined,
+                      color: Color(0xFF424242),
+                      size: 18,
                     ),
                   ),
                 ),
@@ -603,18 +813,20 @@ class _BerandaPageState extends State<BerandaPage> {
               Positioned(
                 bottom: 12,
                 right: 12,
-                child: GestureDetector(
-                  onTap: () {
-                    if (_latestQuake != null) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => FullscreenMapPage(gempa: _latestQuake!),
-                        ),
-                      );
-                    }
-                  },
-                  child: Container(
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: GestureDetector(
+                    onTap: () {
+                      if (_latestQuake != null) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => FullscreenMapPage(gempa: _latestQuake!),
+                          ),
+                        );
+                      }
+                    },
+                    child: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -629,138 +841,153 @@ class _BerandaPageState extends State<BerandaPage> {
                     child: const Icon(
                       Icons.open_in_full_rounded,
                       size: 16,
-                      color: Color(0xFF1A1A1A),
+                      color: Color(0xFF1E293B),
                     ),
                   ),
                 ),
               ),
+            ),
             ],
-          ),
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: const BoxDecoration(
-              border: Border(
-                bottom: BorderSide(color: Color(0xFFF0F0F0), width: 1),
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'MAGNITUDO',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF9E9E9E),
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    _isLoadingQuake 
-                        ? const CircularProgressIndicator() 
-                        : RichText(
-                            text: TextSpan(
-                              children: [
-                                TextSpan(
-                                  text: _latestQuake?.magnitude ?? '4.3',
-                                  style: const TextStyle(
-                                    fontSize: 40,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF1A1A1A),
-                                    height: 1.2,
-                                  ),
-                                ),
-                                const TextSpan(
-                                  text: ' SR',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: Color(0xFF9E9E9E),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                  ],
-                ),
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFEAEA),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(
-                    Icons.waves,
-                    color: Color(0xFFFF5252),
-                    size: 30,
-                  ),
-                ),
-              ],
-            ),
           ),
           Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildDetailRow(
-                  'LOKASI PUSAT',
-                  _isLoadingQuake ? 'Memuat data...' : (_latestQuake?.wilayah ?? '81 Km Barat Daya Kuta Selatan'),
-                ),
-                const SizedBox(height: 16),
+
                 Row(
                   children: [
-                    Expanded(child: _buildDetailRow('KEDALAMAN', _isLoadingQuake ? '...' : (_latestQuake?.kedalaman ?? ' 37 Km'))),
-                    const SizedBox(width: 16),
-                    Expanded(child: _buildDetailRow('WAKTU', _isLoadingQuake ? '...' : (_latestQuake?.jam ?? '02:23 WIB'))),
+                    Expanded(
+                      child: _buildInfoBox(
+                        _isLoadingQuake
+                            ? '...'
+                            : (_latestQuake?.magnitude ?? '4.0'),
+                        'Magnitudo',
+                        const Color(0xFFF44336),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildInfoBox(
+                        _isLoadingQuake
+                            ? '...'
+                            : (_latestQuake?.kedalaman ?? '10 Km'),
+                        'Kedalaman',
+                        const Color(0xFF4CAF50),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildInfoBox(
+                        _isLoadingQuake
+                            ? '...'
+                            : (_latestQuake?.lintang ?? '1.54 LU'),
+                        'Lokasi',
+                        const Color(0xFF2196F3),
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => GempaDetailPage(gempa: _latestQuake),
-                        ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0F172A),
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Text(
-                          'DETAIL LENGKAP',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                        SizedBox(width: 8),
-                        Icon(Icons.arrow_forward, size: 16),
-                      ],
-                    ),
-                  ),
+                _buildQuakeDetailRow(
+                  Icons.access_time,
+                  _isLoadingQuake
+                      ? 'Memuat data...'
+                      : '${_latestQuake?.tanggal ?? ''}, ${_latestQuake?.jam ?? ''}',
+                  'Waktu Gempa',
+                  const Color(0xFFFF9800),
                 ),
+                if (_latestQuake?.dirasakan.isNotEmpty == true && _latestQuake!.dirasakan != '-') ...[
+                  const SizedBox(height: 16),
+                  _buildQuakeDetailRow(
+                    Icons.track_changes,
+                    _latestQuake!.dirasakan,
+                    'Wilayah Dirasakan (MMI)',
+                    const Color(0xFFFF5722),
+                  ),
+                ],
+                const SizedBox(height: 16),
+                _buildQuakeDetailRow(
+                  Icons.location_on,
+                  _isLoadingQuake
+                      ? 'Memuat data...'
+                      : (_latestQuake?.wilayah ?? '...'),
+                  null,
+                  const Color(0xFFFF9800),
+                ),
+
               ],
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildInfoBox(String value, String label, Color valueColor) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8F9FA),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        children: [
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: valueColor,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 10, color: Color(0xFF757575)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuakeDetailRow(
+    IconData icon,
+    String text,
+    String? subtext,
+    Color iconColor,
+  ) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, color: iconColor, size: 18),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                text,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF1A1A1A),
+                ),
+              ),
+              if (subtext != null) ...[
+                const SizedBox(height: 4),
+                Text(
+                  subtext,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: Color(0xFF757575),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -796,143 +1023,220 @@ class _BerandaPageState extends State<BerandaPage> {
           ],
         ),
         const SizedBox(height: 16),
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: 20,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
+          clipBehavior: Clip.none,
           child: Row(
             children: [
-              Stack(
-                children: [
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE8F5E9),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.backpack,
-                      color: Color(0xFF4CAF50),
-                      size: 40,
-                    ),
-                  ),
-                  Positioned(
-                    top: 8,
-                    left: 8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFF5252),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: const Text(
-                        '30%',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+              _buildSurvivalItemCard(
+                title: 'Tas Siaga 72 Jam',
+                desc: 'Paket survival kit lengkap untuk 3 hari darurat. Tas anti-air & senter',
+                oldPrice: 'Rp 650.000',
+                newPrice: 'Rp 455.000',
+                discount: '30%',
+                icon: Icons.backpack,
+                iconColor: const Color(0xFF4CAF50),
+                bgColor: const Color(0xFFE8F5E9),
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Sedia Payung Sebelum Gempa!',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1A1A1A),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      'Paket survival kit lengkap untuk 3 hari darurat. Tas anti-air & senter',
-                      style: TextStyle(fontSize: 11, color: Color(0xFF757575)),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
-                            Text(
-                              'Rp 450.000',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: Color(0xFF9E9E9E),
-                                decoration: TextDecoration.lineThrough,
-                              ),
-                            ),
-                            Text(
-                              'Rp 315.000',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFFFF5252),
-                                height: 1.1,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const Spacer(),
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const TokoAmaninPage(),
-                              ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF00BCD4),
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          child: const Text(
-                            'Beli Sekarang',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+              _buildSurvivalItemCard(
+                title: 'Radio Engkol Surya',
+                desc: 'Radio dengan baterai cadangan, senter, dan pemutar engkol daya.',
+                oldPrice: 'Rp 300.000',
+                newPrice: 'Rp 210.000',
+                discount: '30%',
+                icon: Icons.radio,
+                iconColor: const Color(0xFF26A69A),
+                bgColor: const Color(0xFFE0F2F1),
+              ),
+              _buildSurvivalItemCard(
+                title: 'Kotak P3K Lengkap',
+                desc: 'Alat medis standar untuk luka ringan dan perban pendarahan.',
+                oldPrice: 'Rp 150.000',
+                newPrice: 'Rp 127.500',
+                discount: '15%',
+                icon: Icons.medical_services,
+                iconColor: const Color(0xFFEF5350),
+                bgColor: const Color(0xFFFFEAEA),
+              ),
+              _buildSurvivalItemCard(
+                title: 'Power Station Mini',
+                desc: 'Baterai portabel 20000mAh tahan lama untuk charge HP berulang.',
+                oldPrice: '',
+                newPrice: 'Rp 550.000',
+                discount: '',
+                icon: Icons.battery_charging_full,
+                iconColor: const Color(0xFF42A5F5),
+                bgColor: const Color(0xFFE3F2FD),
+              ),
+              _buildSurvivalItemCard(
+                title: 'Senter LED Darurat',
+                desc: 'Senter terang dengan fitur SOS dan daya tahan baterai super.',
+                oldPrice: 'Rp 120.000',
+                newPrice: 'Rp 85.000',
+                discount: '29%',
+                icon: Icons.flashlight_on,
+                iconColor: const Color(0xFFFFB300),
+                bgColor: const Color(0xFFFFF8E1),
               ),
             ],
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildSurvivalItemCard({
+    required String title,
+    required String desc,
+    required String oldPrice,
+    required String newPrice,
+    required String discount,
+    required IconData icon,
+    required Color iconColor,
+    required Color bgColor,
+  }) {
+    return Container(
+      width: 320,
+      margin: const EdgeInsets.only(right: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Stack(
+            children: [
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: bgColor,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  icon,
+                  color: iconColor,
+                  size: 40,
+                ),
+              ),
+              if (discount.isNotEmpty)
+                Positioned(
+                  top: 8,
+                  left: 8,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFF5252),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      discount,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1A1A1A),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  desc,
+                  style: const TextStyle(fontSize: 11, color: Color(0xFF757575)),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (oldPrice.isNotEmpty)
+                          Text(
+                            oldPrice,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Color(0xFF9E9E9E),
+                              decoration: TextDecoration.lineThrough,
+                            ),
+                          ),
+                        Text(
+                          newPrice,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFFFF5252),
+                            height: 1.1,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const TokoAmaninPage(),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF00BCD4),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text(
+                        'Beli',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -1119,18 +1423,20 @@ class _BerandaPageState extends State<BerandaPage> {
           ],
         ),
         const SizedBox(height: 12),
-        GestureDetector(
-          onTap: () {
-            if (widget.onNavigateToCuaca != null) {
-              widget.onNavigateToCuaca!();
-            } else {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const CuacaPage()),
-              );
-            }
-          },
-          child: Container(
+        MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: GestureDetector(
+            onTap: () {
+              if (widget.onNavigateToCuaca != null) {
+                widget.onNavigateToCuaca!();
+              } else {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const CuacaPage()),
+                );
+              }
+            },
+            child: Container(
             decoration: BoxDecoration(
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
@@ -1290,9 +1596,10 @@ class _BerandaPageState extends State<BerandaPage> {
             ),
           ),
         ),
-        ),
-      ],
-    );
+      ),
+    ),
+  ],
+);
   }
 
   Widget _buildWeatherDetail(
@@ -1477,16 +1784,18 @@ class _BerandaPageState extends State<BerandaPage> {
   }
 
   Widget _buildNewsCard(NewsModel news) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => IsiBeritaPage(news: news),
-          ),
-        );
-      },
-      child: Container(
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => IsiBeritaPage(news: news),
+            ),
+          );
+        },
+        child: Container(
         width: 280,
         decoration: BoxDecoration(
           color: Colors.white,
@@ -1600,6 +1909,7 @@ class _BerandaPageState extends State<BerandaPage> {
           ],
         ),
       ),
-    );
+    ),
+   );
   }
 }
