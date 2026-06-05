@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "901060009992",
+    "project_id": "amanin-79dfc",
+    "storage_bucket": "amanin-79dfc.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:901060009992:android:9304a22cab61e2e3ad71bd",
+        "android_client_info": {
+          "package_name": "com.example.amanin"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "901060009992-pg3pdqeecl7h8tsm49v0a8kkqudjrteh.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.amanin",
+            "certificate_hash": "f2839bc4561e438b363cc38c21b6abbf151785ca"
+          }
+        },
+        {
+          "client_id": "901060009992-0hkuksjqtttfolosq8r86p73s93cptsq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBsaQ27AJegjGWvzr0dFhMUkGRI_7FOB5c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "901060009992-0hkuksjqtttfolosq8r86p73s93cptsq.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "901060009992-chpg736tj6l900b5ukustd3ng7a4t54p.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.amanin"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

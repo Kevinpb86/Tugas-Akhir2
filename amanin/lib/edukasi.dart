@@ -5,9 +5,80 @@ import 'main.dart';
 import 'asuransi.dart';
 import 'video_edukasi.dart';
 import 'mitigasi_gempa.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
-class EdukasiPage extends StatelessWidget {
+class EdukasiPage extends StatefulWidget {
   const EdukasiPage({super.key});
+
+  @override
+  State<EdukasiPage> createState() => _EdukasiPageState();
+}
+
+class _EdukasiPageState extends State<EdukasiPage> {
+  String _currentCityName = 'Jakarta Pusat';
+
+  @override
+  void initState() {
+    super.initState();
+    _requestLocationPermission();
+  }
+
+  Future<void> _requestLocationPermission() async {
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) return;
+      
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) return;
+      }
+      
+      if (permission == LocationPermission.deniedForever) return;
+      
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.medium,
+      );
+      
+      String cityName = 'Jakarta Pusat';
+      try {
+        List<Placemark> placemarks = await placemarkFromCoordinates(
+          position.latitude,
+          position.longitude,
+        );
+        if (placemarks.isNotEmpty) {
+          Placemark place = placemarks[0];
+          cityName = place.subAdministrativeArea ?? place.locality ?? 'Jakarta Pusat';
+          cityName = cityName.replaceAll('Kabupaten ', '').replaceAll('Kota ', '');
+        }
+      } catch (e) {
+        try {
+          final url = Uri.parse('https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.latitude}&lon=${position.longitude}');
+          final response = await http.get(url, headers: {'User-Agent': 'AmaninApp/1.0'});
+          if (response.statusCode == 200) {
+            final data = json.decode(response.body);
+            if (data['address'] != null) {
+              cityName = data['address']['city'] ?? data['address']['town'] ?? data['address']['county'] ?? data['address']['state'] ?? 'Jakarta Pusat';
+              cityName = cityName.replaceAll('Kabupaten ', '').replaceAll('Kota ', '');
+            }
+          }
+        } catch (fallbackError) {
+          print("Nominatim fallback error: $fallbackError");
+        }
+      }
+      
+      if (mounted) {
+        setState(() {
+          _currentCityName = cityName;
+        });
+      }
+    } catch (e) {
+      print("Location permission error: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -80,18 +151,23 @@ class EdukasiPage extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: const Color(0xFFE3F2FD),
+                color: const Color(0xFFE0F7FA), // Light cyan
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
-                children: const [
-                  Icon(Icons.location_on, color: Color(0xFF2196F3), size: 12),
-                  SizedBox(width: 4),
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.location_on,
+                    color: Color(0xFF00BCD4),
+                    size: 14,
+                  ),
+                  const SizedBox(width: 4),
                   Text(
-                    'Jakarta Pusat',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFF2196F3),
+                    _currentCityName,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF00BCD4),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
