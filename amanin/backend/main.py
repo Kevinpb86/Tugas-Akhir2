@@ -46,15 +46,29 @@ class EarthquakeData(BaseModel):
     longitude: float
     source: str = "bmkg" # Bisa 'bmkg' atau 'usgs'
 
+class AnomaliData(BaseModel):
+    latitude: float
+    longitude: float
+    depth: float
+    gap: float
+    dmin: float
+    nst: float
+    bulan: int
+    jam: int
+
 # Load Machine Learning Model
 MODEL_DIR = os.path.join(os.path.dirname(__file__), "model")
 MODEL_BMKG_PATH = os.path.join(MODEL_DIR, "bmkg_model.pkl")
 MODEL_USGS_PATH = os.path.join(MODEL_DIR, "usgs_model.pkl")
+MODEL_ANOMALI_PATH = os.path.join(MODEL_DIR, "model_anomali.pkl")
+SCALER_ANOMALI_PATH = os.path.join(MODEL_DIR, "scaler_anomali.pkl")
 
 ml_models = {
     "bmkg": None,
     "usgs": None
 }
+anomali_model = None
+anomali_scaler = None
 
 try:
     if os.path.exists(MODEL_BMKG_PATH):
@@ -62,12 +76,24 @@ try:
         print("Model BMKG berhasil diload!")
     else:
         print(f"Warning: Model BMKG tidak ditemukan di {MODEL_BMKG_PATH}")
-        
+
     if os.path.exists(MODEL_USGS_PATH):
         ml_models["usgs"] = joblib.load(MODEL_USGS_PATH)
         print("Model USGS berhasil diload!")
     else:
         print(f"Warning: Model USGS tidak ditemukan di {MODEL_USGS_PATH}")
+
+    if os.path.exists(MODEL_ANOMALI_PATH):
+        anomali_model = joblib.load(MODEL_ANOMALI_PATH)
+        print("Model Anomali berhasil diload!")
+    else:
+        print(f"Warning: Model Anomali tidak ditemukan di {MODEL_ANOMALI_PATH}")
+
+    if os.path.exists(SCALER_ANOMALI_PATH):
+        anomali_scaler = joblib.load(SCALER_ANOMALI_PATH)
+        print("Scaler Anomali berhasil diload!")
+    else:
+        print(f"Warning: Scaler Anomali tidak ditemukan di {SCALER_ANOMALI_PATH}")
 except Exception as e:
     print(f"Error loading models: {e}")
 
@@ -213,6 +239,47 @@ async def predict_risk(data: EarthquakeData):
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Gagal melakukan prediksi: {str(e)}")
+
+@app.post("/predict-anomali")
+async def predict_anomali(data: AnomaliData):
+    if anomali_model is None or anomali_scaler is None:
+        raise HTTPException(status_code=503, detail="Model atau scaler anomali belum tersedia.")
+
+    try:
+        features = np.array([[
+            data.latitude,
+            data.longitude,
+            data.depth,
+            data.gap,
+            data.dmin,
+            data.nst,
+            data.bulan,
+            data.jam
+        ]])
+
+        features_scaled = anomali_scaler.transform(features)
+        prediction = anomali_model.predict(features_scaled)
+        pred_value = int(prediction[0])
+
+        is_anomali = pred_value == 1
+        label = "Anomali" if is_anomali else "Normal"
+
+        try:
+            prob = anomali_model.predict_proba(features_scaled)[0]
+            confidence_val = round(float(prob[pred_value]), 4)
+        except Exception:
+            confidence_val = 1.0
+
+        return {
+            "is_anomali": is_anomali,
+            "label": label,
+            "prediction_code": pred_value,
+            "confidence": confidence_val
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Gagal melakukan prediksi anomali: {str(e)}")
+
 
 if __name__ == "__main__":
     import uvicorn

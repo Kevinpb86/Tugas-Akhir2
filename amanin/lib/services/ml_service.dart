@@ -2,6 +2,29 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'api_config.dart';
 
+class AnomalyPredictionModel {
+  final bool isAnomali;
+  final String label;
+  final int predictionCode;
+  final double confidence;
+
+  AnomalyPredictionModel({
+    required this.isAnomali,
+    required this.label,
+    required this.predictionCode,
+    required this.confidence,
+  });
+
+  factory AnomalyPredictionModel.fromJson(Map<String, dynamic> json) {
+    return AnomalyPredictionModel(
+      isAnomali: json['is_anomali'] ?? false,
+      label: json['label'] ?? 'Tidak Diketahui',
+      predictionCode: json['prediction_code'] ?? -1,
+      confidence: (json['confidence'] ?? 0.0).toDouble(),
+    );
+  }
+}
+
 class MLPredictionModel {
   final String riskLevel;
   final int predictionCode;
@@ -63,6 +86,43 @@ class MlService {
         return MLPredictionModel.fromJson(data);
       } else {
         throw Exception('Gagal melakukan prediksi: ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Terjadi kesalahan koneksi ke backend ML: $e');
+    }
+  }
+
+  static Future<AnomalyPredictionModel> predictAnomali({
+    required double latitude,
+    required double longitude,
+    required double depth,
+    required double gap,
+    required double dmin,
+    required double nst,
+    required int bulan,
+    required int jam,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/predict-anomali'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'latitude': latitude,
+          'longitude': longitude,
+          'depth': depth,
+          'gap': gap,
+          'dmin': dmin,
+          'nst': nst,
+          'bulan': bulan,
+          'jam': jam,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return AnomalyPredictionModel.fromJson(data);
+      } else {
+        throw Exception('Gagal melakukan deteksi anomali: ${response.body}');
       }
     } catch (e) {
       throw Exception('Terjadi kesalahan koneksi ke backend ML: $e');

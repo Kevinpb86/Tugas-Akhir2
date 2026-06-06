@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'hitung_dampak_gempa.dart';
 import 'klasifikasi_seismik.dart';
+import 'deteksi_anomali.dart';
 
 class FiturPage extends StatelessWidget {
   const FiturPage({super.key});
@@ -27,22 +27,6 @@ class FiturPage extends StatelessWidget {
         children: [
           _buildFeatureCard(
             context,
-            icon: Icons.analytics_outlined,
-            title: 'Hitung Dampak Guncangan Gempa',
-            description: 'Estimasi dampak guncangan gempa pada lokasi Anda.',
-            color: const Color(0xFF42A5F5),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const HitungDampakGempaPage(),
-                ),
-              );
-            },
-          ),
-          const SizedBox(height: 16),
-          _buildFeatureCard(
-            context,
             icon: Icons.memory,
             title: 'Klasifikasi Kerentanan Seismik (SVM)',
             description: 'Klasifikasi tingkat kerentanan seismik secara otomatis menggunakan Machine Learning.',
@@ -63,6 +47,14 @@ class FiturPage extends StatelessWidget {
             title: 'Deteksi Anomali Gempa',
             description: 'Deteksi pola anomali seismik secara otomatis sebagai indikator awal aktivitas gempa.',
             color: const Color(0xFF66BB6A),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const DeteksiAnomaliPage(),
+                ),
+              );
+            },
           ),
           const SizedBox(height: 16),
           _buildFeatureCard(
