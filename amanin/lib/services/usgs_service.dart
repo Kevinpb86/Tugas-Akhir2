@@ -82,7 +82,7 @@ class UsgsService {
           // Convert time (ms) to BMKG style
           final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(props['time']);
           final String tanggal = DateFormat('dd MMM yyyy').format(dateTime);
-          final String jam = DateFormat('HH:mm:ss').format(dateTime) + ' WIB'; // Assume WIB for uniformity
+          final String jam = '${DateFormat('HH:mm:ss').format(dateTime)} WIB'; // Assume WIB for uniformity
 
           return GempaModel(
             tanggal: tanggal,
