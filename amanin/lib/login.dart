@@ -404,7 +404,7 @@ class _LoginPageState extends State<LoginPage> {
                 );
                 
                 http.post(
-                  Uri.parse('http://localhost:8000/forgot-password'),
+                  Uri.parse('${ApiConfig.baseUrl}/forgot-password'),
                   headers: {'Content-Type': 'application/json'},
                   body: jsonEncode({'email': resetEmailController.text}),
                 ).then((response) {
@@ -455,7 +455,7 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:8000/login'),
+        Uri.parse('${ApiConfig.baseUrl}/login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'email': _emailController.text,
