@@ -6,7 +6,7 @@ import 'package:intl/intl.dart';
 class IsiBeritaPage extends StatelessWidget {
   final NewsModel news;
   
-  const IsiBeritaPage({Key? key, required this.news}) : super(key: key);
+  const IsiBeritaPage({super.key, required this.news});
 
   String _formatDate(String utcDate) {
     try {
