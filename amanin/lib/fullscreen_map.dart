@@ -60,8 +60,10 @@ class _FullscreenMapPageState extends State<FullscreenMapPage> {
 
       // Get current position
       Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.medium,
+        desiredAccuracy: LocationAccuracy.high,
       );
+
+      print("[FullscreenMap] GPS coordinates: lat=${position.latitude}, lon=${position.longitude}, accuracy=${position.accuracy}m");
 
       // Parse earthquake coordinates
       final coords = widget.gempa.coordinates.split(',');
@@ -89,20 +91,25 @@ class _FullscreenMapPageState extends State<FullscreenMapPage> {
         );
         if (placemarks.isNotEmpty) {
           Placemark place = placemarks[0];
-          cityName = place.subAdministrativeArea ?? place.locality ?? 'lokasi Anda';
+          print("[FullscreenMap] Geocoding result: subLocality=${place.subLocality}, locality=${place.locality}, subAdmin=${place.subAdministrativeArea}");
+          cityName = place.locality ?? place.subLocality ?? place.subAdministrativeArea ?? 'lokasi Anda';
           // Clean up "Kabupaten" or "Kota" prefix if needed
-          cityName = cityName.replaceAll('Kabupaten ', '').replaceAll('Kota ', '');
+          cityName = cityName.replaceAll('Kabupaten ', '').replaceAll('Kota ', '').replaceAll(' City', '').replaceAll('Kecamatan ', '').replaceAll('Kelurahan ', '').replaceAll('Desa ', '');
         }
       } catch (e) {
+        print("[FullscreenMap] Geocoding package error: $e, falling back to Nominatim");
         // Fallback for Web using OpenStreetMap Nominatim API
         try {
-          final url = Uri.parse('https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.latitude}&lon=${position.longitude}');
+          final url = Uri.parse('https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.latitude}&lon=${position.longitude}&zoom=16&addressdetails=1');
           final response = await http.get(url, headers: {'User-Agent': 'AmaninApp/1.0'});
           if (response.statusCode == 200) {
             final data = json.decode(response.body);
+            print("[FullscreenMap] Nominatim full address: ${data['address']}");
             if (data['address'] != null) {
-              cityName = data['address']['city'] ?? data['address']['town'] ?? data['address']['county'] ?? data['address']['state'] ?? 'lokasi Anda';
-              cityName = cityName.replaceAll('Kabupaten ', '').replaceAll('Kota ', '');
+              final addr = data['address'];
+              cityName = addr['town'] ?? addr['subdistrict'] ?? addr['suburb'] ?? addr['city_district'] ?? addr['city'] ?? addr['county'] ?? addr['state'] ?? 'lokasi Anda';
+              cityName = cityName.replaceAll('Kabupaten ', '').replaceAll('Kota ', '').replaceAll('Kecamatan ', '').replaceAll('Kelurahan ', '').replaceAll('Desa ', '');
+              print("[FullscreenMap] Final city name: $cityName");
             }
           }
         } catch (fallbackError) {

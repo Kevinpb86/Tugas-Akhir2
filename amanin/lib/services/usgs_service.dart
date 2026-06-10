@@ -59,7 +59,7 @@ class UsgsService {
           '&maxlatitude=$_maxLat'
           '&minlongitude=$_minLon'
           '&maxlongitude=$_maxLon'
-          '&limit=50'
+          '&limit=300'
           '&orderby=time';
 
       final response = await http.get(Uri.parse(url));
@@ -68,11 +68,12 @@ class UsgsService {
         final data = json.decode(response.body);
         final List<dynamic> allFeatures = data['features'];
         
-        // Filter only results that are in Indonesia
+        // The bounding box includes parts of the Philippines and Malaysia.
+        // We filter for 'indonesia' to ensure we only show relevant data.
         final List<dynamic> features = allFeatures.where((f) {
           final String place = (f['properties']['place'] ?? "").toString().toLowerCase();
-          return place.contains('indonesia');
-        }).toList();
+          return place.contains('indonesia') || place.contains('java') || place.contains('sumatra') || place.contains('sulawesi') || place.contains('papua') || place.contains('bali');
+        }).take(50).toList();
 
         return features.map((feature) {
           final props = feature['properties'];

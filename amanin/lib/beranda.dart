@@ -43,7 +43,7 @@ class _BerandaPageState extends State<BerandaPage> {
   List<NewsModel> _newsList = [];
   bool _isLoadingNews = true;
 
-  String _currentCityName = 'Jakarta Pusat';
+  String _currentCityName = 'Memuat lokasi...';
 
   @override
   void initState() {
@@ -68,8 +68,10 @@ class _BerandaPageState extends State<BerandaPage> {
       if (permission == LocationPermission.deniedForever) return;
 
       Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.medium,
+        desiredAccuracy: LocationAccuracy.high,
       );
+
+      print("[Beranda] GPS coordinates: lat=${position.latitude}, lon=${position.longitude}, accuracy=${position.accuracy}m");
 
       String cityName = 'Jakarta Pusat';
       try {
@@ -79,34 +81,24 @@ class _BerandaPageState extends State<BerandaPage> {
         );
         if (placemarks.isNotEmpty) {
           Placemark place = placemarks[0];
-          cityName =
-              place.subAdministrativeArea ?? place.locality ?? 'Jakarta Pusat';
-          cityName = cityName
-              .replaceAll('Kabupaten ', '')
-              .replaceAll('Kota ', '');
+          print("[Beranda] Geocoding result: subLocality=${place.subLocality}, locality=${place.locality}, subAdmin=${place.subAdministrativeArea}, admin=${place.administrativeArea}");
+          cityName = place.locality ?? place.subLocality ?? place.subAdministrativeArea ?? 'Jakarta Pusat';
+          cityName = cityName.replaceAll('Kabupaten ', '').replaceAll('Kota ', '').replaceAll(' City', '').replaceAll('Kecamatan ', '').replaceAll('Kelurahan ', '').replaceAll('Desa ', '');
         }
       } catch (e) {
+        print("[Beranda] Geocoding package error: $e, falling back to Nominatim");
         // Fallback for Web using OpenStreetMap Nominatim API
         try {
-          final url = Uri.parse(
-            'https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.latitude}&lon=${position.longitude}',
-          );
-          final response = await http.get(
-            url,
-            headers: {'User-Agent': 'AmaninApp/1.0'},
-          );
+          final url = Uri.parse('https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.latitude}&lon=${position.longitude}&zoom=16&addressdetails=1');
+          final response = await http.get(url, headers: {'User-Agent': 'AmaninApp/1.0'});
           if (response.statusCode == 200) {
             final data = json.decode(response.body);
+            print("[Beranda] Nominatim full address: ${data['address']}");
             if (data['address'] != null) {
-              cityName =
-                  data['address']['city'] ??
-                  data['address']['town'] ??
-                  data['address']['county'] ??
-                  data['address']['state'] ??
-                  'Jakarta Pusat';
-              cityName = cityName
-                  .replaceAll('Kabupaten ', '')
-                  .replaceAll('Kota ', '');
+              final addr = data['address'];
+              cityName = addr['town'] ?? addr['subdistrict'] ?? addr['suburb'] ?? addr['city_district'] ?? addr['city'] ?? addr['county'] ?? addr['state'] ?? 'Jakarta Pusat';
+              cityName = cityName.replaceAll('Kabupaten ', '').replaceAll('Kota ', '').replaceAll(' City', '').replaceAll('Kecamatan ', '').replaceAll('Kelurahan ', '').replaceAll('Desa ', '');
+              print("[Beranda] Final city name: $cityName");
             }
           }
         } catch (fallbackError) {

@@ -35,6 +35,8 @@ class _RegisterPageState extends State<RegisterPage> {
   Future<void> _signInWithGoogle() async {
     try {
       final GoogleSignIn googleSignIn = GoogleSignIn();
+      // Sign out first to force the account picker dialog to appear
+      await googleSignIn.signOut();
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
       if (googleUser != null) {

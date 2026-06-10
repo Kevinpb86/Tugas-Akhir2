@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'riwayat_gempa.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'utils/map_utils.dart';
@@ -25,14 +26,15 @@ class GempaPage extends StatefulWidget {
 }
 
 class _GempaPageState extends State<GempaPage> {
-  int _selectedFilterIndex = 0; // 0: Terkini, 1: M >= 5, 2: Dirasakan
+  String _currentCityName = 'Memuat lokasi...';
+  Position? _userPosition;
+  int _selectedFilterIndex = 0; // 0: Terkini, 1: M >= 5, 2: Jarak Jauh, 3: Jarak Dekat
   GempaModel? _latestQuake;
   List<GempaModel> _recentQuakes = [];
   bool _isLoadingQuake = true;
   bool _isLoadingRecentQuakes = true;
   Timer? _refreshTimer;
   DateTime? _lastUpdated;
-  String _currentCityName = 'Jakarta Pusat';
 
   @override
   void initState() {
@@ -65,8 +67,10 @@ class _GempaPageState extends State<GempaPage> {
       if (permission == LocationPermission.deniedForever) return;
       
       Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.medium,
+        desiredAccuracy: LocationAccuracy.high,
       );
+      
+      print("[Gempa] GPS coordinates: lat=${position.latitude}, lon=${position.longitude}, accuracy=${position.accuracy}m");
       
       String cityName = 'Jakarta Pusat';
       try {
@@ -76,18 +80,23 @@ class _GempaPageState extends State<GempaPage> {
         );
         if (placemarks.isNotEmpty) {
           Placemark place = placemarks[0];
-          cityName = place.subAdministrativeArea ?? place.locality ?? 'Jakarta Pusat';
-          cityName = cityName.replaceAll('Kabupaten ', '').replaceAll('Kota ', '');
+          print("[Gempa] Geocoding result: subLocality=${place.subLocality}, locality=${place.locality}, subAdmin=${place.subAdministrativeArea}, admin=${place.administrativeArea}");
+          cityName = place.locality ?? place.subLocality ?? place.subAdministrativeArea ?? 'Jakarta Pusat';
+          cityName = cityName.replaceAll('Kabupaten ', '').replaceAll('Kota ', '').replaceAll(' City', '').replaceAll('Kecamatan ', '').replaceAll('Kelurahan ', '').replaceAll('Desa ', '');
         }
       } catch (e) {
+        print("[Gempa] Geocoding package error: $e, falling back to Nominatim");
         try {
-          final url = Uri.parse('https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.latitude}&lon=${position.longitude}');
+          final url = Uri.parse('https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.latitude}&lon=${position.longitude}&zoom=16&addressdetails=1');
           final response = await http.get(url, headers: {'User-Agent': 'AmaninApp/1.0'});
           if (response.statusCode == 200) {
             final data = json.decode(response.body);
+            print("[Gempa] Nominatim full address: ${data['address']}");
             if (data['address'] != null) {
-              cityName = data['address']['city'] ?? data['address']['town'] ?? data['address']['county'] ?? data['address']['state'] ?? 'Jakarta Pusat';
-              cityName = cityName.replaceAll('Kabupaten ', '').replaceAll('Kota ', '');
+              final addr = data['address'];
+              cityName = addr['town'] ?? addr['subdistrict'] ?? addr['suburb'] ?? addr['city_district'] ?? addr['city'] ?? addr['county'] ?? addr['state'] ?? 'Jakarta Pusat';
+              cityName = cityName.replaceAll('Kabupaten ', '').replaceAll('Kota ', '').replaceAll(' City', '').replaceAll('Kecamatan ', '').replaceAll('Kelurahan ', '').replaceAll('Desa ', '');
+              print("[Gempa] Final city name: $cityName");
             }
           }
         } catch (fallbackError) {
@@ -98,6 +107,7 @@ class _GempaPageState extends State<GempaPage> {
       if (mounted) {
         setState(() {
           _currentCityName = cityName;
+          _userPosition = position;
         });
       }
     } catch (e) {
@@ -140,14 +150,34 @@ class _GempaPageState extends State<GempaPage> {
     if (!isAuto && mounted) setState(() => _isLoadingRecentQuakes = true);
     try {
       List<GempaModel> quakes;
-      // BMKG API has two main lists: gempaterkini (M 5.0+) and gempadirasakan
-      // Now using USGS for "Terkini" and "Real-Time" to show all magnitudes
-      if (_selectedFilterIndex == 0 || _selectedFilterIndex == 3) {
+      // 0: Terkini, 1: M >= 5, 2: Jarak Jauh, 3: Jarak Dekat
+      if (_selectedFilterIndex == 0) {
         quakes = await UsgsService.fetchIndonesiaEarthquakes();
-      } else if (_selectedFilterIndex == 2) {
-        quakes = await BmkgService.fetchFeltEarthquakeList();
-      } else {
+      } else if (_selectedFilterIndex == 1) {
+        // BMKG fetchEarthquakeList returns M 5.0+
         quakes = await BmkgService.fetchEarthquakeList();
+      } else {
+        // For Jarak Jauh and Jarak Dekat, fetch all available then sort
+        quakes = await UsgsService.fetchIndonesiaEarthquakes();
+        if (_userPosition != null) {
+          quakes.sort((a, b) {
+            double latA = double.tryParse(a.lintang) ?? 0;
+            double lonA = double.tryParse(a.bujur) ?? 0;
+            double latB = double.tryParse(b.lintang) ?? 0;
+            double lonB = double.tryParse(b.bujur) ?? 0;
+            
+            double distA = Geolocator.distanceBetween(_userPosition!.latitude, _userPosition!.longitude, latA, lonA);
+            double distB = Geolocator.distanceBetween(_userPosition!.latitude, _userPosition!.longitude, latB, lonB);
+            
+            if (_selectedFilterIndex == 2) {
+              // Jarak Jauh: Descending distance
+              return distB.compareTo(distA);
+            } else {
+              // Jarak Dekat: Ascending distance
+              return distA.compareTo(distB);
+            }
+          });
+        }
       }
 
       if (mounted) {
@@ -372,8 +402,8 @@ class _GempaPageState extends State<GempaPage> {
         children: [
           _buildChip(0, 'Terkini'),
           _buildChip(1, 'M ≥ 5'),
-          _buildChip(2, 'Dirasakan'),
-          _buildChip(3, 'Real-Time'),
+          _buildChip(2, 'Jarak Jauh'),
+          _buildChip(3, 'Jarak Dekat'),
         ],
       ),
     );
@@ -795,7 +825,14 @@ class _GempaPageState extends State<GempaPage> {
               ),
             ),
             TextButton(
-              onPressed: () {}, // TODO: Implement Lihat Semua
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => RiwayatGempaPage(quakes: _recentQuakes),
+                  ),
+                );
+              },
               child: const Text(
                 'Lihat Semua',
                 style: TextStyle(
@@ -848,7 +885,7 @@ class _GempaPageState extends State<GempaPage> {
     }
 
     return Column(
-      children: _recentQuakes.map((quake) {
+      children: _recentQuakes.take(5).map((quake) {
         final magValue = double.tryParse(quake.magnitude) ?? 0.0;
         // All magnitude cards set to yellow as requested
         Color magColor = const Color(0xFFFFC107);

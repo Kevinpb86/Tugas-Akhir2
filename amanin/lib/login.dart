@@ -30,10 +30,10 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _signInWithGoogle() async {
     try {
       final GoogleSignIn googleSignIn = GoogleSignIn();
+      await googleSignIn.signOut();
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
       if (googleUser != null) {
-        // Success
         userNameNotifier.value = googleUser.displayName ?? 'Pengguna Google';
         userEmailNotifier.value = googleUser.email;
         userPhotoUrlNotifier.value = googleUser.photoUrl ?? '';
@@ -60,7 +60,6 @@ class _LoginPageState extends State<LoginPage> {
       final LoginResult result = await FacebookAuth.instance.login();
 
       if (result.status == LoginStatus.success) {
-        // Success
         final userData = await FacebookAuth.instance.getUserData();
         
         userNameNotifier.value = userData['name'] ?? 'Pengguna Facebook';
