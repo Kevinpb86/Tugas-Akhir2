@@ -130,12 +130,14 @@ Mengklasifikasikan status gempa apakah merupakan gempa utama (Mainshock) atau ge
 
 ### 2. Prediksi Risiko Gempa (`POST /predict`)
 *   **Request Body:**
+    *   *Catatan*: Koordinat `latitude` dan `longitude` bersifat opsional jika `location_name` disertakan.
     ```json
     {
       "magnitude": 5.2,
       "depth": 10.0,
-      "latitude": -6.9,
-      "longitude": 107.6,
+      "latitude": -6.9,           // Opsional jika ada location_name
+      "longitude": 107.6,         // Opsional jika ada location_name
+      "location_name": "Lembang", // Opsional (pencarian lokasi ramah pengguna)
       "source": "bmkg"
     }
     ```
@@ -144,7 +146,9 @@ Mengklasifikasikan status gempa apakah merupakan gempa utama (Mainshock) atau ge
     {
       "risk_level": "Sedang",
       "prediction_code": 1,
-      "confidence": 0.8421
+      "confidence": 0.8421,
+      "latitude": -6.82,          // Koordinat terdeteksi (geocoded)
+      "longitude": 107.62         // Koordinat terdeteksi (geocoded)
     }
     ```
 
