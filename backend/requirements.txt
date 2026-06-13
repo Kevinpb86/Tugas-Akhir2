@@ -9,3 +9,4 @@ email-validator
 xgboost
 google-auth
 requests
+python-dotenv
