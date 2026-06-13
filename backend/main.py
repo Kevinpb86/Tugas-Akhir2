@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr
+from typing import Optional
 import mysql.connector
 from passlib.context import CryptContext
 import os
@@ -44,8 +45,9 @@ class UserLogin(BaseModel):
 class EarthquakeData(BaseModel):
     magnitude: float
     depth: float
-    latitude: float
-    longitude: float
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    location_name: Optional[str] = None
     source: str = "bmkg" # Bisa 'bmkg' atau 'usgs'
 
 class AnomaliData(BaseModel):
@@ -202,6 +204,83 @@ async def health_check():
         "usgs_scaler_loaded": ml_scalers["usgs"] is not None
     }
 
+LOCAL_COORDINATES = {
+    "lembang": (-6.82, 107.62),
+    "bandung": (-6.9175, 107.6191),
+    "cimahi": (-6.8722, 107.5414),
+    "sumedang": (-6.8589, 107.9333),
+    "subang": (-6.5715, 107.7587),
+    "cianjur": (-6.8222, 107.1394),
+    "purwakarta": (-6.5569, 107.4433),
+    "garut": (-7.2278, 107.9086),
+    "sukabumi": (-6.9278, 106.9300),
+    "bogor": (-6.5971, 106.8060),
+    "depok": (-6.4025, 106.7942),
+    "bekasi": (-6.2383, 106.9756),
+    "karawang": (-6.3039, 107.2981),
+    "cirebon": (-6.7320, 108.5520),
+    "indramayu": (-6.3264, 108.3200),
+    "majalengka": (-6.8374, 108.2238),
+    "kuningan": (-6.9764, 108.4842),
+    "tasikmalaya": (-7.3274, 108.2207),
+    "ciamis": (-7.3274, 108.3556),
+    "banjar": (-7.3719, 108.5439),
+    "pangandaran": (-7.6961, 108.4904)
+}
+
+LAT_MIN, LAT_MAX = -8.00, -5.50
+LON_MIN, LON_MAX = 106.00, 109.00
+
+def geocode_online(query: str) -> Optional[tuple[float, float]]:
+    try:
+        full_query = f"{query}, Jawa Barat, Indonesia"
+        url = "https://nominatim.openstreetmap.org/search"
+        headers = {
+            "User-Agent": "AmaninApp/1.0 (contact: dava@amanin.com)"
+        }
+        params = {
+            "q": full_query,
+            "format": "json",
+            "limit": 10
+        }
+        res = requests.get(url, headers=headers, params=params, timeout=5)
+        if res.status_code == 200:
+            data = res.json()
+            if data:
+                excluded = {'amenity', 'shop', 'office', 'highway', 'building', 'craft', 'leisure', 'tourism'}
+                for item in data:
+                    item_class = item.get("class", "")
+                    if item_class in excluded:
+                        continue
+                    lat = float(item["lat"])
+                    lon = float(item["lon"])
+                    return lat, lon
+    except Exception as e:
+        print(f"Error geocoding online: {e}")
+    return None
+
+def resolve_coordinates(location_name: str) -> tuple[float, float]:
+    clean_name = location_name.strip().lower()
+    if clean_name in LOCAL_COORDINATES:
+        return LOCAL_COORDINATES[clean_name]
+    
+    coords = geocode_online(location_name)
+    if coords:
+        return coords
+        
+    raise HTTPException(
+        status_code=400, 
+        detail=f"Lokasi '{location_name}' tidak dapat ditemukan atau tidak dikenali."
+    )
+
+def validate_study_area(lat: float, lon: float, location_name: str = None):
+    if not (LAT_MIN <= lat <= LAT_MAX) or not (LON_MIN <= lon <= LON_MAX):
+        loc_str = f" ({location_name})" if location_name else ""
+        raise HTTPException(
+            status_code=400,
+            detail=f"Koordinat ({lat}, {lon}){loc_str} berada di luar wilayah studi Jawa Barat (Lintang: -8.00 s/d -5.50, Bujur: 106.00 s/d 109.00)."
+        )
+
 @app.post("/predict")
 async def predict_risk(data: EarthquakeData):
     source = data.source.lower()
@@ -213,8 +292,22 @@ async def predict_risk(data: EarthquakeData):
     if selected_model is None:
         raise HTTPException(status_code=503, detail=f"Model ML {source.upper()} belum diload/tidak tersedia.")
     
+    lat = data.latitude
+    lon = data.longitude
+    
+    if data.location_name:
+        lat, lon = resolve_coordinates(data.location_name)
+        
+    if lat is None or lon is None:
+        raise HTTPException(
+            status_code=400,
+            detail="Harus menyertakan koordinat (latitude & longitude) atau nama daerah (location_name)."
+        )
+        
+    validate_study_area(lat, lon, data.location_name)
+    
     try:
-        features = np.array([[data.magnitude, data.depth, data.latitude, data.longitude]])
+        features = np.array([[data.magnitude, data.depth, lat, lon]])
         
         # Gunakan scaler yang diload jika tersedia
         selected_scaler = ml_scalers.get(source)
@@ -262,7 +355,9 @@ async def predict_risk(data: EarthquakeData):
         return {
             "risk_level": risk_label,
             "prediction_code": pred_value,
-            "confidence": confidence_val
+            "confidence": confidence_val,
+            "latitude": lat,
+            "longitude": lon
         }
         
     except Exception as e:

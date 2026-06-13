@@ -118,6 +118,73 @@ def run_tests():
         print(f"[FAIL] Prediction (USGS) failed: {e}")
         return
 
+    # 8. Test Prediction with local location_name (Lembang)
+    try:
+        predict_data = json.dumps({
+            "magnitude": 5.5,
+            "depth": 10.0,
+            "location_name": "Lembang",
+            "source": "bmkg"
+        }).encode("utf-8")
+        req = urllib.request.Request(
+            f"{BASE_URL}/predict", 
+            data=predict_data, 
+            headers={"Content-Type": "application/json"}
+        )
+        res = urllib.request.urlopen(req)
+        predict_res = json.loads(res.read().decode())
+        print(f"[OK] Prediction (Location Lembang): {predict_res}")
+        assert "latitude" in predict_res and "longitude" in predict_res
+        assert predict_res["latitude"] == -6.82
+    except Exception as e:
+        print(f"[FAIL] Prediction (Location Lembang) failed: {e}")
+        return
+
+    # 9. Test Prediction with online location_name (Cimahi)
+    try:
+        predict_data = json.dumps({
+            "magnitude": 5.0,
+            "depth": 15.0,
+            "location_name": "Cimahi",
+            "source": "bmkg"
+        }).encode("utf-8")
+        req = urllib.request.Request(
+            f"{BASE_URL}/predict", 
+            data=predict_data, 
+            headers={"Content-Type": "application/json"}
+        )
+        res = urllib.request.urlopen(req)
+        predict_res = json.loads(res.read().decode())
+        print(f"[OK] Prediction (Location Cimahi): {predict_res}")
+        assert "latitude" in predict_res and "longitude" in predict_res
+    except Exception as e:
+        print(f"[FAIL] Prediction (Location Cimahi) failed: {e}")
+        return
+
+    # 10. Test Prediction with out-of-bounds location_name (Tokyo)
+    try:
+        predict_data = json.dumps({
+            "magnitude": 6.0,
+            "depth": 20.0,
+            "location_name": "Tokyo",
+            "source": "bmkg"
+        }).encode("utf-8")
+        req = urllib.request.Request(
+            f"{BASE_URL}/predict", 
+            data=predict_data, 
+            headers={"Content-Type": "application/json"}
+        )
+        urllib.request.urlopen(req)
+        print("[FAIL] Prediction for Tokyo should have failed but succeeded.")
+        return
+    except urllib.error.HTTPError as e:
+        err_msg = e.read().decode()
+        print(f"[OK] Out-of-bounds check (Tokyo failed as expected): {e.code} - {err_msg}")
+        assert e.code == 400
+    except Exception as e:
+        print(f"[FAIL] Out-of-bounds check (Tokyo) unexpected error: {e}")
+        return
+
     print("=== ALL TESTS PASSED SUCCESSFULLY ===")
 
 if __name__ == "__main__":
