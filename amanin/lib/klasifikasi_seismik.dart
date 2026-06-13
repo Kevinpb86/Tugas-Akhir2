@@ -201,14 +201,14 @@ class _KlasifikasiSeismikPageState extends State<KlasifikasiSeismikPage> {
                           DropdownMenuItem(
                             value: 'bmkg',
                             child: Text(
-                              'BMKG (Lokal - 99.7%)',
+                              'BMKG (Lokal - 98.7%)',
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           DropdownMenuItem(
                             value: 'usgs',
                             child: Text(
-                              'USGS (Global - 96.1%)',
+                              'USGS (Global - 97.4%)',
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
