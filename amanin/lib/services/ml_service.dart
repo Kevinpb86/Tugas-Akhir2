@@ -29,11 +29,15 @@ class MLPredictionModel {
   final String riskLevel;
   final int predictionCode;
   final double confidence;
+  final double latitude;
+  final double longitude;
 
   MLPredictionModel({
     required this.riskLevel,
     required this.predictionCode,
     required this.confidence,
+    required this.latitude,
+    required this.longitude,
   });
 
   factory MLPredictionModel.fromJson(Map<String, dynamic> json) {
@@ -41,6 +45,8 @@ class MLPredictionModel {
       riskLevel: json['risk_level'] ?? 'Tidak Diketahui',
       predictionCode: json['prediction_code'] ?? -1,
       confidence: (json['confidence'] ?? 0.0).toDouble(),
+      latitude: (json['latitude'] ?? 0.0).toDouble(),
+      longitude: (json['longitude'] ?? 0.0).toDouble(),
     );
   }
 }
@@ -64,8 +70,7 @@ class MlService {
   static Future<MLPredictionModel> predictRisk({
     required double magnitude,
     required double depth,
-    required double latitude,
-    required double longitude,
+    required String locationName,
     String source = 'bmkg',
   }) async {
     try {
@@ -75,8 +80,7 @@ class MlService {
         body: json.encode({
           'magnitude': magnitude,
           'depth': depth,
-          'latitude': latitude,
-          'longitude': longitude,
+          'location_name': locationName,
           'source': source,
         }),
       );
@@ -85,7 +89,13 @@ class MlService {
         final data = json.decode(response.body);
         return MLPredictionModel.fromJson(data);
       } else {
-        throw Exception('Gagal melakukan prediksi: ${response.body}');
+        try {
+          final errData = json.decode(response.body);
+          final errMsg = errData['detail'] ?? response.body;
+          throw Exception(errMsg);
+        } catch (_) {
+          throw Exception('Gagal melakukan prediksi: ${response.body}');
+        }
       }
     } catch (e) {
       throw Exception('Terjadi kesalahan koneksi ke backend ML: $e');
