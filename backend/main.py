@@ -61,11 +61,17 @@ class AnomaliData(BaseModel):
 # Load Machine Learning Model
 MODEL_DIR = os.path.join(os.path.dirname(__file__), "model")
 MODEL_BMKG_PATH = os.path.join(MODEL_DIR, "bmkg_model.pkl")
+SCALER_BMKG_PATH = os.path.join(MODEL_DIR, "scaler_bmkg.pkl")
 MODEL_USGS_PATH = os.path.join(MODEL_DIR, "usgs_model.pkl")
+SCALER_USGS_PATH = os.path.join(MODEL_DIR, "scaler_usgs.pkl")
 MODEL_ANOMALI_PATH = os.path.join(MODEL_DIR, "model_anomali.pkl")
 SCALER_ANOMALI_PATH = os.path.join(MODEL_DIR, "scaler_anomali.pkl")
 
 ml_models = {
+    "bmkg": None,
+    "usgs": None
+}
+ml_scalers = {
     "bmkg": None,
     "usgs": None
 }
@@ -78,12 +84,24 @@ try:
         print("Model BMKG berhasil diload!")
     else:
         print(f"Warning: Model BMKG tidak ditemukan di {MODEL_BMKG_PATH}")
+
+    if os.path.exists(SCALER_BMKG_PATH):
+        ml_scalers["bmkg"] = joblib.load(SCALER_BMKG_PATH)
+        print("Scaler BMKG berhasil diload!")
+    else:
+        print(f"Warning: Scaler BMKG tidak ditemukan di {SCALER_BMKG_PATH}")
         
     if os.path.exists(MODEL_USGS_PATH):
         ml_models["usgs"] = joblib.load(MODEL_USGS_PATH)
         print("Model USGS berhasil diload!")
     else:
         print(f"Warning: Model USGS tidak ditemukan di {MODEL_USGS_PATH}")
+
+    if os.path.exists(SCALER_USGS_PATH):
+        ml_scalers["usgs"] = joblib.load(SCALER_USGS_PATH)
+        print("Scaler USGS berhasil diload!")
+    else:
+        print(f"Warning: Scaler USGS tidak ditemukan di {SCALER_USGS_PATH}")
 
     if os.path.exists(MODEL_ANOMALI_PATH):
         anomali_model = joblib.load(MODEL_ANOMALI_PATH)
@@ -179,7 +197,9 @@ async def health_check():
         "status": "ok", 
         "model_loaded": (ml_models["bmkg"] is not None) or (ml_models["usgs"] is not None),
         "bmkg_model_loaded": ml_models["bmkg"] is not None,
-        "usgs_model_loaded": ml_models["usgs"] is not None
+        "usgs_model_loaded": ml_models["usgs"] is not None,
+        "bmkg_scaler_loaded": ml_scalers["bmkg"] is not None,
+        "usgs_scaler_loaded": ml_scalers["usgs"] is not None
     }
 
 @app.post("/predict")
@@ -194,26 +214,25 @@ async def predict_risk(data: EarthquakeData):
         raise HTTPException(status_code=503, detail=f"Model ML {source.upper()} belum diload/tidak tersedia.")
     
     try:
-        # Mapping batas minimum dan maksimum dataset saat training untuk MinMaxScaler
-        # Urutan fitur: [magnitude, depth, latitude, longitude]
-        
-        if source == "usgs":
-            # Data batas dari dataset USGS
-            x_min = np.array([3.400, 1.410, -7.999, 106.001])
-            x_max = np.array([7.500, 407.300, -5.561, 109.000])
-        else:
-            # Data batas dari dataset BMKG
-            x_min = np.array([1.000, 1.000, -7.998, 106.000])
-            x_max = np.array([7.191, 649.067, -5.501, 108.998])
-            
         features = np.array([[data.magnitude, data.depth, data.latitude, data.longitude]])
         
-        # Lakukan Normalisasi Min-Max secara manual
-        # Rumus: (X - X_min) / (X_max - X_min)
-        features_scaled = (features - x_min) / (x_max - x_min)
-        
-        # Clip data agar nilainya tidak keluar dari range [0, 1] jika ada input ekstrem
-        features_scaled = np.clip(features_scaled, 0, 1)
+        # Gunakan scaler yang diload jika tersedia
+        selected_scaler = ml_scalers.get(source)
+        if selected_scaler is not None:
+            features_scaled = selected_scaler.transform(features)
+        else:
+            # Fallback ke normalisasi manual jika file scaler tidak tersedia
+            if source == "usgs":
+                # Data batas dari dataset USGS
+                x_min = np.array([3.400, 1.410, -7.999, 106.001])
+                x_max = np.array([7.500, 407.300, -5.561, 109.000])
+            else:
+                # Data batas dari dataset BMKG
+                x_min = np.array([1.000, 1.000, -7.998, 106.000])
+                x_max = np.array([7.191, 649.067, -5.501, 108.998])
+            features_scaled = (features - x_min) / (x_max - x_min)
+            # Clip data agar nilainya tidak keluar dari range [0, 1] jika ada input ekstrem
+            features_scaled = np.clip(features_scaled, 0, 1)
         
         # Model SVM melakukan prediksi
         prediction = selected_model.predict(features_scaled)
