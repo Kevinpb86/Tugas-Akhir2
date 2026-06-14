@@ -8,6 +8,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'services/bmkg_service.dart';
 import 'utils/earthquake_map.dart';
+import 'gempa_detail.dart';
 
 class FullscreenMapPage extends StatefulWidget {
   final GempaModel gempa;

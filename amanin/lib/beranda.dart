@@ -978,7 +978,7 @@ class _BerandaPageState extends State<BerandaPage> {
                           context,
                           MaterialPageRoute(
                             builder: (context) =>
-                                GempaDetailPage(gempa: _latestQuake),
+                                FullscreenMapPage(gempa: _latestQuake!),
                           ),
                         );
                       }
