@@ -6,5 +6,10 @@ python-multipart
 scikit-learn
 joblib
 email-validator
+xgboost
 google-auth
 requests
+python-dotenv
+alembic
+sqlalchemy
+pymysql

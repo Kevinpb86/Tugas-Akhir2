@@ -12,12 +12,13 @@ class _KlasifikasiSeismikPageState extends State<KlasifikasiSeismikPage> {
   final _formKey = GlobalKey<FormState>();
   final _magnitudoController = TextEditingController();
   final _kedalamanController = TextEditingController();
-  final _lintangController = TextEditingController();
-  final _bujurController = TextEditingController();
+  final _lokasiController = TextEditingController();
 
   String? _hasilKlasifikasi;
   Color _warnaKlasifikasi = Colors.grey;
   String _deskripsiKlasifikasi = '';
+  double? _hasilLatitude;
+  double? _hasilLongitude;
   bool _isLoading = false;
   String _selectedSource = 'bmkg';
 
@@ -25,8 +26,7 @@ class _KlasifikasiSeismikPageState extends State<KlasifikasiSeismikPage> {
   void dispose() {
     _magnitudoController.dispose();
     _kedalamanController.dispose();
-    _lintangController.dispose();
-    _bujurController.dispose();
+    _lokasiController.dispose();
     super.dispose();
   }
 
@@ -45,24 +45,20 @@ class _KlasifikasiSeismikPageState extends State<KlasifikasiSeismikPage> {
         double kedalaman = double.parse(
           _kedalamanController.text.replaceAll(',', '.'),
         );
-        double lintang = double.parse(
-          _lintangController.text.replaceAll(',', '.'),
-        );
-        double bujur = double.parse(
-          _bujurController.text.replaceAll(',', '.'),
-        );
+        String lokasi = _lokasiController.text.trim();
 
         // Panggil Model Machine Learning via Backend API
         final hasil = await MlService.predictRisk(
           magnitude: magnitudo,
           depth: kedalaman,
-          latitude: lintang,
-          longitude: bujur,
+          locationName: lokasi,
           source: _selectedSource,
         );
 
         setState(() {
           _hasilKlasifikasi = hasil.riskLevel;
+          _hasilLatitude = hasil.latitude;
+          _hasilLongitude = hasil.longitude;
           
           if (hasil.riskLevel == 'Tinggi' || hasil.predictionCode == 2) {
             _warnaKlasifikasi = Colors.red;
@@ -201,14 +197,14 @@ class _KlasifikasiSeismikPageState extends State<KlasifikasiSeismikPage> {
                           DropdownMenuItem(
                             value: 'bmkg',
                             child: Text(
-                              'BMKG (Lokal - 99.7%)',
+                              'BMKG (Lokal - 98.7%)',
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           DropdownMenuItem(
                             value: 'usgs',
                             child: Text(
-                              'USGS (Global - 96.1%)',
+                              'USGS (Global - 97.4%)',
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
@@ -270,62 +266,25 @@ class _KlasifikasiSeismikPageState extends State<KlasifikasiSeismikPage> {
                         },
                       ),
                       const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextFormField(
-                              controller: _lintangController,
-                              keyboardType: const TextInputType.numberWithOptions(
-                                decimal: true,
-                                signed: true,
-                              ),
-                              decoration: InputDecoration(
-                                labelText: 'Lintang Episenter',
-                                hintText: 'Contoh: -6.82',
-                                prefixIcon: const Icon(
-                                  Icons.language,
-                                  color: Color(0xFF66BB6A),
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Harap diisi';
-                                }
-                                return null;
-                              },
-                            ),
+                      TextFormField(
+                        controller: _lokasiController,
+                        decoration: InputDecoration(
+                          labelText: 'Nama Daerah / Lokasi',
+                          hintText: 'Contoh: Lembang, Bandung, Cianjur',
+                          prefixIcon: const Icon(
+                            Icons.location_on,
+                            color: Color(0xFF66BB6A),
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: TextFormField(
-                              controller: _bujurController,
-                              keyboardType: const TextInputType.numberWithOptions(
-                                decimal: true,
-                                signed: true,
-                              ),
-                              decoration: InputDecoration(
-                                labelText: 'Bujur Episenter',
-                                hintText: 'Contoh: 107.60',
-                                prefixIcon: const Icon(
-                                  Icons.explore,
-                                  color: Color(0xFFA1887F),
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Harap diisi';
-                                }
-                                return null;
-                              },
-                            ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                        ],
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Harap masukkan nama daerah atau lokasi';
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(height: 24),
                       SizedBox(
@@ -397,6 +356,19 @@ class _KlasifikasiSeismikPageState extends State<KlasifikasiSeismikPage> {
                         ),
                       ),
                       const SizedBox(height: 12),
+                      if (_hasilLatitude != null && _hasilLongitude != null) ...[
+                        Text(
+                          'Koordinat Terdeteksi: Lintang ${_hasilLatitude!.toStringAsFixed(4)}, Bujur ${_hasilLongitude!.toStringAsFixed(4)}',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            fontStyle: FontStyle.italic,
+                            color: Color(0xFF616161),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                      ],
                       Text(
                         _deskripsiKlasifikasi,
                         textAlign: TextAlign.center,

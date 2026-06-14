@@ -3,6 +3,7 @@ import 'akun.dart';
 import 'login.dart';
 import 'main.dart';
 import 'asuransi.dart';
+import 'semua_video.dart';
 import 'video_edukasi.dart';
 import 'mitigasi_gempa.dart';
 import 'package:geolocator/geolocator.dart';
@@ -105,7 +106,7 @@ class _EdukasiPageState extends State<EdukasiPage> {
               _buildHeroBanner(),
               const SizedBox(height: 24),
               const Text(
-                'Apa yang harus dilakukan saat gempa?',
+                'Pertolongan Pertama Saat Bencana',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -113,9 +114,9 @@ class _EdukasiPageState extends State<EdukasiPage> {
                 ),
               ),
               const SizedBox(height: 16),
-              _buildActionGrid(),
+              _buildFirstAidSection(),
               const SizedBox(height: 24),
-              _buildVideoHeader(),
+              _buildVideoHeader(context),
               const SizedBox(height: 16),
               _buildVideoCard(context),
               const SizedBox(height: 24),
@@ -515,11 +516,145 @@ class _EdukasiPageState extends State<EdukasiPage> {
     );
   }
 
-  Widget _buildVideoHeader() {
+  Widget _buildFirstAidSection() {
+    final items = [
+      {
+        'icon': Icons.healing,
+        'color': const Color(0xFFE53935),
+        'title': 'Hentikan Pendarahan',
+        'steps': [
+          'Tekan luka dengan kain bersih atau perban',
+          'Angkat bagian yang luka lebih tinggi dari jantung',
+          'Pertahankan tekanan selama 10–15 menit',
+          'Jangan lepas perban meski sudah basah, tambahkan di atasnya',
+        ],
+      },
+      {
+        'icon': Icons.accessibility_new,
+        'color': const Color(0xFFFF9800),
+        'title': 'Patah Tulang',
+        'steps': [
+          'Jangan paksa anggota tubuh untuk digerakkan',
+          'Stabilkan dengan bidai dari bahan keras (kayu, kardus)',
+          'Ikat bidai di atas dan bawah area patah',
+          'Segera bawa ke fasilitas kesehatan terdekat',
+        ],
+      },
+      {
+        'icon': Icons.airline_seat_flat,
+        'color': const Color(0xFF2196F3),
+        'title': 'Korban Pingsan',
+        'steps': [
+          'Baringkan korban di tempat yang aman dan datar',
+          'Longgarkan pakaian di leher dan dada',
+          'Pastikan jalan napas terbuka, miringkan kepala ke belakang',
+          'Panggil bantuan jika tidak sadar lebih dari 1 menit',
+        ],
+      },
+      {
+        'icon': Icons.local_fire_department,
+        'color': const Color(0xFFFF5722),
+        'title': 'Luka Bakar',
+        'steps': [
+          'Siram dengan air mengalir selama minimal 10 menit',
+          'Jangan pecahkan lepuhan yang terbentuk',
+          'Tutup dengan kain bersih yang tidak berbulu',
+          'Jangan oleskan pasta gigi atau minyak pada luka',
+        ],
+      },
+    ];
+
+    return Column(
+      children: items.map((item) {
+        final color = item['color'] as Color;
+        final icon = item['icon'] as IconData;
+        final title = item['title'] as String;
+        final steps = item['steps'] as List<String>;
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFEEEEEE)),
+          ),
+          child: Theme(
+            data: ThemeData().copyWith(dividerColor: Colors.transparent),
+            child: ExpansionTile(
+              leading: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: color, size: 22),
+              ),
+              title: Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1A1A1A),
+                ),
+              ),
+              subtitle: Text(
+                'Ketuk untuk melihat langkah-langkah',
+                style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+              ),
+              childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              children: steps.asMap().entries.map((entry) {
+                final i = entry.key + 1;
+                final step = entry.value;
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 24,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          color: color,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(
+                          child: Text(
+                            '$i',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          step,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Color(0xFF424242),
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildVideoHeader(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: const [
-        Text(
+      children: [
+        const Text(
           'Video Edukasi',
           style: TextStyle(
             fontSize: 16,
@@ -527,12 +662,22 @@ class _EdukasiPageState extends State<EdukasiPage> {
             color: Color(0xFF1A1A1A),
           ),
         ),
-        Text(
-          'Lihat Semua',
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF2196F3),
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const SemuaVideoPage(),
+              ),
+            );
+          },
+          child: const Text(
+            'Lihat Semua',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF2196F3),
+            ),
           ),
         ),
       ],
