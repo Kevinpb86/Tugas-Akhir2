@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'services/bmkg_service.dart';
 import 'utils/earthquake_map.dart';
+import 'gempa_detail.dart';
 
 class FullscreenMapPage extends StatefulWidget {
   final GempaModel gempa;
@@ -19,6 +21,7 @@ class FullscreenMapPage extends StatefulWidget {
 
 class _FullscreenMapPageState extends State<FullscreenMapPage> {
   String _distanceText = 'Menghitung jarak...';
+  LatLng? _userLatLng;
 
   @override
   void initState() {
@@ -64,6 +67,12 @@ class _FullscreenMapPageState extends State<FullscreenMapPage> {
       );
 
       print("[FullscreenMap] GPS coordinates: lat=${position.latitude}, lon=${position.longitude}, accuracy=${position.accuracy}m");
+
+      if (mounted) {
+        setState(() {
+          _userLatLng = LatLng(position.latitude, position.longitude);
+        });
+      }
 
       // Parse earthquake coordinates
       final coords = widget.gempa.coordinates.split(',');
@@ -147,6 +156,7 @@ class _FullscreenMapPageState extends State<FullscreenMapPage> {
             child: EarthquakeMap(
               coordinates: widget.gempa.coordinates,
               initialZoom: 7.0,
+              userLocation: _userLatLng,
             ),
           ),
           

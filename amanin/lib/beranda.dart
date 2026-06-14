@@ -953,7 +953,7 @@ class _BerandaPageState extends State<BerandaPage> {
                   _buildQuakeDetailRow(
                     Icons.track_changes,
                     _latestQuake!.dirasakan,
-                    'Wilayah Dirasakan (MMI)',
+                    'Dampak Guncangan',
                     const Color(0xFFFF5722),
                   ),
                 ],
@@ -967,6 +967,7 @@ class _BerandaPageState extends State<BerandaPage> {
                   const Color(0xFFFF9800),
                 ),
                 const SizedBox(height: 20),
+
                 SizedBox(
                   width: double.infinity,
                   height: 48,
@@ -977,7 +978,7 @@ class _BerandaPageState extends State<BerandaPage> {
                           context,
                           MaterialPageRoute(
                             builder: (context) =>
-                                GempaDetailPage(gempa: _latestQuake),
+                                FullscreenMapPage(gempa: _latestQuake!),
                           ),
                         );
                       }

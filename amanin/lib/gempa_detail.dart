@@ -1,16 +1,13 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'utils/map_utils.dart';
 import 'utils/earthquake_map.dart';
 import 'fullscreen_map.dart';
 import 'services/bmkg_service.dart';
 
 class GempaDetailPage extends StatefulWidget {
   final GempaModel? gempa;
-  
+
   const GempaDetailPage({super.key, this.gempa});
 
   @override
@@ -18,14 +15,14 @@ class GempaDetailPage extends StatefulWidget {
 }
 
 class _GempaDetailPageState extends State<GempaDetailPage> {
-  final DraggableScrollableController _sheetController = DraggableScrollableController();
+  final DraggableScrollableController _sheetController =
+      DraggableScrollableController();
 
   @override
   void dispose() {
     _sheetController.dispose();
     super.dispose();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -34,16 +31,16 @@ class _GempaDetailPageState extends State<GempaDetailPage> {
     final status = _getMagnitudeStatus(mag);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC), // White/Light background
+      backgroundColor: const Color(0xFFF8FAFC),
       body: Stack(
         children: [
-          // Background Map (Top Half)
+          // Background Map
           Positioned(
             top: 0,
             left: 0,
             right: 0,
             height: MediaQuery.of(context).size.height * 0.45,
-            child: gempa?.coordinates.isNotEmpty == true 
+            child: gempa?.coordinates.isNotEmpty == true
                 ? EarthquakeMap(
                     coordinates: gempa!.coordinates,
                     initialZoom: 7.0,
@@ -51,8 +48,8 @@ class _GempaDetailPageState extends State<GempaDetailPage> {
                   )
                 : Container(color: const Color(0xFFE2E8F0)),
           ),
-          
-          // Map Gradient Overlay (Fade to bottom)
+
+          // Gradient Overlay
           Positioned(
             top: 0,
             left: 0,
@@ -64,17 +61,17 @@ class _GempaDetailPageState extends State<GempaDetailPage> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    const Color(0xFFF8FAFC).withOpacity(0.4),
-                    const Color(0xFFF8FAFC).withOpacity(0.0),
-                    const Color(0xFFF8FAFC).withOpacity(1.0),
+                    const Color(0xFFF8FAFC).withValues(alpha: 0.3),
+                    const Color(0xFFF8FAFC).withValues(alpha: 0.0),
+                    const Color(0xFFF8FAFC).withValues(alpha: 1.0),
                   ],
-                  stops: const [0.0, 0.5, 1.0],
+                  stops: const [0.0, 0.45, 1.0],
                 ),
               ),
             ),
           ),
 
-          // Custom App Bar (Floating)
+          // AppBar
           Positioned(
             top: MediaQuery.of(context).padding.top + 10,
             left: 20,
@@ -87,44 +84,47 @@ class _GempaDetailPageState extends State<GempaDetailPage> {
                   onTap: () => Navigator.pop(context),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withValues(alpha: 0.9),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: status.color.withOpacity(0.3)),
+                    border: Border.all(
+                        color: status.color.withValues(alpha: 0.3)),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: Colors.black.withValues(alpha: 0.05),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       )
-                    ]
+                    ],
                   ),
                   child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Container(
-                        width: 8,
-                        height: 8,
+                        width: 7,
+                        height: 7,
                         decoration: BoxDecoration(
                           color: status.color,
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: status.color.withOpacity(0.5),
-                              blurRadius: 8,
+                              color: status.color.withValues(alpha: 0.5),
+                              blurRadius: 6,
                               spreadRadius: 1,
                             )
-                          ]
+                          ],
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 7),
                       Text(
-                        'UPDATE TERKINI',
+                        status.label,
                         style: GoogleFonts.poppins(
                           color: status.color,
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
-                          letterSpacing: 1.5,
+                          letterSpacing: 0.8,
                         ),
                       ),
                     ],
@@ -137,7 +137,7 @@ class _GempaDetailPageState extends State<GempaDetailPage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => FullscreenMapPage(gempa: gempa!),
+                          builder: (context) => FullscreenMapPage(gempa: gempa),
                         ),
                       );
                     }
@@ -147,74 +147,116 @@ class _GempaDetailPageState extends State<GempaDetailPage> {
             ),
           ),
 
-
-          // Scrollable Content (Draggable Sheet Style)
+          // Draggable Sheet
           Positioned.fill(
             child: DraggableScrollableSheet(
               controller: _sheetController,
-              initialChildSize: 0.65,
-              minChildSize: 0.65,
+              initialChildSize: 0.63,
+              minChildSize: 0.63,
               maxChildSize: 0.95,
               builder: (context, scrollController) {
                 return Container(
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.92),
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(40)),
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.5),
-                      width: 1.5,
-                    ),
+                    color: Colors.white,
+                    borderRadius:
+                        const BorderRadius.vertical(top: Radius.circular(36)),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 20,
-                        offset: const Offset(0, -5),
+                        color: Colors.black.withValues(alpha: 0.08),
+                        blurRadius: 24,
+                        offset: const Offset(0, -4),
                       )
-                    ]
+                    ],
                   ),
-                  child: ClipRRect(
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(40)),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                      child: SingleChildScrollView(
-                        controller: scrollController,
-                        physics: const BouncingScrollPhysics(),
-                        padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Drag Handle
-                            Center(
-                              child: Container(
-                                width: 40,
-                                height: 5,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFCBD5E1),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
+                  child: SingleChildScrollView(
+                    controller: scrollController,
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(20, 14, 20, 40),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Drag Handle
+                        Center(
+                          child: Container(
+                            width: 36,
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFDDE3EC),
+                              borderRadius: BorderRadius.circular(10),
                             ),
-                            const SizedBox(height: 32),
-                            
-                            // Magnitude Hero
-                            _buildMagnitudeSection(status, mag),
-                            const SizedBox(height: 32),
-                            
-                            // Coordinates & Location
-                            _buildLocationSection(),
-                            const SizedBox(height: 24),
-                            
-                            // Metrics Grid
-                            _buildMetricsGrid(),
-                            const SizedBox(height: 24),
-                            
-                            // Impact & Safety
-                            _buildImpactSection(status),
-                            const SizedBox(height: 24),
-                            _buildSafetySection(),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+
+                        // Magnitude Header
+                        _buildMagnitudeHeader(status, mag),
+                        const SizedBox(height: 20),
+
+                        // Info Grid: Waktu & Kedalaman
+                        Row(
+                          children: [
+                            Expanded(child: _buildInfoTile(
+                              icon: Icons.access_time_rounded,
+                              iconColor: const Color(0xFF7C3AED),
+                              label: 'Waktu',
+                              value: gempa?.jam.split(' ').first ?? '--:--',
+                              unit: gempa?.jam.split(' ').last ?? 'WIB',
+                              bgColor: const Color(0xFFF5F3FF),
+                            )),
+                            const SizedBox(width: 12),
+                            Expanded(child: _buildInfoTile(
+                              icon: Icons.straighten_rounded,
+                              iconColor: const Color(0xFF00ACC1),
+                              label: 'Kedalaman',
+                              value: (gempa?.kedalaman ?? '0 km').split(' ').first,
+                              unit: 'km',
+                              bgColor: const Color(0xFFE0F7FA),
+                            )),
                           ],
                         ),
-                      ),
+                        const SizedBox(height: 12),
+
+                        // Tanggal
+                        _buildDetailCard(
+                          icon: Icons.calendar_today_rounded,
+                          iconColor: const Color(0xFFFF9800),
+                          title: 'Tanggal',
+                          content: gempa?.tanggal ?? '-',
+                        ),
+                        const SizedBox(height: 12),
+
+                        // Pusat Gempa
+                        _buildDetailCard(
+                          icon: Icons.location_on_rounded,
+                          iconColor: const Color(0xFF00BCD4),
+                          title: 'Pusat Gempa',
+                          content: gempa?.wilayah ?? 'Lokasi tidak diketahui',
+                        ),
+                        const SizedBox(height: 12),
+
+                        // Koordinat
+                        _buildCoordinatesCard(gempa),
+                        const SizedBox(height: 12),
+
+                        // Dampak Guncangan (jika ada)
+                        if (gempa?.dirasakan.isNotEmpty == true &&
+                            gempa!.dirasakan != '-') ...[
+                          _buildDetailCard(
+                            icon: Icons.track_changes_rounded,
+                            iconColor: const Color(0xFFFF5722),
+                            title: 'Dampak Guncangan',
+                            content: gempa.dirasakan,
+                          ),
+                          const SizedBox(height: 12),
+                        ],
+
+                        // Analisis Risiko
+                        _buildRiskCard(status, mag),
+                        const SizedBox(height: 12),
+
+                        // Panduan Keselamatan
+                        _buildSafetyCard(mag),
+                      ],
                     ),
                   ),
                 );
@@ -226,63 +268,56 @@ class _GempaDetailPageState extends State<GempaDetailPage> {
     );
   }
 
-  Widget _buildGlassButton({required IconData icon, required VoidCallback onTap}) {
+  Widget _buildGlassButton(
+      {required IconData icon, required VoidCallback onTap}) {
     return GestureDetector(
       onTap: onTap,
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(11),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.8),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white.withOpacity(0.9)),
+              color: Colors.white.withValues(alpha: 0.85),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.9)),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.06),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 )
-              ]
+              ],
             ),
-            child: Icon(icon, color: const Color(0xFF1E293B), size: 20),
+            child: Icon(icon, color: const Color(0xFF1E293B), size: 18),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildMagnitudeSection(_MagnitudeStatus status, double? mag) {
-    return _buildGlassCard(
-      color: status.color.withOpacity(0.05),
-      borderColor: status.color.withOpacity(0.2),
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+  Widget _buildMagnitudeHeader(_MagnitudeStatus status, double? mag) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: status.color.withValues(alpha: 0.07),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: status.color.withValues(alpha: 0.18)),
+      ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Icon(Icons.monitor_heart_rounded, color: status.color, size: 20),
-                  const SizedBox(width: 8),
-                  Text(
-                    'SKALA RICHTER',
-                    style: GoogleFonts.poppins(
-                      color: const Color(0xFF64748B),
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 2,
-                    ),
-                  ),
-                ],
+              Text(
+                'Magnitudo',
+                style: GoogleFonts.poppins(
+                  color: const Color(0xFF64748B),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
-
-              const SizedBox(height: 8),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.baseline,
                 textBaseline: TextBaseline.alphabetic,
@@ -291,407 +326,498 @@ class _GempaDetailPageState extends State<GempaDetailPage> {
                     widget.gempa?.magnitude ?? '0.0',
                     style: GoogleFonts.poppins(
                       color: const Color(0xFF1E293B),
-                      fontSize: 56,
+                      fontSize: 54,
                       fontWeight: FontWeight.w800,
-                      height: 1.1,
-                      letterSpacing: -1.5,
+                      height: 1.0,
+                      letterSpacing: -2,
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 6),
                   Text(
-                    'SR',
+                    'Mw',
                     style: GoogleFonts.poppins(
                       color: status.color,
-                      fontSize: 20,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ],
               ),
+              const SizedBox(height: 4),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: status.color.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  status.label,
+                  style: GoogleFonts.poppins(
+                    color: status.color,
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
             ],
           ),
+          const Spacer(),
           Icon(
-            Icons.waves_rounded,
-            color: status.color.withOpacity(0.2),
-            size: 64,
+            status.icon,
+            color: status.color.withValues(alpha: 0.25),
+            size: 80,
           ),
         ],
       ),
     );
   }
 
+  Widget _buildInfoTile({
+    required IconData icon,
+    required Color iconColor,
+    required String label,
+    required String value,
+    required String unit,
+    required Color bgColor,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: iconColor, size: 20),
+          const SizedBox(height: 12),
+          Text(
+            label,
+            style: GoogleFonts.poppins(
+              color: const Color(0xFF64748B),
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            value,
+            style: GoogleFonts.poppins(
+              color: const Color(0xFF1E293B),
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              height: 1.1,
+            ),
+          ),
+          Text(
+            unit,
+            style: GoogleFonts.poppins(
+              color: iconColor,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-  Widget _buildLocationSection() {
-    final wilayah = widget.gempa?.wilayah ?? 'Lokasi tidak diketahui';
+  Widget _buildDetailCard({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String content,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE9EEF4)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(9),
+            decoration: BoxDecoration(
+              color: iconColor.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: iconColor, size: 18),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: GoogleFonts.poppins(
+                    color: const Color(0xFF94A3B8),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  content,
+                  style: GoogleFonts.poppins(
+                    color: const Color(0xFF1E293B),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCoordinatesCard(GempaModel? gempa) {
+    final coords = gempa?.coordinates.split(',') ?? ['-', '-'];
+    final lat = coords.isNotEmpty ? coords[0].trim() : '-';
+    final lon = coords.length > 1 ? coords[1].trim() : '-';
+    final wilayah = gempa?.wilayah ?? '';
     final isDarat = wilayah.toLowerCase().contains('darat');
 
-    return _buildGlassCard(
-      color: const Color(0xFFF0F9FF), // Soft Sky Blue
-      borderColor: const Color(0xFFE0F2FE),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE9EEF4)),
+      ),
+      child: Row(
         children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF00BCD4).withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(12),
+          Expanded(child: _buildCoordItem('Lintang', lat, Icons.south_rounded)),
+          Container(width: 1, height: 36, color: const Color(0xFFE2E8F0)),
+          Expanded(child: _buildCoordItem('Bujur', lon, Icons.east_rounded)),
+          Container(width: 1, height: 36, color: const Color(0xFFE2E8F0)),
+          Expanded(
+            child: Column(
+              children: [
+                Icon(
+                  isDarat ? Icons.landscape_rounded : Icons.water_rounded,
+                  size: 14,
+                  color: isDarat
+                      ? const Color(0xFFF57C00)
+                      : const Color(0xFF0288D1),
                 ),
-                child: const Icon(Icons.location_on_rounded, color: Color(0xFF00BCD4), size: 20),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'PUSAT GEMPA',
-                      style: GoogleFonts.poppins(
-                        color: const Color(0xFF64748B),
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.5,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      wilayah,
-                      style: GoogleFonts.poppins(
-                        color: const Color(0xFF1E293B),
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        height: 1.3,
-                      ),
-                    ),
-                  ],
+                const SizedBox(height: 4),
+                Text(
+                  'Area',
+                  style: GoogleFonts.poppins(
+                      color: const Color(0xFF94A3B8),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w500),
                 ),
-              ),
-            ],
-          ),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 16),
-            child: Divider(color: Color(0xFFF1F5F9), height: 1),
-          ),
-          Row(
-            children: [
-              Expanded(
-                child: _buildCoordinateColumn('LINTANG', widget.gempa?.coordinates.split(',').first ?? '-', Icons.south_rounded),
-              ),
-              Container(width: 1, height: 40, color: const Color(0xFFF1F5F9)),
-              Expanded(
-                child: _buildCoordinateColumn('BUJUR', widget.gempa?.coordinates.split(',').last ?? '-', Icons.east_rounded),
-              ),
-              Container(width: 1, height: 40, color: const Color(0xFFF1F5F9)),
-              Expanded(
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(isDarat ? Icons.landscape_rounded : Icons.water_rounded, size: 12, color: const Color(0xFF64748B)),
-                        const SizedBox(width: 6),
-                        Text(
-                          'AREA',
-                          style: GoogleFonts.poppins(color: const Color(0xFF64748B), fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      isDarat ? 'DARAT' : 'LAUT',
-                      style: GoogleFonts.poppins(
-                        color: isDarat ? const Color(0xFFF57C00) : const Color(0xFF0288D1),
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
+                const SizedBox(height: 2),
+                Text(
+                  isDarat ? 'Darat' : 'Laut',
+                  style: GoogleFonts.poppins(
+                    color: isDarat
+                        ? const Color(0xFFF57C00)
+                        : const Color(0xFF0288D1),
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildCoordinateColumn(String label, String value, IconData icon) {
+  Widget _buildCoordItem(String label, String value, IconData icon) {
     return Column(
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 12, color: const Color(0xFF64748B)),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: GoogleFonts.poppins(color: const Color(0xFF64748B), fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1),
-            ),
-          ],
+        Icon(icon, size: 14, color: const Color(0xFF94A3B8)),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: GoogleFonts.poppins(
+              color: const Color(0xFF94A3B8),
+              fontSize: 10,
+              fontWeight: FontWeight.w500),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 2),
         Text(
           value,
-          style: GoogleFonts.poppins(color: const Color(0xFF1E293B), fontSize: 15, fontWeight: FontWeight.bold),
+          style: GoogleFonts.poppins(
+              color: const Color(0xFF1E293B),
+              fontSize: 13,
+              fontWeight: FontWeight.bold),
         ),
       ],
     );
   }
 
+  Widget _buildRiskCard(_MagnitudeStatus status, double? mag) {
+    final items = [
+      _RiskItem(
+        icon: Icons.vibration_rounded,
+        color: const Color(0xFF7C3AED),
+        label: 'Intensitas getaran',
+        value: _getIntensityDesc(mag),
+      ),
+      _RiskItem(
+        icon: Icons.home_work_rounded,
+        color: status.color,
+        label: 'Risiko kerusakan',
+        value: _getMagnitudeWarning(mag),
+        badge: status.label,
+        badgeColor: status.color,
+      ),
+      _RiskItem(
+        icon: Icons.waves_rounded,
+        color: const Color(0xFF0288D1),
+        label: 'Potensi tsunami',
+        value: _getTsunamiRisk(mag, widget.gempa?.wilayah ?? ''),
+        badge: _getTsunamiBadge(mag, widget.gempa?.wilayah ?? ''),
+        badgeColor: _getTsunamiColor(mag, widget.gempa?.wilayah ?? ''),
+      ),
+    ];
 
-  Widget _buildMetricsGrid() {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildGlassCard(
-            color: const Color(0xFFF5F3FF), // Soft Purple
-            borderColor: const Color(0xFFEDE9FE),
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(Icons.access_time_rounded, color: const Color(0xFF673AB7), size: 24),
-                const SizedBox(height: 16),
-                Text(
-                  'WAKTU',
-                  style: GoogleFonts.poppins(color: const Color(0xFF64748B), fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  widget.gempa?.jam.split(' ').first ?? '00:00',
-                  style: GoogleFonts.poppins(color: const Color(0xFF1E293B), fontSize: 22, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  widget.gempa?.jam.split(' ').last ?? 'WIB',
-                  style: GoogleFonts.poppins(color: const Color(0xFF673AB7), fontSize: 12, fontWeight: FontWeight.w600),
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: _buildGlassCard(
-            color: const Color(0xFFECFEFF), // Soft Cyan
-            borderColor: const Color(0xFFCFFAFE),
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(Icons.straighten_rounded, color: const Color(0xFF00BCD4), size: 24),
-                const SizedBox(height: 16),
-                Text(
-                  'KEDALAMAN',
-                  style: GoogleFonts.poppins(color: const Color(0xFF64748B), fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  (widget.gempa?.kedalaman ?? '0 km').split(' ').first,
-                  style: GoogleFonts.poppins(color: const Color(0xFF1E293B), fontSize: 22, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  'Kilometer',
-                  style: GoogleFonts.poppins(color: const Color(0xFF00BCD4), fontSize: 12, fontWeight: FontWeight.w600),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildImpactSection(_MagnitudeStatus status) {
-    return _buildGlassCard(
-      color: const Color(0xFFEEF2FF), // Soft Indigo
-      borderColor: const Color(0xFFE0E7FF),
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE9EEF4)),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(Icons.analytics_rounded, color: Color(0xFF64748B), size: 20),
-              const SizedBox(width: 12),
+              const Icon(Icons.analytics_rounded,
+                  color: Color(0xFF64748B), size: 17),
+              const SizedBox(width: 8),
               Text(
-                'ANALISIS DAMPAK',
+                'Analisis Dampak',
                 style: GoogleFonts.poppins(
                   color: const Color(0xFF1E293B),
                   fontSize: 13,
                   fontWeight: FontWeight.bold,
-                  letterSpacing: 1,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 24),
-          _buildImpactRow(
-            icon: Icons.vibration_rounded,
-            color: const Color(0xFF673AB7),
-            title: 'INTENSITAS GETARAN',
-            desc: 'Dirasakan di wilayah pusat gempa',
-          ),
           const SizedBox(height: 16),
-          _buildImpactRow(
-            icon: Icons.waves_rounded,
-            color: const Color(0xFF00BCD4),
-            title: 'POTENSI TSUNAMI',
-            desc: 'Tidak berpotensi tsunami',
-            badge: 'AMAN',
-            badgeColor: const Color(0xFF00BCD4),
-          ),
-          const SizedBox(height: 16),
-          _buildImpactRow(
-            icon: Icons.home_work_rounded,
-            color: status.color,
-            title: 'RISIKO KERUSAKAN',
-            desc: _getMagnitudeWarning(double.tryParse(widget.gempa?.magnitude ?? '0')),
-            badge: status.label,
-            badgeColor: status.color,
-          ),
+          ...items.map((item) => _buildRiskRow(item)),
         ],
       ),
     );
   }
 
-  Widget _buildImpactRow({required IconData icon, required Color color, required String title, required String desc, String? badge, Color? badgeColor}) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(icon, color: color, size: 20),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: GoogleFonts.poppins(color: const Color(0xFF64748B), fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.5),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                desc,
-                style: GoogleFonts.poppins(color: const Color(0xFF1E293B), fontSize: 13, fontWeight: FontWeight.w500),
-              ),
-            ],
-          ),
-        ),
-        if (badge != null && badgeColor != null)
+  Widget _buildRiskRow(_RiskItem item) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Row(
+        children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            padding: const EdgeInsets.all(9),
             decoration: BoxDecoration(
-              color: badgeColor.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: badgeColor.withOpacity(0.3)),
+              color: item.color.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(10),
             ),
-            child: Text(
-              badge,
-              style: GoogleFonts.poppins(color: badgeColor, fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+            child: Icon(item.icon, color: item.color, size: 17),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.label,
+                  style: GoogleFonts.poppins(
+                      color: const Color(0xFF94A3B8),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w500),
+                ),
+                Text(
+                  item.value,
+                  style: GoogleFonts.poppins(
+                      color: const Color(0xFF1E293B),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600),
+                ),
+              ],
             ),
           ),
-      ],
+          if (item.badge != null && item.badgeColor != null)
+            Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+              decoration: BoxDecoration(
+                color: item.badgeColor!.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                    color: item.badgeColor!.withValues(alpha: 0.3)),
+              ),
+              child: Text(
+                item.badge!,
+                style: GoogleFonts.poppins(
+                    color: item.badgeColor,
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.4),
+              ),
+            ),
+        ],
+      ),
     );
   }
 
-  Widget _buildSafetySection() {
-    return _buildGlassCard(
-      color: const Color(0xFFFEF2F2), // Light red
-      borderColor: const Color(0xFFFEE2E2),
+  Widget _buildSafetyCard(double? mag) {
+    final tips = _getSafetyTips(mag);
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF8F0),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFFFE0B2)),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(Icons.security_rounded, color: Color(0xFFF44336), size: 20),
-              const SizedBox(width: 12),
+              const Icon(Icons.shield_rounded,
+                  color: Color(0xFFF57C00), size: 17),
+              const SizedBox(width: 8),
               Text(
-                'PANDUAN KESELAMATAN',
+                'Panduan Keselamatan',
                 style: GoogleFonts.poppins(
-                  color: const Color(0xFFF44336),
+                  color: const Color(0xFFF57C00),
                   fontSize: 13,
                   fontWeight: FontWeight.bold,
-                  letterSpacing: 1,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 20),
-          _buildSafetyRow('Hindari bangunan yang retak atau rusak akibat gempa.'),
-          _buildSafetyRow('Waspada terhadap potensi gempa susulan yang mungkin terjadi.'),
-          _buildSafetyRow('Pastikan jalur evakuasi di sekitar Anda aman dan terbuka.'),
-          _buildSafetyRow('Pantau selalu informasi resmi dari kanal BMKG.'),
+          const SizedBox(height: 14),
+          ...tips.map((tip) => Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.only(top: 5),
+                      child: Icon(Icons.circle,
+                          color: Color(0xFFF57C00), size: 5),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        tip,
+                        style: GoogleFonts.poppins(
+                            color: const Color(0xFF4A3800),
+                            fontSize: 12,
+                            height: 1.5),
+                      ),
+                    ),
+                  ],
+                ),
+              )),
         ],
       ),
     );
   }
 
-  Widget _buildSafetyRow(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Padding(
-            padding: EdgeInsets.only(top: 4),
-            child: Icon(Icons.circle, color: Color(0xFFF44336), size: 6),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              text,
-              style: GoogleFonts.poppins(color: const Color(0xFF334155), fontSize: 13, height: 1.5),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildGlassCard({required Widget child, EdgeInsetsGeometry? padding, Color? color, Color? borderColor}) {
-    return Container(
-      padding: padding ?? const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: color ?? Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: borderColor ?? const Color(0xFFF1F5F9),
-          width: 1.5,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
-          )
-        ]
-      ),
-      child: child,
-    );
-  }
-
+  // ─── Helpers ───────────────────────────────────────────────
   _MagnitudeStatus _getMagnitudeStatus(double? mag) {
-    if (mag == null) return _MagnitudeStatus('MOHON TUNGGU', Colors.grey, Icons.help_outline);
-    if (mag < 4.0) {
-      return _MagnitudeStatus('GEMPA RINGAN', const Color(0xFF00BCD4), Icons.sentiment_satisfied_rounded); // Cyan
-    } else if (mag < 6.0) {
-      return _MagnitudeStatus('GEMPA SEDANG', const Color(0xFFFF9800), Icons.warning_amber_rounded); // Orange
-    } else {
-      return _MagnitudeStatus('GEMPA KUAT', const Color(0xFFF44336), Icons.warning_rounded); // Red
+    if (mag == null) {
+      return _MagnitudeStatus('Memuat...', Colors.grey, Icons.help_outline);
     }
+    if (mag < 4.0) {
+      return _MagnitudeStatus(
+          'Gempa Ringan', const Color(0xFF00ACC1), Icons.sentiment_satisfied_rounded);
+    }
+    if (mag < 6.0) {
+      return _MagnitudeStatus(
+          'Gempa Sedang', const Color(0xFFFF9800), Icons.warning_amber_rounded);
+    }
+    return _MagnitudeStatus(
+        'Gempa Kuat', const Color(0xFFF44336), Icons.warning_rounded);
   }
 
   String _getMagnitudeWarning(double? mag) {
-    if (mag == null) return 'Data sedang diproses...';
-    if (mag < 4.0) return 'Dirasakan oleh beberapa orang';
-    if (mag < 6.0) return 'Dapat menyebabkan kerusakan ringan';
-    return 'Berpotensi bahaya dan kerusakan luas';
+    if (mag == null) return 'Data sedang diproses';
+    if (mag < 3.0) return 'Hampir tidak dirasakan';
+    if (mag < 4.0) return 'Dirasakan oleh sebagian orang';
+    if (mag < 5.0) return 'Terasa cukup kuat, kerusakan ringan mungkin terjadi';
+    if (mag < 6.0) return 'Dapat menyebabkan kerusakan pada bangunan lemah';
+    if (mag < 7.0) return 'Berpotensi bahaya, kerusakan cukup luas';
+    return 'Sangat berbahaya, kerusakan luas dan masif';
+  }
+
+  String _getIntensityDesc(double? mag) {
+    if (mag == null) return '-';
+    if (mag < 3.0) return 'Mikro — tidak terasa oleh manusia';
+    if (mag < 4.0) return 'Lemah — dirasakan beberapa orang';
+    if (mag < 5.0) return 'Sedang — benda berguncang, dirasakan banyak orang';
+    if (mag < 6.0) return 'Kuat — getaran terasa di area luas';
+    return 'Sangat kuat — getaran besar dan luas';
+  }
+
+  String _getTsunamiRisk(double? mag, String wilayah) {
+    final isSea = !wilayah.toLowerCase().contains('darat');
+    if (mag == null) return 'Data tidak tersedia';
+    if (mag >= 7.0 && isSea) return 'Perhatikan peringatan tsunami';
+    if (mag >= 6.0 && isSea) return 'Pantau informasi BMKG secara berkala';
+    return 'Tidak berpotensi tsunami';
+  }
+
+  String _getTsunamiBadge(double? mag, String wilayah) {
+    final isSea = !wilayah.toLowerCase().contains('darat');
+    if (mag == null) return 'N/A';
+    if (mag >= 7.0 && isSea) return 'WASPADA';
+    if (mag >= 6.0 && isSea) return 'PANTAU';
+    return 'AMAN';
+  }
+
+  Color _getTsunamiColor(double? mag, String wilayah) {
+    final isSea = !wilayah.toLowerCase().contains('darat');
+    if (mag == null) return Colors.grey;
+    if (mag >= 7.0 && isSea) return const Color(0xFFF44336);
+    if (mag >= 6.0 && isSea) return const Color(0xFFFF9800);
+    return const Color(0xFF00ACC1);
+  }
+
+  List<String> _getSafetyTips(double? mag) {
+    if (mag == null || mag < 4.0) {
+      return [
+        'Tetap tenang, gempa kecil ini tidak berbahaya.',
+        'Pantau informasi BMKG untuk memastikan tidak ada gempa susulan.',
+        'Periksa sekitar Anda untuk memastikan tidak ada kerusakan.',
+      ];
+    } else if (mag < 6.0) {
+      return [
+        'Berlindung di bawah meja atau benda kokoh jika masih dalam guncangan.',
+        'Jauhi kaca, lemari, dan benda yang bisa jatuh.',
+        'Setelah guncangan berhenti, keluar dengan tertib melalui tangga.',
+        'Waspada terhadap kemungkinan gempa susulan.',
+        'Pantau saluran resmi BMKG untuk informasi terkini.',
+      ];
+    } else {
+      return [
+        'Segera evakuasi ke tempat terbuka yang aman.',
+        'Hindari bangunan yang berpotensi runtuh atau retak parah.',
+        'Jika berada di pantai, segera menjauh ke dataran tinggi.',
+        'Gunakan tangga darurat, jangan gunakan lift.',
+        'Ikuti arahan petugas dan tim SAR setempat.',
+        'Pantau informasi resmi dari BMKG dan BNPB.',
+      ];
+    }
   }
 }
 
@@ -701,4 +827,22 @@ class _MagnitudeStatus {
   final IconData icon;
 
   _MagnitudeStatus(this.label, this.color, this.icon);
+}
+
+class _RiskItem {
+  final IconData icon;
+  final Color color;
+  final String label;
+  final String value;
+  final String? badge;
+  final Color? badgeColor;
+
+  _RiskItem({
+    required this.icon,
+    required this.color,
+    required this.label,
+    required this.value,
+    this.badge,
+    this.badgeColor,
+  });
 }
