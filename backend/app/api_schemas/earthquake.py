@@ -1,15 +1,6 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 
-class UserRegister(BaseModel):
-    full_name: str
-    email: EmailStr
-    password: str
-
-class UserLogin(BaseModel):
-    email: EmailStr
-    password: str
-
 class EarthquakeData(BaseModel):
     magnitude: float
     depth: float
@@ -28,13 +19,3 @@ class AnomaliData(BaseModel):
     bulan: int
     jam: int
 
-class GoogleAuthRequest(BaseModel):
-    email: str
-    full_name: str
-    google_id: str
-
-class FacebookAuthRequest(BaseModel):
-    access_token: str
-
-class ForgotPasswordRequest(BaseModel):
-    email: EmailStr

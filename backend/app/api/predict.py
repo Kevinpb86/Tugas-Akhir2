@@ -1,6 +1,6 @@
 import numpy as np
 from fastapi import APIRouter, HTTPException
-from app.models.schemas import EarthquakeData, AnomaliData
+from app.api_schemas.earthquake import EarthquakeData, AnomaliData
 from app.services.ml_service import ml_models, ml_scalers, anomali_model, anomali_scaler, resolve_coordinates, validate_study_area
 
 router = APIRouter()
