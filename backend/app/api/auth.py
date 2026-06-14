@@ -7,8 +7,8 @@ from fastapi import APIRouter, HTTPException
 
 from app.config.database import get_db
 from app.auth.security import pwd_context
-from app.models.schemas import UserRegister, UserLogin, GoogleAuthRequest, FacebookAuthRequest, ForgotPasswordRequest
-from app.config.db import SENDER_EMAIL, APP_PASSWORD
+from app.api_schemas.auth import UserRegister, UserLogin, GoogleAuthRequest, FacebookAuthRequest, ForgotPasswordRequest
+from app.config.config import SENDER_EMAIL, APP_PASSWORD
 
 router = APIRouter()
 
