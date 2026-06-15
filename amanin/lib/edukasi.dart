@@ -2,9 +2,91 @@ import 'package:flutter/material.dart';
 import 'akun.dart';
 import 'login.dart';
 import 'main.dart';
+import 'asuransi.dart';
+import 'semua_video.dart';
+import 'video_edukasi.dart';
+import 'mitigasi_gempa.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
-class EdukasiPage extends StatelessWidget {
+class EdukasiPage extends StatefulWidget {
   const EdukasiPage({super.key});
+
+  @override
+  State<EdukasiPage> createState() => _EdukasiPageState();
+}
+
+class _EdukasiPageState extends State<EdukasiPage> {
+  String _currentCityName = 'Memuat lokasi...';
+
+  @override
+  void initState() {
+    super.initState();
+    _requestLocationPermission();
+  }
+
+  Future<void> _requestLocationPermission() async {
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) return;
+      
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) return;
+      }
+      
+      if (permission == LocationPermission.deniedForever) return;
+      
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+      
+      print("[Edukasi] GPS coordinates: lat=${position.latitude}, lon=${position.longitude}, accuracy=${position.accuracy}m");
+      
+      String cityName = 'Jakarta Pusat';
+      try {
+        List<Placemark> placemarks = await placemarkFromCoordinates(
+          position.latitude,
+          position.longitude,
+        );
+        if (placemarks.isNotEmpty) {
+          Placemark place = placemarks[0];
+          print("[Edukasi] Geocoding result: subLocality=${place.subLocality}, locality=${place.locality}, subAdmin=${place.subAdministrativeArea}, admin=${place.administrativeArea}");
+          cityName = place.locality ?? place.subLocality ?? place.subAdministrativeArea ?? 'Jakarta Pusat';
+          cityName = cityName.replaceAll('Kabupaten ', '').replaceAll('Kota ', '').replaceAll(' City', '').replaceAll('Kecamatan ', '').replaceAll('Kelurahan ', '').replaceAll('Desa ', '');
+        }
+      } catch (e) {
+        print("[Edukasi] Geocoding package error: $e, falling back to Nominatim");
+        try {
+          final url = Uri.parse('https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.latitude}&lon=${position.longitude}&zoom=16&addressdetails=1');
+          final response = await http.get(url, headers: {'User-Agent': 'AmaninApp/1.0'});
+          if (response.statusCode == 200) {
+            final data = json.decode(response.body);
+            print("[Edukasi] Nominatim full address: ${data['address']}");
+            if (data['address'] != null) {
+              final addr = data['address'];
+              cityName = addr['town'] ?? addr['subdistrict'] ?? addr['suburb'] ?? addr['city_district'] ?? addr['city'] ?? addr['county'] ?? addr['state'] ?? 'Jakarta Pusat';
+              cityName = cityName.replaceAll('Kabupaten ', '').replaceAll('Kota ', '').replaceAll('Kecamatan ', '').replaceAll('Kelurahan ', '').replaceAll('Desa ', '');
+              print("[Edukasi] Final city name: $cityName");
+            }
+          }
+        } catch (fallbackError) {
+          print("Nominatim fallback error: $fallbackError");
+        }
+      }
+      
+      if (mounted) {
+        setState(() {
+          _currentCityName = cityName;
+        });
+      }
+    } catch (e) {
+      print("Location permission error: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +106,7 @@ class EdukasiPage extends StatelessWidget {
               _buildHeroBanner(),
               const SizedBox(height: 24),
               const Text(
-                'Apa yang harus dilakukan saat gempa?',
+                'Pertolongan Pertama Saat Bencana',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -32,11 +114,11 @@ class EdukasiPage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              _buildActionGrid(),
+              _buildFirstAidSection(),
               const SizedBox(height: 24),
-              _buildVideoHeader(),
+              _buildVideoHeader(context),
               const SizedBox(height: 16),
-              _buildVideoCard(),
+              _buildVideoCard(context),
               const SizedBox(height: 24),
               const Text(
                 'Tas Siaga Bencana (TSB)',
@@ -49,7 +131,7 @@ class EdukasiPage extends StatelessWidget {
               const SizedBox(height: 16),
               _buildTsbCard(),
               const SizedBox(height: 24),
-              _buildInsuranceSection(),
+              _buildInsuranceSection(context),
               const SizedBox(height: 100), // padding for floating bottom nav
             ],
           ),
@@ -77,18 +159,23 @@ class EdukasiPage extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: const Color(0xFFE3F2FD),
+                color: const Color(0xFFE0F7FA), // Light cyan
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
-                children: const [
-                  Icon(Icons.location_on, color: Color(0xFF2196F3), size: 12),
-                  SizedBox(width: 4),
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.location_on,
+                    color: Color(0xFF00BCD4),
+                    size: 14,
+                  ),
+                  const SizedBox(width: 4),
                   Text(
-                    'Jakarta Pusat',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFF2196F3),
+                    _currentCityName,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF00BCD4),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -107,7 +194,7 @@ class EdukasiPage extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 10,
                     offset: const Offset(0, 2),
                   ),
@@ -159,7 +246,7 @@ class EdukasiPage extends StatelessWidget {
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.05),
+                                color: Colors.black.withValues(alpha: 0.05),
                                 blurRadius: 10,
                                 offset: const Offset(0, 2),
                               ),
@@ -194,7 +281,7 @@ class EdukasiPage extends StatelessWidget {
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFF00BCD4).withOpacity(0.3),
+                                color: const Color(0xFF00BCD4).withValues(alpha: 0.3),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
                               ),
@@ -251,7 +338,7 @@ class EdukasiPage extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF2196F3).withOpacity(0.3),
+            color: const Color(0xFF2196F3).withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -263,7 +350,7 @@ class EdukasiPage extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(20),
             ),
             child: const Text(
@@ -288,33 +375,42 @@ class EdukasiPage extends StatelessWidget {
           Text(
             'Pelajari langkah-langkah keselamatan sebelum, saat, dan sesudah terjadi gempa bumi untuk melindungi diri dan keluarga.',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.9),
+              color: Colors.white.withValues(alpha: 0.9),
               fontSize: 13,
               height: 1.4,
             ),
           ),
           const SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: () {},
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: const Color(0xFF1E88E5),
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: const [
-                Text(
-                  'Mulai Belajar',
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+          Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const MitigasiGempaPage(),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: const Color(0xFF1E88E5),
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                SizedBox(width: 4),
-                Icon(Icons.arrow_forward, size: 14),
-              ],
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Text(
+                    'Mulai Belajar',
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(width: 4),
+                  Icon(Icons.arrow_forward, size: 14),
+                ],
+              ),
             ),
           ),
         ],
@@ -391,7 +487,7 @@ class EdukasiPage extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: color, size: 20),
@@ -420,11 +516,145 @@ class EdukasiPage extends StatelessWidget {
     );
   }
 
-  Widget _buildVideoHeader() {
+  Widget _buildFirstAidSection() {
+    final items = [
+      {
+        'icon': Icons.healing,
+        'color': const Color(0xFFE53935),
+        'title': 'Hentikan Pendarahan',
+        'steps': [
+          'Tekan luka dengan kain bersih atau perban',
+          'Angkat bagian yang luka lebih tinggi dari jantung',
+          'Pertahankan tekanan selama 10–15 menit',
+          'Jangan lepas perban meski sudah basah, tambahkan di atasnya',
+        ],
+      },
+      {
+        'icon': Icons.accessibility_new,
+        'color': const Color(0xFFFF9800),
+        'title': 'Patah Tulang',
+        'steps': [
+          'Jangan paksa anggota tubuh untuk digerakkan',
+          'Stabilkan dengan bidai dari bahan keras (kayu, kardus)',
+          'Ikat bidai di atas dan bawah area patah',
+          'Segera bawa ke fasilitas kesehatan terdekat',
+        ],
+      },
+      {
+        'icon': Icons.airline_seat_flat,
+        'color': const Color(0xFF2196F3),
+        'title': 'Korban Pingsan',
+        'steps': [
+          'Baringkan korban di tempat yang aman dan datar',
+          'Longgarkan pakaian di leher dan dada',
+          'Pastikan jalan napas terbuka, miringkan kepala ke belakang',
+          'Panggil bantuan jika tidak sadar lebih dari 1 menit',
+        ],
+      },
+      {
+        'icon': Icons.local_fire_department,
+        'color': const Color(0xFFFF5722),
+        'title': 'Luka Bakar',
+        'steps': [
+          'Siram dengan air mengalir selama minimal 10 menit',
+          'Jangan pecahkan lepuhan yang terbentuk',
+          'Tutup dengan kain bersih yang tidak berbulu',
+          'Jangan oleskan pasta gigi atau minyak pada luka',
+        ],
+      },
+    ];
+
+    return Column(
+      children: items.map((item) {
+        final color = item['color'] as Color;
+        final icon = item['icon'] as IconData;
+        final title = item['title'] as String;
+        final steps = item['steps'] as List<String>;
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFEEEEEE)),
+          ),
+          child: Theme(
+            data: ThemeData().copyWith(dividerColor: Colors.transparent),
+            child: ExpansionTile(
+              leading: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: color, size: 22),
+              ),
+              title: Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1A1A1A),
+                ),
+              ),
+              subtitle: Text(
+                'Ketuk untuk melihat langkah-langkah',
+                style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+              ),
+              childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              children: steps.asMap().entries.map((entry) {
+                final i = entry.key + 1;
+                final step = entry.value;
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 24,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          color: color,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(
+                          child: Text(
+                            '$i',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          step,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Color(0xFF424242),
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildVideoHeader(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: const [
-        Text(
+      children: [
+        const Text(
           'Video Edukasi',
           style: TextStyle(
             fontSize: 16,
@@ -432,21 +662,38 @@ class EdukasiPage extends StatelessWidget {
             color: Color(0xFF1A1A1A),
           ),
         ),
-        Text(
-          'Lihat Semua',
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF2196F3),
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const SemuaVideoPage(),
+              ),
+            );
+          },
+          child: const Text(
+            'Lihat Semua',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF2196F3),
+            ),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildVideoCard() {
-    return Container(
-      decoration: BoxDecoration(
+  Widget _buildVideoCard(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const VideoEdukasiPage()),
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: const Color(0xFFEEEEEE), width: 1),
@@ -482,7 +729,7 @@ class EdukasiPage extends StatelessWidget {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withValues(alpha: 0.1),
                           blurRadius: 10,
                         ),
                       ],
@@ -503,7 +750,7 @@ class EdukasiPage extends StatelessWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.7),
+                      color: Colors.black.withValues(alpha: 0.7),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: const Text(
@@ -564,8 +811,9 @@ class EdukasiPage extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildTsbCard() {
     return Container(
@@ -672,7 +920,7 @@ class EdukasiPage extends StatelessWidget {
     );
   }
 
-  Widget _buildInsuranceSection() {
+  Widget _buildInsuranceSection(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -680,7 +928,7 @@ class EdukasiPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -765,7 +1013,12 @@ class EdukasiPage extends StatelessWidget {
             width: double.infinity,
             height: 48,
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AsuransiWebPage()),
+                );
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF03A9F4),
                 foregroundColor: Colors.white,

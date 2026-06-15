@@ -1,0 +1,6 @@
+# Claude Code
+CLAUDE.md
+.claude/
+.env
+__pycache__/
+*.pkl

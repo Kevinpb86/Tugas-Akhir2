@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'hitung_dampak_gempa.dart';
+import 'klasifikasi_seismik.dart';
+import 'deteksi_anomali.dart';
 
 class FiturPage extends StatelessWidget {
-  const FiturPage({Key? key}) : super(key: key);
+  const FiturPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -26,15 +27,15 @@ class FiturPage extends StatelessWidget {
         children: [
           _buildFeatureCard(
             context,
-            icon: Icons.analytics_outlined,
-            title: 'Hitung Dampak Guncangan Gempa',
-            description: 'Estimasi dampak guncangan gempa pada lokasi Anda.',
-            color: const Color(0xFF42A5F5),
+            icon: Icons.memory,
+            title: 'Klasifikasi Kerentanan Seismik (SVM)',
+            description: 'Klasifikasi tingkat kerentanan seismik secara otomatis menggunakan Machine Learning.',
+            color: const Color(0xFFEF5350),
             onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const HitungDampakGempaPage(),
+                  builder: (context) => const KlasifikasiSeismikPage(),
                 ),
               );
             },
@@ -42,18 +43,18 @@ class FiturPage extends StatelessWidget {
           const SizedBox(height: 16),
           _buildFeatureCard(
             context,
-            icon: Icons.contact_phone_outlined,
-            title: 'Fitur 2',
-            description: 'Deskripsi untuk Fitur 2.',
-            color: const Color(0xFFEF5350),
-          ),
-          const SizedBox(height: 16),
-          _buildFeatureCard(
-            context,
             icon: Icons.medical_services_outlined,
-            title: 'Fitur 3',
-            description: 'Deskripsi untuk Fitur 3.',
+            title: 'Deteksi Anomali Gempa',
+            description: 'Deteksi pola anomali seismik secara otomatis sebagai indikator awal aktivitas gempa.',
             color: const Color(0xFF66BB6A),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const DeteksiAnomaliPage(),
+                ),
+              );
+            },
           ),
           const SizedBox(height: 16),
           _buildFeatureCard(
@@ -82,7 +83,7 @@ class FiturPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 15,
             offset: const Offset(0, 4),
           ),
@@ -106,7 +107,7 @@ class FiturPage extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
+                    color: color.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(icon, color: color, size: 32),
@@ -139,7 +140,7 @@ class FiturPage extends StatelessWidget {
                 const SizedBox(width: 12),
                 Icon(
                   Icons.arrow_forward_ios,
-                  color: const Color(0xFF9E9E9E).withOpacity(0.5),
+                  color: const Color(0xFF9E9E9E).withValues(alpha: 0.5),
                   size: 16,
                 ),
               ],

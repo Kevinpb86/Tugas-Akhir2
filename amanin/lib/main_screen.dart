@@ -22,7 +22,11 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     _pages = [
-      const BerandaPage(),
+      BerandaPage(
+        onNavigateToCuaca: () {
+          _onItemTapped(1);
+        },
+      ),
       CuacaPage(
         onBack: () {
           setState(() {
@@ -68,7 +72,7 @@ class _MainScreenState extends State<MainScreen> {
         borderRadius: BorderRadius.circular(40),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 20,
             offset: const Offset(0, 5),
           ),
@@ -102,7 +106,7 @@ class _MainScreenState extends State<MainScreen> {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF0088CC).withOpacity(0.3),
+                          color: const Color(0xFF0088CC).withValues(alpha: 0.3),
                           blurRadius: 16,
                           spreadRadius: 2,
                           offset: const Offset(0, 8),
@@ -141,10 +145,12 @@ class _MainScreenState extends State<MainScreen> {
 
     // Choose specific icon based on active state if necessary
     IconData displayIcon = icon;
-    if (index == 0)
+    if (index == 0) {
       displayIcon = isActive ? Icons.home_rounded : Icons.home_rounded;
-    if (index == 1)
+    }
+    if (index == 1) {
       displayIcon = isActive ? Icons.cloud_outlined : Icons.cloud_outlined;
+    }
 
     return InkWell(
       onTap: () => _onItemTapped(index),

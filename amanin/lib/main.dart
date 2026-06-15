@@ -1,15 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'main_screen.dart';
 import 'utils/localization.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  if (kIsWeb) {
+    // Inisialisasi Facebook JS SDK khusus untuk Web
+    await FacebookAuth.i.webAndDesktopInitialize(
+      appId: "2085866942301238",
+      cookie: true,
+      xfbml: true,
+      version: "v18.0",
+    );
+  }
   runApp(const MyApp());
 }
 
 final ValueNotifier<Locale> localeNotifier = ValueNotifier(const Locale('id'));
 final ValueNotifier<bool> isLoggedInNotifier = ValueNotifier(false);
+final ValueNotifier<String> userNameNotifier = ValueNotifier('');
+final ValueNotifier<String> userEmailNotifier = ValueNotifier('');
+final ValueNotifier<String> userPhotoUrlNotifier = ValueNotifier('');
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -20,6 +35,7 @@ class MyApp extends StatelessWidget {
       valueListenable: localeNotifier,
       builder: (context, locale, child) {
         return MaterialApp(
+          scrollBehavior: const ScrollBehavior().copyWith(overscroll: false),
           title: 'Amanin - Earthquake Monitoring',
           debugShowCheckedModeBanner: false,
           theme: ThemeData(

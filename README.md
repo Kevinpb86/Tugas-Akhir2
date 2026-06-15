@@ -2,9 +2,12 @@
 
 <div align="center">
   <h3>🎉 Selamat Datang di "Amanin" (Proyek Tugas Akhir)</h3>
+  <p><i>Solusi Cerdas, Cepat, dan Tepat untuk Mitigasi Bencana di Genggaman Anda.</i></p>
   <br>
   <img src="https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white" alt="Flutter" />
   <img src="https://img.shields.io/badge/Dart-0175C2?style=for-the-badge&logo=dart&logoColor=white" alt="Dart" />
+  <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
+  <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" />
   <img src="https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Android" />
   <img src="https://img.shields.io/badge/iOS-000000?style=for-the-badge&logo=ios&logoColor=white" alt="iOS" />
 </div>
@@ -17,71 +20,106 @@ Aplikasi ini dirancang khusus dengan antarmuka (UI/UX) yang sangat modern, bersi
 
 ---
 
-## ✨ Fitur-Fitur Utama (Core Features)
+## ✨ Ikhtisar Halaman & Fitur Aplikasi Utama (Core Features)
 
-🚨 **1. Peringatan & Informasi Gempa Real-Time**
-- Pantau data gempabumi yang baru saja terjadi berdasarkan filter cerdas (Terkini, Mangitudo ≥ 5.0, Dirasakan, Real-Time).
-- Tampilan detail berupa **Peta Guncangan** (interaktif), titik koordinat (Lintang/Bujur), magnitudo, dan kedalaman gempa.
-- Opsi pelaporan instan dengan tombol cepat *"Saya juga merasakannya"*.
-- Dilengkapi dengan daftar riwayat gempa yang rapi dan detail historis.
+Aplikasi *Amanin* memuat berbagai *screen* utama yang menyediakan integrasi layanan komplit, mencakup:
 
-🌤️ **2. Pemantauan Cuaca Berbasis Titik Lokasi**
-- Integrasi cerdas untuk memantau prakiraan "Cuaca Mingguan" secara presisi berdasarkan posisi pengguna (Misal: Jakarta Pusat).
-- Laporan suhu harian (Celcius) lengkap dengan indeks kelembaban, tekanan udara, kecepatan angin, hingga jarak pandang.
-- Rekomendasi aktivitas harian berdasar pergerakan matahari.
+🏠 **1. Beranda Terpadu & Interaktif (Dashboard/Home)**
+Halaman utama (*Beranda*) menghadirkan segala informasi vital secara *at-a-glance* (sekilas) kepada pengguna:
+- **Peringatan Dini (Early Warning):** Notifikasi guncangan darurat beserta status aman pada zona pengguna.
+- **Card Gempa Terkini:** Ringkasan peristiwa gempa sonder *detail* dengan ikon peringatan darurat.
+- **Ringkasan Cuaca Lokal:** Terdapat indikator visibilitas, cuaca harian, dan rekomendasi aktivitas cerdas dalam format UI modern.
+- **Berita Kebencanaan & Section Survival:** Pusat berita terbaru (API Live News Terintegrasi) serta pengingat mengenai *Survival Kit*.
 
-📚 **3. Pusat Edukasi Mitigasi Bencana**
-- Modul "Mitigasi Gempa Bumi" komprehensif (Pra-bencana, saat bencana, pasca-bencana).
-- Tampilan grid responsif untuk langkah keselamatan di berbagai tempat: Di dalam rumah, di luar ruangan, di dalam mobil, dan di gedung tinggi.
-- Integrasi **Video Edukasi** (misal: Simulasi evakuasi mandiri) agar masyarakat mudah memahaminya lewat simulasi visual.
-- Fasilitas panduan merakit komponen krusial **Tas Siaga Bencana (TSB)** berwujud _checklist_ (dokumen, p3k, senter, dsb).
-- Standar operasional keselamatan multi-bencana lainnya (Tsunami, Longsor, Banjir, Gunung Api).
+🚨 **2. Peringatan & Informasi Gempa Real-Time**
+Pusat kontrol pemantauan data gempabumi untuk meningkatkan respon siaga pengguna:
+- Peta *interaktif* Guncangan.
+- Filter cerdas (Gempa Terkini, Mangitudo ≥ 5.0, Gempa Dirasakan).
+- Tampilan riwayat riil dan detail seperti koordinat lokasi, kedalaman episenter, dan intensitas skala *MMI*.
+- *Call to Action* instan ("Saya juga merasakannya").
 
-📞 **4. Akses Cepat Bantuan Darurat (Emergency Call)**
-- Nomor telepon vital terpusat (Ambulans/Medis: 118, Pemadam Kebakaran: 113, Polisi: 110, dan SAR/Basarnas: 115) dapat dihubungi langsung dalam *1-tap call*.
+🌤️ **3. Pemantauan Cuaca Berbasis Geofisika**
+Layanan cuaca dinamis yang menyesuaikan dengan geolokasi yang dihidupkan:
+- Prakiraan *"Cuaca Mingguan"* secara presisi per hari/jam.
+- Status iklim komplit (Suhu, Kelembaban, Tekanan Udara, Jarak Pandang, Kecepatan Angin).
 
-🛡️ **5. Edukasi Perlindungan Aset & Keluarga**
-- Banner terintegrasi program "Asuransi Pro-Siaga" untuk memberi pengarahan proteksi finansial dari dampak bencana.
+📚 **4. Pusat Edukasi Bencana Edukatif & Multimedia**
+- **Video Edukasi Interaktif**: Pemutaran video penanggulangan prabencana langsung dalam *interface* aplikasi.
+- **Filter Chip Cerdas**: Materi bacaan komprehensif berhias UI *Glassmorphism*.
+- **Panduan Standar Keselamatan Ruang**: Tips mitigasi khusus lingkungan sekitar.
+
+🧠 **5. Klasifikasi Tingkat Kerentanan Seismik (Model Machine Learning)**
+Fitur *eksklusif* pengembangan Tugas Akhir (Terbaru!):
+- **Integrasi Penuh Machine Learning**: Klasifikasi berbasis **Support Vector Machine (SVM)** yang *real-time* terhubung ke backend Python FastAPI.
+- **Dual Model Inference**: Memilih sumber data prediksi dari model dataset **BMKG (Lokal)** atau **USGS (Global)**.
+- **Sistem Prediksi Skor Risiko**: Tingkatan **Rendah**, **Sedang**, dan **Tinggi** dengan pra-pemrosesan Normalisasi Min-Max.
+
+🛡️ **6. Edukasi Perlindungan Aset & Peralatan Survival Kritis**
+- **Asuransi "Pro-Siaga":** Integrasi panel proteksi finansial.
+- **Toko Mitigasi (*Toko Shop*)**: Menjual beragam produk krusial untuk bencana.
 
 ---
 
-## 🛠️ Teknologi yang Digunakan
-Proyek ini dibangun menggunakan arsitektur modern untuk *mobile application* *cross-platform* (bisa jalan di Android maupun iOS dalam satu *codebase*!):
+## 👨‍💻 Tim Pengembang & Riwayat Kolaborasi (Team & Branches)
 
-- **Framework:** [Flutter](https://flutter.dev/) (UI Toolkit by Google)
-- **Bahasa Pemrograman:** [Dart](https://dart.dev/)
-- **UI/UX:** *Material Design & Custom Styling* (Micro-interactions, Navigation Bar Melayang, Gradient & Shadow UI, dsb)
-- **Komponen Spesifik:**
-  - `webview_flutter`: Render fungsionalitas peta (Map) dan penampil peringatan dini cuaca guncangan.
-  - Implementasi *Font* Khusus (Custom Typography) untuk menciptakan nuansa yang elegan dan mudah terbaca.
-- **Workflow & Version Control:** Git, Visual Studio Code / Android Studio, dan GitHub repositori.
+Proyek ini merupakan hasil dedikasi kerja sama tim yang luar biasa. Berikut adalah struktur kolaborasi dan pembagian *branch* kami di GitHub:
+
+| Kontributor | Peran / Fokus | Branch Aktif |
+| :--- | :--- | :--- |
+| **Dava Ihza Bagus S** (`Davaihza`) | **Lead UI/UX Designer (Figma), Keseluruhan Frontend**, ML Integration, API Development, & Bug Fixes | `Dava-Ihza`, `main` |
+| **Kevin** (`Kevinpb86`) | Version Control Management & Supporting Tasks | `kevin_branch`, `main` |
+| **Fuad Nugraha** (`FuadNugraha25`) | Supporting Feature Implementation | `Fuad_branch` |
+
+### 🚀 Hasil Push & Pencapaian Terkini (Changelog & History)
+Kami aktif memelihara *"History"* kolaborasi. Beberapa pembaruan keren yang baru saja berhasil di-*push* dan di-*merge* ke dalam *repository* meliputi:
+
+*   🎉 **[Davaihza] Integrasi Machine Learning SVM (BMKG & USGS) ke Backend FastAPI & Flutter:** Membangun *endpoint* Python untuk menerima *request* magnitudo dan kedalaman dari Flutter, mengembalikannya sebagai tingkat risiko Rendah/Sedang/Tinggi melalui `uvicorn` (Diselesaikan melalui sinkronisasi AI Pair Programming yang epik!).
+*   🔧 **[Davaihza] Bug Fix & Refactoring UI Dart Analyzer:** Menghilangkan peringatan (*warnings*) dari Dart Analyzer, contohnya mengganti `withOpacity` menjadi `withAlpha` agar kode berjalan modern, bersih, dan optimal.
+*   📰 **[Davaihza] Update Tampilan Berita & API News Data:** Memperbarui antarmuka berita statis menjadi dinamis *(Real-time via RapidAPI)*, dilengkapi integrasi ke halaman Detail Berita yang *fresh*.
+*   🤝 **[Kevinpb86] Push & Sinkronisasi Branch Utama:** Memastikan struktur file dasar stabil sebelum *merging* *pull requests* antar *branch*.
+*   ✨ **[Davaihza] Optimalisasi Estetika Aplikasi Keseluruhan:** Mendesain mandiri dari awal di Figma, menerjemahkannya ke Flutter, menambahkan ruang putih (*whitespace*) elegan, memperbaiki *margin*, dan menyeimbangkan *text bounds* untuk menciptakan desain *Glassmorphism* yang memukau.
 
 ---
 
-## 🚀 Cara Menjalankan Proyek Secara Lokal
+## 🛠️ Arsitektur & Teknologi
 
-Ingin mencoba meng-compile antarmuka *Amanin* cantik ini langsung ke HP / Emulator-mu? Ikuti panduan singkat berikut:
+Proyek ini dibangun menggunakan landasan modern pada pengembangan *mobile cross-platform*:
 
-1. **Clone repositori ini:**
-   Buka terminal/Command Prompt dan jalankan:
+- **Frontend Framework:** [Flutter](https://flutter.dev/) (Dart)
+- **Backend API & ML Engine:** [FastAPI](https://fastapi.tiangolo.com/) (Python) dengan Scikit-Learn (SVM) dan Joblib.
+- **Paradigma Antarmuka UI/UX:** *Material Design & Custom Styling* bertemakan minimalis-futuristik. Dilengkapi *Drop & Inner Shadows*, mikro-interaksi responsif, dan *glassmorphism*.
+- **Sistem Version Control:** *Git* & *GitHub*.
+
+---
+
+## ⚙️ Eksekusi dan Penjalanan Simulasi Lokal
+
+Ingin mencoba meng-compile antarmuka *Amanin* memukau ini di emulator?
+
+1. **Clone Repositori:**
    ```bash
    git clone https://github.com/Kevinpb86/Tugas-Akhir2.git
    ```
 
-2. **Masuk ke direktori utama aplikasi:**
+2. **Masuk ke Direktori & Install Dependensi Flutter:**
    ```bash
    cd Tugas-Akhir2/amanin
-   ```
-
-3. **Install seluruh dependensi *package*:**
-   ```bash
    flutter pub get
    ```
 
-4. **Jalankan Aplikasi:**
-   Koneksikan *device* atau emulator Anda, lalu lakukan eksekusi:
+3. **Menjalankan Backend ML FastAPI (Wajib untuk Klasifikasi Seismik):**
+   ```bash
+   cd Tugas-Akhir2/amanin/backend
+   pip install -r requirements.txt
+   python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+   ```
+
+4. **Kompilasi Aplikasi Flutter:**
+   Pastikan emulator atau perangkat sudah terkoneksi dengan baik.
    ```bash
    flutter run
    ```
 
-> **Catatan Penting:** Repositori komitmen (branch: `Dava-Ihza`) ini dimanfaatkan khusus sebagai sub-wadah pengembangan (Development Sandbox) **purwarupa purwa (UI/UX prototype)** aplikasi Tugas Akhir akademik. Jika terdapat *dummy text* / placeholder pada simulasi API, maka itu ditujukan untuk keperluan presentasi desain di masa pembangunan aplikasi ini.
+---
+
+> **⚠️ Catatan Ekstra (Academic Context):** Repositori pada komitmen (`branch: Dava-Ihza`) ini dimanfaatkan sebagai sub-wadah *Development Sandbox* / **Prototipe Purwarupa UI/UX** dari penelitian dan perancangan Akademik Tugas Akhir. Jika Anda mendapati penempatan statis, hal tersebut bertujuan mengimplementasikan kaidah visualnya terlebih dahulu sesuai dengan gagasan metodologi penelitian.

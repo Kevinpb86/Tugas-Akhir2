@@ -1,0 +1,15 @@
+fastapi
+uvicorn[standard]
+mysql-connector-python
+passlib[bcrypt]
+python-multipart
+scikit-learn
+joblib
+email-validator
+xgboost
+google-auth
+requests
+python-dotenv
+alembic
+sqlalchemy
+pymysql
