@@ -6,6 +6,7 @@ from app.services.ml_service import load_ml_models
 from app.api.auth import router as auth_router
 from app.api.predict import router as predict_router
 from app.api.health import router as health_router
+from app.api.edukasi import router as edukasi_router
 
 
 app = FastAPI()
@@ -31,6 +32,7 @@ def startup_event():
 app.include_router(auth_router)
 app.include_router(predict_router)
 app.include_router(health_router)
+app.include_router(edukasi_router, prefix="/api/edukasi", tags=["Edukasi"])
 
 
 @app.get("/")
