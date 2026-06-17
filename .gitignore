@@ -4,3 +4,6 @@ CLAUDE.md
 .env
 __pycache__/
 *.pkl
+
+# logs
+backend/logs/
