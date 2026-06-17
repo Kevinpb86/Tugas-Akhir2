@@ -7,3 +7,5 @@ __pycache__/
 
 # Gemini
 gemini.md
+# logs
+backend/logs/
