@@ -1,7 +1,9 @@
 import numpy as np
+import requests
 from fastapi import APIRouter, HTTPException
 from app.api_schemas.earthquake import EarthquakeData, AnomaliData
-from app.services.ml_service import ml_models, ml_scalers, anomali_model, anomali_scaler, resolve_coordinates, validate_study_area
+from app.services import ml_service
+from app.services.ml_service import ml_models, ml_scalers, resolve_coordinates, validate_study_area
 
 router = APIRouter()
 
@@ -89,31 +91,32 @@ async def predict_risk(data: EarthquakeData):
 
 @router.post("/predict-anomali")
 async def predict_anomali(data: AnomaliData):
-    if anomali_model is None or anomali_scaler is None:
-        raise HTTPException(status_code=503, detail="Model atau scaler anomali belum tersedia.")
+    if ml_service.anomali_model is None:
+        raise HTTPException(status_code=503, detail="Model anomali belum tersedia.")
 
     try:
         features = np.array([[
-            data.latitude,
-            data.longitude,
+            data.magnitude,
             data.depth,
-            data.gap,
-            data.dmin,
-            data.nst,
-            data.bulan,
-            data.jam
+            data.latitude,
+            data.longitude
         ]])
 
-        features_scaled = anomali_scaler.transform(features)
-        prediction = anomali_model.predict(features_scaled)
+        if ml_service.anomali_scaler is not None:
+            features_for_model = ml_service.anomali_scaler.transform(features)
+        else:
+            features_for_model = features
+            
+        prediction = ml_service.anomali_model.predict(features_for_model)
         pred_value = int(prediction[0])
 
-        is_anomali = pred_value == 1
-        label = "Anomali" if is_anomali else "Normal"
+        # Isolation Forest dari scikit-learn mengembalikan -1 untuk anomali, 1 untuk normal
+        is_anomali = (pred_value == -1)
+        label = "Anomali Terdeteksi" if is_anomali else "Normal"
 
         try:
-            prob = anomali_model.predict_proba(features_scaled)[0]
-            confidence_val = round(float(prob[pred_value]), 4)
+            score = ml_service.anomali_model.decision_function(features_for_model)[0]
+            confidence_val = round(float(abs(score)), 4)
         except Exception:
             confidence_val = 1.0
 
@@ -126,3 +129,66 @@ async def predict_anomali(data: AnomaliData):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Gagal melakukan prediksi anomali: {str(e)}")
+
+@router.get("/anomali-terkini")
+async def get_anomali_terkini():
+    if ml_service.anomali_model is None:
+        raise HTTPException(status_code=503, detail="Model anomali belum tersedia.")
+
+    url = "https://data.bmkg.go.id/DataMKG/TEWS/gempadirasakan.json"
+    try:
+        res = requests.get(url, timeout=10)
+        res.raise_for_status()
+        data_bmkg = res.json()
+        gempa_list = data_bmkg.get("Infogempa", {}).get("gempa", [])
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Gagal mengambil data dari BMKG: {str(e)}")
+
+    hasil_list = []
+    for g in gempa_list:
+        try:
+            # Ekstrak data dari format BMKG
+            mag = float(g.get("Magnitude", "0"))
+            
+            # Kedalaman biasanya "10 km", ambil angkanya saja
+            depth_str = g.get("Kedalaman", "0").replace(" km", "")
+            depth = float(depth_str)
+            
+            # Coordinates biasanya "-6.12,106.82"
+            coords_str = g.get("Coordinates", "0,0").split(",")
+            lat = float(coords_str[0])
+            lon = float(coords_str[1])
+            
+            # Lakukan prediksi Anomali
+            features = np.array([[mag, depth, lat, lon]])
+            if ml_service.anomali_scaler is not None:
+                features_for_model = ml_service.anomali_scaler.transform(features)
+            else:
+                features_for_model = features
+                
+            prediction = ml_service.anomali_model.predict(features_for_model)
+            pred_value = int(prediction[0])
+            
+            # -1 = anomali, 1 = normal di scikit-learn IsolationForest
+            is_anomali = (pred_value == -1)
+            label = "Anomali Terdeteksi" if is_anomali else "Normal"
+            
+            try:
+                score = ml_service.anomali_model.decision_function(features_for_model)[0]
+                confidence_val = round(float(abs(score)), 4)
+            except Exception:
+                confidence_val = 1.0
+
+            # Menggabungkan data asli BMKG dengan hasil prediksi
+            g_copy = dict(g)
+            g_copy["is_anomali"] = is_anomali
+            g_copy["status_anomali"] = label
+            g_copy["anomaly_score"] = confidence_val
+            
+            hasil_list.append(g_copy)
+        except Exception as parse_error:
+            # Skip jika ada gempa yang gagal diparse
+            print(f"Error parsing earthquake: {parse_error}")
+            hasil_list.append(g)
+
+    return {"data": hasil_list}

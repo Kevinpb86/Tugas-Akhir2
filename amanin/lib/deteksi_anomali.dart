@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'services/anomali_service.dart';
 
 class DeteksiAnomaliPage extends StatelessWidget {
   const DeteksiAnomaliPage({super.key});
@@ -24,77 +25,9 @@ class DeteksiAnomaliPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Kartu Informasi Model
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF2E7D32), Color(0xFF4CAF50)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.green.withValues(alpha: 0.3),
-                    blurRadius: 10,
-                    offset: const Offset(0, 5),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Icon(Icons.analytics_outlined, color: Colors.white),
-                      ),
-                      const SizedBox(width: 12),
-                      const Expanded(
-                        child: Text(
-                          'Model Machine Learning Aktif',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Isolation Forest (BMKG)',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'File: isolation_forest_bmkg.pkl\nDigunakan untuk mendeteksi keanehan (anomali) seismik berdasarkan pola data historis gempa BMKG.',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 13,
-                      height: 1.4,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            
-            const SizedBox(height: 24),
-            
-            // Detail Parameter
+            // Judul Hasil Deteksi
             const Text(
-              'Parameter Input Model',
+              'Hasil Deteksi Gempa Terkini',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -102,43 +35,54 @@ class DeteksiAnomaliPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.grey.shade200),
-              ),
-              child: Column(
-                children: [
-                  _buildParameterRow('Magnitude', 'Skala kekuatan gempa (M)'),
-                  const Divider(height: 1),
-                  _buildParameterRow('Kedalaman', 'Kedalaman pusat gempa (Km)'),
-                  const Divider(height: 1),
-                  _buildParameterRow('Lokasi', 'Koordinat Lintang & Bujur'),
-                ],
-              ),
-            ),
+            
+            // FutureBuilder untuk mengambil data dari Backend
+            FutureBuilder<List<AnomaliGempaModel>>(
+              future: AnomaliService.fetchAnomaliTerkini(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(20.0),
+                      child: CircularProgressIndicator(),
+                    ),
+                  );
+                } else if (snapshot.hasError) {
+                  return Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.red.shade50,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.red.shade200),
+                    ),
+                    child: Text(
+                      'Gagal memuat data: ${snapshot.error}',
+                      style: TextStyle(color: Colors.red.shade700),
+                    ),
+                  );
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Center(child: Text('Tidak ada data gempa saat ini.'));
+                }
 
-            const SizedBox(height: 24),
-
-            // Simulasi Output
-            const Text(
-              'Contoh Output Deteksi',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1A1A1A),
-              ),
-            ),
-            const SizedBox(height: 12),
-            _buildDummyOutputCard(
-              title: 'M 5.2 - 125 km Tenggara BITUNG',
-              isAnomaly: false,
-            ),
-            const SizedBox(height: 10),
-            _buildDummyOutputCard(
-              title: 'M 6.5 - 200 km BaratLaut TAHUNA',
-              isAnomaly: true,
+                final gempaList = snapshot.data!;
+                
+                return ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: gempaList.length,
+                  separatorBuilder: (context, index) => const SizedBox(height: 10),
+                  itemBuilder: (context, index) {
+                    final gempa = gempaList[index];
+                    final title = 'M ${gempa.magnitude} - ${gempa.wilayah}';
+                    return _buildOutputCard(
+                      title: title,
+                      isAnomaly: gempa.isAnomali,
+                      score: gempa.anomalyScore,
+                      time: '${gempa.tanggal} ${gempa.jam}',
+                    );
+                  },
+                );
+              },
             ),
           ],
         ),
@@ -146,27 +90,12 @@ class DeteksiAnomaliPage extends StatelessWidget {
     );
   }
 
-  Widget _buildParameterRow(String name, String desc) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Row(
-        children: [
-          const Icon(Icons.check_circle, color: Color(0xFF2196F3), size: 18),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-              const SizedBox(height: 2),
-              Text(desc, style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDummyOutputCard({required String title, required bool isAnomaly}) {
+  Widget _buildOutputCard({
+    required String title, 
+    required bool isAnomaly,
+    required double score,
+    required String time,
+  }) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -174,6 +103,7 @@ class DeteksiAnomaliPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isAnomaly ? Colors.red.shade300 : Colors.green.shade300,
+          width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
@@ -184,9 +114,11 @@ class DeteksiAnomaliPage extends StatelessWidget {
         ],
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             padding: const EdgeInsets.all(10),
+            margin: const EdgeInsets.only(top: 2),
             decoration: BoxDecoration(
               color: isAnomaly ? Colors.red.withValues(alpha: 0.1) : Colors.green.withValues(alpha: 0.1),
               shape: BoxShape.circle,
@@ -205,14 +137,32 @@ class DeteksiAnomaliPage extends StatelessWidget {
                   title,
                   style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 2),
                 Text(
-                  isAnomaly ? 'Status: Anomali Terdeteksi' : 'Status: Normal',
-                  style: TextStyle(
-                    color: isAnomaly ? Colors.red : Colors.green,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
-                  ),
+                  time,
+                  style: TextStyle(color: Colors.grey.shade500, fontSize: 11),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Text(
+                      isAnomaly ? 'Status: Anomali Terdeteksi' : 'Status: Normal',
+                      style: TextStyle(
+                        color: isAnomaly ? Colors.red : Colors.green,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      'Skor: ${score.toStringAsFixed(2)}',
+                      style: TextStyle(
+                        color: Colors.grey.shade600,
+                        fontSize: 11,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

@@ -4,3 +4,6 @@ CLAUDE.md
 .env
 __pycache__/
 *.pkl
+
+# Gemini
+gemini.md
