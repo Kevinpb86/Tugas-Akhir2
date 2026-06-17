@@ -20,6 +20,7 @@ class EdukasiPage extends StatefulWidget {
 
 class _EdukasiPageState extends State<EdukasiPage> {
   String _currentCityName = 'Memuat lokasi...';
+  bool _showSemuaVideo = false;
 
   @override
   void initState() {
@@ -90,6 +91,26 @@ class _EdukasiPageState extends State<EdukasiPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_showSemuaVideo) {
+      return PopScope(
+        canPop: false,
+        onPopInvoked: (didPop) {
+          if (!didPop) {
+            setState(() {
+              _showSemuaVideo = false;
+            });
+          }
+        },
+        child: SemuaVideoPage(
+          onBackPressed: () {
+            setState(() {
+              _showSemuaVideo = false;
+            });
+          },
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       body: SafeArea(
@@ -664,12 +685,9 @@ class _EdukasiPageState extends State<EdukasiPage> {
         ),
         GestureDetector(
           onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const SemuaVideoPage(),
-              ),
-            );
+            setState(() {
+              _showSemuaVideo = true;
+            });
           },
           child: const Text(
             'Lihat Semua',

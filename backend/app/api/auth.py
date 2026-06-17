@@ -3,66 +3,66 @@ import secrets
 import requests
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
+from sqlalchemy.orm import Session
 
 from app.config.database import get_db
 from app.auth.security import pwd_context
 from app.api_schemas.auth import UserRegister, UserLogin, GoogleAuthRequest, FacebookAuthRequest, ForgotPasswordRequest
 from app.config.config import SENDER_EMAIL, APP_PASSWORD
+from app.db_models.user import User
 
 router = APIRouter()
 
 @router.post("/register")
-async def register(user: UserRegister):
-    db = get_db()
-    if not db:
-        raise HTTPException(status_code=500, detail="Gagal koneksi ke database")
-    
-    cursor = db.cursor()
-    cursor.execute("SELECT id FROM users WHERE email = %s", (user.email,))
-    if cursor.fetchone():
-        db.close()
+async def register(user: UserRegister, db: Session = Depends(get_db)):
+    # Cek apakah email sudah terdaftar
+    try:
+        db_user = db.query(User).filter(User.email == user.email).first()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Gagal koneksi database: {str(e)}")
+        
+    if db_user:
         raise HTTPException(status_code=400, detail="Email sudah terdaftar!")
     
     hashed_password = pwd_context.hash(user.password)
     try:
-        sql = "INSERT INTO users (full_name, email, password) VALUES (%s, %s, %s)"
-        cursor.execute(sql, (user.full_name, user.email, hashed_password))
+        new_user = User(
+            full_name=user.full_name,
+            email=user.email,
+            password=hashed_password
+        )
+        db.add(new_user)
         db.commit()
     except Exception as e:
         db.rollback()
-        db.close()
         raise HTTPException(status_code=500, detail=str(e))
     
-    db.close()
     return {"message": "Registrasi berhasil!", "user": user.email}
 
 @router.post("/login")
-async def login(user: UserLogin):
-    db = get_db()
-    if not db:
-        raise HTTPException(status_code=500, detail="Gagal koneksi ke database")
-    
-    cursor = db.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM users WHERE email = %s", (user.email,))
-    db_user = cursor.fetchone()
-    db.close()
-    
+async def login(user: UserLogin, db: Session = Depends(get_db)):
+    # Cari user berdasarkan email
+    try:
+        db_user = db.query(User).filter(User.email == user.email).first()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Gagal koneksi database: {str(e)}")
+        
     if not db_user:
         raise HTTPException(status_code=401, detail="Email atau password salah!")
     
-    if not pwd_context.verify(user.password, db_user["password"]):
+    if not pwd_context.verify(user.password, db_user.password):
         raise HTTPException(status_code=401, detail="Email atau password salah!")
     
     return {
         "message": "Login berhasil!",
-        "user_id": db_user["id"],
-        "full_name": db_user["full_name"],
-        "email": db_user["email"]
+        "user_id": db_user.id,
+        "full_name": db_user.full_name,
+        "email": db_user.email
     }
 
 @router.post("/auth/google")
-async def auth_google(req: GoogleAuthRequest):
+async def auth_google(req: GoogleAuthRequest, db: Session = Depends(get_db)):
     try:
         email = req.email
         full_name = req.full_name
@@ -70,37 +70,34 @@ async def auth_google(req: GoogleAuthRequest):
         if not email:
             raise HTTPException(status_code=400, detail="Email tidak ditemukan")
             
-        db = get_db()
-        if not db:
-            raise HTTPException(status_code=500, detail="Gagal koneksi ke database")
-            
-        cursor = db.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
-        db_user = cursor.fetchone()
+        # Cek apakah user sudah terdaftar
+        db_user = db.query(User).filter(User.email == email).first()
         
         if db_user:
-            db.close()
             return {
                 "message": "Login berhasil!",
-                "user_id": db_user["id"],
-                "full_name": db_user["full_name"],
-                "email": db_user["email"]
+                "user_id": db_user.id,
+                "full_name": db_user.full_name,
+                "email": db_user.email
             }
         else:
             random_password = secrets.token_urlsafe(16)
             hashed_password = pwd_context.hash(random_password)
             
             try:
-                sql = "INSERT INTO users (full_name, email, password) VALUES (%s, %s, %s)"
-                cursor.execute(sql, (full_name, email, hashed_password))
+                new_user = User(
+                    full_name=full_name,
+                    email=email,
+                    password=hashed_password
+                )
+                db.add(new_user)
                 db.commit()
-                new_user_id = cursor.lastrowid
+                db.refresh(new_user)
+                new_user_id = new_user.id
             except Exception as e:
                 db.rollback()
-                db.close()
                 raise HTTPException(status_code=500, detail=str(e))
                 
-            db.close()
             return {
                 "message": "Registrasi dan Login berhasil!",
                 "user_id": new_user_id,
@@ -114,7 +111,7 @@ async def auth_google(req: GoogleAuthRequest):
         raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
 
 @router.post("/auth/facebook")
-async def auth_facebook(req: FacebookAuthRequest):
+async def auth_facebook(req: FacebookAuthRequest, db: Session = Depends(get_db)):
     try:
         url = f"https://graph.facebook.com/me?fields=id,name,email,picture&access_token={req.access_token}"
         response = requests.get(url)
@@ -130,21 +127,15 @@ async def auth_facebook(req: FacebookAuthRequest):
         if not email:
             raise HTTPException(status_code=400, detail="Akun Facebook tidak memiliki email yang bisa diakses")
             
-        db = get_db()
-        if not db:
-            raise HTTPException(status_code=500, detail="Gagal koneksi ke database")
-            
-        cursor = db.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
-        db_user = cursor.fetchone()
+        # Cek apakah user sudah terdaftar
+        db_user = db.query(User).filter(User.email == email).first()
         
         if db_user:
-            db.close()
             return {
                 "message": "Login berhasil!",
-                "user_id": db_user["id"],
-                "full_name": db_user["full_name"],
-                "email": db_user["email"],
+                "user_id": db_user.id,
+                "full_name": db_user.full_name,
+                "email": db_user.email,
                 "facebook_picture": picture
             }
         else:
@@ -152,16 +143,19 @@ async def auth_facebook(req: FacebookAuthRequest):
             hashed_password = pwd_context.hash(random_password)
             
             try:
-                sql = "INSERT INTO users (full_name, email, password) VALUES (%s, %s, %s)"
-                cursor.execute(sql, (name, email, hashed_password))
+                new_user = User(
+                    full_name=name,
+                    email=email,
+                    password=hashed_password
+                )
+                db.add(new_user)
                 db.commit()
-                new_user_id = cursor.lastrowid
+                db.refresh(new_user)
+                new_user_id = new_user.id
             except Exception as e:
                 db.rollback()
-                db.close()
                 raise HTTPException(status_code=500, detail=str(e))
                 
-            db.close()
             return {
                 "message": "Registrasi dan Login berhasil!",
                 "user_id": new_user_id,
@@ -176,23 +170,13 @@ async def auth_facebook(req: FacebookAuthRequest):
         raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
 
 @router.post("/forgot-password")
-def forgot_password(req: ForgotPasswordRequest):
+def forgot_password(req: ForgotPasswordRequest, db: Session = Depends(get_db)):
     email = req.email
-    db = get_db()
-    if not db:
-        raise HTTPException(status_code=500, detail="Gagal koneksi ke database")
-        
+    
     try:
-        cursor = db.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
-        user = cursor.fetchone()
+        user = db.query(User).filter(User.email == email).first()
     except Exception as e:
-        db.close()
         raise HTTPException(status_code=500, detail=str(e))
-    finally:
-        if 'cursor' in locals():
-            cursor.close()
-        db.close()
         
     if not user:
         raise HTTPException(status_code=404, detail="Email tidak terdaftar!")

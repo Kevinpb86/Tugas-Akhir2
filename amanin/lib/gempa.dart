@@ -691,7 +691,7 @@ class _GempaPageState extends State<GempaPage> {
                   _isLoadingQuake
                       ? 'Memuat data...'
                       : (_latestQuake?.dirasakan ?? '-'),
-                  'Wilayah Dirasakan (MMI)',
+                  'Dampak Guncangan',
                   const Color(0xFFFF5722),
                 ),
                 const SizedBox(height: 16),
