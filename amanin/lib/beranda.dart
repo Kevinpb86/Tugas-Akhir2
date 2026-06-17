@@ -14,6 +14,7 @@ import 'main.dart'; // For isLoggedInNotifier
 import 'toko.dart';
 import 'asuransi.dart';
 import 'services/bmkg_service.dart';
+import 'services/anomali_service.dart';
 import 'services/news_service.dart';
 import 'isi_berita.dart';
 import 'package:intl/intl.dart';
@@ -32,10 +33,10 @@ class BerandaPage extends StatefulWidget {
 }
 
 class _BerandaPageState extends State<BerandaPage> {
-  // Earthquake location: 81 Km Barat Daya Kuta Selatan
   LatLng _earthquakeLocation = const LatLng(-8.8, 115.0);
   GempaModel? _latestQuake;
   bool _isLoadingQuake = true;
+  bool _isLatestQuakeAnomali = false;
 
   CuacaModel? _latestCuaca;
   bool _isLoadingCuaca = true;
@@ -119,17 +120,35 @@ class _BerandaPageState extends State<BerandaPage> {
   Future<void> _fetchEarthquakeData() async {
     try {
       final quake = await BmkgService.fetchLatestEarthquake();
+      
+      // Hitung parameter untuk Anomali
+      double mag = double.tryParse(quake.magnitude) ?? 0.0;
+      double depth = double.tryParse(quake.kedalaman.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0.0;
+      double lat = 0.0;
+      double lon = 0.0;
+      
+      if (quake.coordinates.isNotEmpty) {
+        final coords = quake.coordinates.split(',');
+        if (coords.length == 2) {
+          lat = double.tryParse(coords[0]) ?? 0.0;
+          lon = double.tryParse(coords[1]) ?? 0.0;
+        }
+      }
+
+      // Jalankan pengecekan AI secara diam-diam
+      final bool isAnomali = await AnomaliService.checkSingleAnomali(
+        magnitude: mag,
+        kedalaman: depth,
+        lintang: lat,
+        bujur: lon,
+      );
+
       if (mounted) {
         setState(() {
           _latestQuake = quake;
-          if (_latestQuake!.coordinates.isNotEmpty) {
-            final coords = _latestQuake!.coordinates.split(',');
-            if (coords.length == 2) {
-              _earthquakeLocation = LatLng(
-                double.parse(coords[0]),
-                double.parse(coords[1]),
-              );
-            }
+          _isLatestQuakeAnomali = isAnomali;
+          if (lat != 0.0 && lon != 0.0) {
+            _earthquakeLocation = LatLng(lat, lon);
           }
           _isLoadingQuake = false;
         });
@@ -733,6 +752,9 @@ class _BerandaPageState extends State<BerandaPage> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
+        border: _isLatestQuakeAnomali 
+            ? Border.all(color: Colors.red.shade400, width: 2) 
+            : null,
         boxShadow: [
           BoxShadow(
             color: const Color(
@@ -741,17 +763,52 @@ class _BerandaPageState extends State<BerandaPage> {
             blurRadius: 24,
             offset: const Offset(0, 8),
           ),
+          if (_isLatestQuakeAnomali)
+            BoxShadow(
+              color: Colors.red.withValues(alpha: 0.2),
+              blurRadius: 15,
+              spreadRadius: 2,
+            ),
         ],
       ),
       child: Column(
         children: [
+          if (_isLatestQuakeAnomali)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              decoration: const BoxDecoration(
+                color: Color(0xFFFF5252),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(22),
+                  topRight: Radius.circular(22),
+                ),
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.warning_amber_rounded, color: Colors.white, size: 18),
+                  SizedBox(width: 8),
+                  Text(
+                    'Peringatan: Aktivitas Seismik Tidak Biasa!',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           Stack(
             children: [
               ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(24),
-                  topRight: Radius.circular(24),
-                ),
+                borderRadius: _isLatestQuakeAnomali 
+                    ? BorderRadius.zero 
+                    : const BorderRadius.only(
+                        topLeft: Radius.circular(24),
+                        topRight: Radius.circular(24),
+                      ),
                 child: SizedBox(
                   height: 200,
                   width: double.infinity,
@@ -872,7 +929,10 @@ class _BerandaPageState extends State<BerandaPage> {
                           context,
                           MaterialPageRoute(
                             builder: (context) =>
-                                FullscreenMapPage(gempa: _latestQuake!),
+                                FullscreenMapPage(
+                                  gempa: _latestQuake!, 
+                                  isAnomali: _isLatestQuakeAnomali,
+                                ),
                           ),
                         );
                       }
@@ -978,7 +1038,10 @@ class _BerandaPageState extends State<BerandaPage> {
                           context,
                           MaterialPageRoute(
                             builder: (context) =>
-                                FullscreenMapPage(gempa: _latestQuake!),
+                                FullscreenMapPage(
+                                  gempa: _latestQuake!, 
+                                  isAnomali: _isLatestQuakeAnomali,
+                                ),
                           ),
                         );
                       }

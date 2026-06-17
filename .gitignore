@@ -5,5 +5,7 @@ CLAUDE.md
 __pycache__/
 *.pkl
 
+# Gemini
+gemini.md
 # logs
 backend/logs/

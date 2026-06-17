@@ -5,6 +5,7 @@ import 'package:geocoding/geocoding.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:convert';
+import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'services/bmkg_service.dart';
 import 'utils/earthquake_map.dart';
@@ -12,8 +13,9 @@ import 'gempa_detail.dart';
 
 class FullscreenMapPage extends StatefulWidget {
   final GempaModel gempa;
+  final bool isAnomali;
 
-  const FullscreenMapPage({super.key, required this.gempa});
+  const FullscreenMapPage({super.key, required this.gempa, this.isAnomali = false});
 
   @override
   State<FullscreenMapPage> createState() => _FullscreenMapPageState();
@@ -23,10 +25,55 @@ class _FullscreenMapPageState extends State<FullscreenMapPage> {
   String _distanceText = 'Menghitung jarak...';
   LatLng? _userLatLng;
 
+  bool _showNotification = false;
+  double _progressValue = 1.0;
+  Timer? _progressTimer;
+
   @override
   void initState() {
     super.initState();
     _calculateDistance();
+    
+    if (widget.isAnomali) {
+      // Tunggu sebentar sebelum memunculkan notifikasi agar transisi smooth
+      Future.delayed(const Duration(milliseconds: 300), () {
+        if (mounted) {
+          setState(() {
+            _showNotification = true;
+          });
+          _startNotificationTimers();
+        }
+      });
+    }
+  }
+
+  void _startNotificationTimers() {
+    _progressValue = 1.0;
+    const duration = const Duration(seconds: 2);
+    const tick = const Duration(milliseconds: 16);
+    final int totalTicks = duration.inMilliseconds ~/ tick.inMilliseconds;
+    int currentTick = 0;
+
+    _progressTimer = Timer.periodic(tick, (timer) {
+      if (mounted) {
+        setState(() {
+          currentTick++;
+          _progressValue = 1.0 - (currentTick / totalTicks);
+          if (currentTick >= totalTicks) {
+            _showNotification = false;
+            timer.cancel();
+          }
+        });
+      } else {
+        timer.cancel();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _progressTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _calculateDistance() async {
@@ -325,6 +372,96 @@ class _FullscreenMapPageState extends State<FullscreenMapPage> {
                       ),
                     )
                   ],
+                ),
+              ),
+            ),
+          ),
+          
+          // 5. In-App Popup Notification (Top)
+          AnimatedPositioned(
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeOutCubic,
+            top: _showNotification ? MediaQuery.of(context).padding.top + 16 : -150,
+            left: 20,
+            right: 20,
+            child: GestureDetector(
+              onVerticalDragUpdate: (details) {
+                if (details.primaryDelta! < -5) {
+                  // Swipe up detected
+                  setState(() {
+                    _showNotification = false;
+                  });
+                  _progressTimer?.cancel();
+                }
+              },
+              child: Material(
+                color: Colors.transparent,
+                child: Container(
+                  clipBehavior: Clip.hardEdge,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.red.withOpacity(0.15),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                      )
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.red.shade50,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(Icons.warning_amber_rounded, color: Colors.red.shade600, size: 24),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Status Waspada',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 14, 
+                                      color: Colors.red.shade700, 
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Pola kekuatan dan kedalaman gempa ini tidak biasa',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 12, 
+                                      color: const Color(0xFF424242),
+                                      height: 1.3,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          ],
+                        ),
+                      ),
+                      // Progress Bar Timer
+                      LinearProgressIndicator(
+                        value: _progressValue,
+                        backgroundColor: Colors.transparent,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.red.shade400),
+                        minHeight: 3,
+                      )
+                    ],
+                  ),
                 ),
               ),
             ),
