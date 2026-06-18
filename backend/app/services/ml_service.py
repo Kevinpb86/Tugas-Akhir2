@@ -1,6 +1,8 @@
 import os
+import warnings
 import joblib
 import numpy as np
+from sklearn.exceptions import InconsistentVersionWarning
 import requests
 from fastapi import HTTPException
 from typing import Optional
@@ -26,6 +28,7 @@ anomali_model = None
 anomali_scaler = None
 
 def load_ml_models():
+    warnings.filterwarnings("ignore", category=InconsistentVersionWarning)
     global anomali_model, anomali_scaler
     try:
         if os.path.exists(MODEL_BMKG_PATH):
