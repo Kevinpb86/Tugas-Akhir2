@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'panduan_fitur.dart';
+import 'deteksi_lingkungan.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'gempa_detail.dart';
@@ -28,7 +30,8 @@ import 'dart:math' as math;
 
 class BerandaPage extends StatefulWidget {
   final VoidCallback? onNavigateToCuaca;
-  const BerandaPage({super.key, this.onNavigateToCuaca});
+  final GlobalKey? bottomNavKey;
+  const BerandaPage({super.key, this.onNavigateToCuaca, this.bottomNavKey});
 
   @override
   State<BerandaPage> createState() => _BerandaPageState();
@@ -49,8 +52,19 @@ class _BerandaPageState extends State<BerandaPage> {
   String _currentCityName = 'Memuat lokasi...';
 
   bool _isIndoor = true;
-  String _environmentType = 'Darat';
+  String _environmentType = 'Perkotaan';
   String _nearbyMountainName = '';
+
+  bool _showHelpTour = false;
+  int _helpTourStep = 1;
+  final GlobalKey _chipsKey = GlobalKey();
+  final GlobalKey _mapCardKey = GlobalKey();
+  final GlobalKey _survivalKitKey = GlobalKey();
+  final GlobalKey _weatherKey = GlobalKey();
+  final GlobalKey _earlyWarningKey = GlobalKey();
+  final GlobalKey _newsKey = GlobalKey();
+  final GlobalKey _insuranceKey = GlobalKey();
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -64,62 +78,181 @@ class _BerandaPageState extends State<BerandaPage> {
     _fetchNewsData();
   }
 
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
   // Fungsi untuk memunculkan popup konfirmasi lokasi setiap kali aplikasi dibuka/restart
   Future<void> _showLocationPermissionDialog() async {
     showDialog(
       context: context,
       barrierDismissible: false, // User wajib memilih salah satu tombol
       builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: const Row(
-            children: [
-              Icon(Icons.location_on, color: Color(0xFF00BCD4), size: 28),
-              SizedBox(width: 8),
-              Text(
-                'Akses Lokasi',
-                style: TextStyle(fontWeight: FontWeight.bold),
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 28),
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 320),
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  const Color(0xFFE0F7FA),
+                  Colors.white,
+                ],
               ),
-            ],
-          ),
-          content: const Text(
-            'Amanin memerlukan akses lokasi perangkat Anda untuk menampilkan informasi cuaca dan gempa bumi terdekat secara akurat.',
-            style: TextStyle(fontSize: 14),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text(
-                'Tolak',
-                style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
-              ),
-              onPressed: () {
-                Navigator.of(context).pop();
-                setState(() {
-                  _currentCityName = 'Lokasi ditolak (Default Jakarta)';
-                });
-              },
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF00BCD4),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF00BCD4).withValues(alpha: 0.08),
+                  blurRadius: 24,
+                  offset: const Offset(0, 8),
                 ),
-              ),
-              child: const Text(
-                'Izinkan',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-              ),
-              onPressed: () {
-                Navigator.of(context).pop();
-                _requestLocationPermission();
-                // Tampilkan popup peringatan gempa setelah izin lokasi
-                _showEarthquakeWarningDialog();
-              },
+              ],
             ),
-          ],
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Radar circular Location Icon (styled like Gempabumi warning dialog)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const LocationWaveWidget(isLeft: true),
+                    const SizedBox(width: 10),
+                    // Outer soft cyan ring
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFE0F7FA),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Container(
+                        width: 56,
+                        height: 56,
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [Color(0xFF00BCD4), Color(0xFF1E88E5)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.location_on_rounded,
+                          color: Colors.white,
+                          size: 28,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    const LocationWaveWidget(isLeft: false),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                // Title
+                const Text(
+                  'Akses Lokasi',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF0F172A), // Slate 900
+                    letterSpacing: -0.3,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                // Description
+                const Text(
+                  'Amanin memerlukan akses lokasi perangkat Anda untuk menampilkan informasi cuaca dan gempa bumi terdekat secara akurat.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Color(0xFF475569), // Slate 600
+                    height: 1.45,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                // Action Buttons
+                Row(
+                  children: [
+                    // Tolak Button
+                    Expanded(
+                      child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Color(0xFFE2E8F0)),
+                          foregroundColor: const Color(0xFF64748B),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          setState(() {
+                            _currentCityName = 'Lokasi ditolak (Default Jakarta)';
+                          });
+                        },
+                        child: const Text(
+                          'Tolak',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    // Izinkan Button (Gradient style)
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF00BCD4), Color(0xFF1E88E5)],
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF1E88E5).withValues(alpha: 0.2),
+                              blurRadius: 6,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            shadowColor: Colors.transparent,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            _requestLocationPermission();
+                            // Tampilkan popup peringatan gempa setelah izin lokasi
+                            _showEarthquakeWarningDialog();
+                          },
+                          child: const Text(
+                            'Izinkan',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
         );
       },
     );
@@ -303,6 +436,7 @@ class _BerandaPageState extends State<BerandaPage> {
                   child: ElevatedButton.icon(
                     onPressed: () {
                       Navigator.of(context).pop();
+                      _startHelpTour();
                     },
                     icon: const Icon(Icons.menu_book_rounded, size: 18),
                     label: const Text(
@@ -328,6 +462,7 @@ class _BerandaPageState extends State<BerandaPage> {
                   child: OutlinedButton(
                     onPressed: () {
                       Navigator.of(context).pop();
+                      _startHelpTour();
                     },
                     style: OutlinedButton.styleFrom(
                       foregroundColor: const Color(0xFF1E88E5),
@@ -421,56 +556,20 @@ class _BerandaPageState extends State<BerandaPage> {
   }
 
   void _determineUserEnvironment(Position position, String fullAddress) {
-    // 1. Heuristic for Indoor/Outdoor based on GPS accuracy
-    final bool autoIndoor = position.accuracy > 25.0;
-
-    // 2. Calculate closest mountain in Indonesia
-    String detectedMountain = '';
-    double closestMountainDistance = double.infinity;
-    for (var m in indonesianMountains) {
-      final dist = calculateDistance(position.latitude, position.longitude, m.latitude, m.longitude);
-      if (dist < 10.0 && dist < closestMountainDistance) {
-        closestMountainDistance = dist;
-        detectedMountain = m.name;
-      }
-    }
-
-    // 3. Determine if near beach based on address keywords
-    final bool isNearBeach = _checkIfNearBeach(fullAddress);
-
-    String envType = 'Darat';
-    if (detectedMountain.isNotEmpty) {
-      envType = 'Pegunungan';
-    } else if (isNearBeach) {
-      envType = 'Pantai';
-    }
+    final result = EnvironmentDetector.determineEnvironment(
+      position.latitude,
+      position.longitude,
+      position.accuracy,
+      fullAddress,
+    );
 
     if (mounted) {
       setState(() {
-        _isIndoor = autoIndoor;
-        _environmentType = envType;
-        _nearbyMountainName = detectedMountain;
+        _isIndoor = result.isIndoor;
+        _environmentType = result.environmentType;
+        _nearbyMountainName = result.nearbyMountainName;
       });
     }
-  }
-
-  double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
-    const p = 0.017453292519943295; // Pi / 180
-    final a = 0.5 - math.cos((lat2 - lat1) * p) / 2 +
-        math.cos(lat1 * p) * math.cos(lat2 * p) *
-        (1 - math.cos((lon2 - lon1) * p)) / 2;
-    return 12742 * math.asin(math.sqrt(a)); // 2 * R; R = 6371 km
-  }
-
-  bool _checkIfNearBeach(String address) {
-    final cleanAddress = address.toLowerCase();
-    final keywords = ['pantai', 'beach', 'pesisir', 'coast', 'laut', 'ocean', 'bay', 'teluk'];
-    for (var word in keywords) {
-      if (cleanAddress.contains(word)) {
-        return true;
-      }
-    }
-    return false;
   }
 
   Future<void> _fetchEarthquakeData() async {
@@ -561,55 +660,150 @@ class _BerandaPageState extends State<BerandaPage> {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
-      body: SafeArea(
-        bottom: false,
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header Section
-                _buildHeader(),
-                const SizedBox(height: 24),
+      body: Stack(
+        children: [
+          SafeArea(
+            bottom: false,
+            child: SingleChildScrollView(
+              controller: _scrollController,
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header Section
+                    _buildHeader(),
+                    const SizedBox(height: 24),
 
-                // Earthquake Status Section
-                _buildEarthquakeStatus(),
-                const SizedBox(height: 16),
+                    // Earthquake Status Section
+                    _buildEarthquakeStatus(),
+                    const SizedBox(height: 16),
 
-                // Merged Earthquake Card
-                _buildEarthquakeCard(),
-                const SizedBox(height: 16),
+                    // Merged Earthquake Card
+                    _buildEarthquakeCard(),
+                    const SizedBox(height: 20),
 
-                // Survival Kit Card
-                _buildSurvivalKitSection(),
-                const SizedBox(height: 24),
+                    // Environment Status Card
+                    _buildEnvironmentStatusCard(),
+                    const SizedBox(height: 24),
 
-                // Weather Card
-                _buildWeatherCard(),
-                const SizedBox(height: 16),
+                    // Survival Kit Card
+                    _buildSurvivalKitSection(),
+                    const SizedBox(height: 24),
 
-                // Early Warning Card
-                _buildEarlyWarningCard(),
-                const SizedBox(height: 24),
+                    // Weather Card
+                    _buildWeatherCard(),
+                    const SizedBox(height: 16),
 
-                // News Section
-                _buildNewsSection(),
-                const SizedBox(height: 24),
+                    // Early Warning Card
+                    _buildEarlyWarningCard(),
+                    const SizedBox(height: 24),
 
-                // Asuransi Section
-                _buildInsuranceSection(),
-                const SizedBox(height: 24),
+                    // News Section
+                    _buildNewsSection(),
+                    const SizedBox(height: 24),
 
-                // Fitur Section (Di Bawah)
-                _buildFiturTambahanSection(),
-                const SizedBox(height: 140), // padding for floating bottom nav
-              ],
+                    // Asuransi Section
+                    _buildInsuranceSection(),
+                    const SizedBox(height: 24),
+
+                    // Fitur Section (Di Bawah)
+                    _buildFiturTambahanSection(),
+                    const SizedBox(height: 140), // padding for floating bottom nav
+                  ],
+                ),
+              ),
             ),
           ),
-        ),
+          if (_showHelpTour)
+            AnimatedBuilder(
+              animation: _scrollController,
+              builder: (context, child) {
+                final chipsRect = _getWidgetRect(_chipsKey);
+                final mapCardRect = _getWidgetRect(_mapCardKey);
+                final survivalKitRect = _getWidgetRect(_survivalKitKey);
+                final weatherRect = _getWidgetRect(_weatherKey);
+                final earlyWarningRect = _getWidgetRect(_earlyWarningKey);
+                final newsRect = _getWidgetRect(_newsKey);
+                final insuranceRect = _getWidgetRect(_insuranceKey);
+                final bottomNavRect = widget.bottomNavKey != null
+                    ? _getWidgetRect(widget.bottomNavKey!)
+                    : null;
+
+                return HelpTourOverlay(
+                  step: _helpTourStep,
+                  chipsRect: chipsRect,
+                  mapCardRect: mapCardRect,
+                  survivalKitRect: survivalKitRect,
+                  weatherRect: weatherRect,
+                  earlyWarningRect: earlyWarningRect,
+                  newsRect: newsRect,
+                  insuranceRect: insuranceRect,
+                  bottomNavRect: bottomNavRect,
+                  onNext: () {
+                    if (_helpTourStep < 8) {
+                      setState(() {
+                        _helpTourStep++;
+                      });
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (_helpTourStep == 1) {
+                          _scrollToKey(_chipsKey);
+                        } else if (_helpTourStep == 2) {
+                          _scrollToKey(_mapCardKey);
+                        } else if (_helpTourStep == 3) {
+                          _scrollToKey(_survivalKitKey);
+                        } else if (_helpTourStep == 4) {
+                          _scrollToKey(_weatherKey);
+                        } else if (_helpTourStep == 5) {
+                          _scrollToKey(_earlyWarningKey);
+                        } else if (_helpTourStep == 6) {
+                          _scrollToKey(_newsKey);
+                        } else if (_helpTourStep == 7) {
+                          _scrollToKey(_insuranceKey);
+                        }
+                      });
+                    } else {
+                      setState(() {
+                        _showHelpTour = false;
+                      });
+                    }
+                  },
+                  onBack: () {
+                    if (_helpTourStep > 1) {
+                      setState(() {
+                        _helpTourStep--;
+                      });
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (_helpTourStep == 1) {
+                          _scrollToKey(_chipsKey);
+                        } else if (_helpTourStep == 2) {
+                          _scrollToKey(_mapCardKey);
+                        } else if (_helpTourStep == 3) {
+                          _scrollToKey(_survivalKitKey);
+                        } else if (_helpTourStep == 4) {
+                          _scrollToKey(_weatherKey);
+                        } else if (_helpTourStep == 5) {
+                          _scrollToKey(_earlyWarningKey);
+                        } else if (_helpTourStep == 6) {
+                          _scrollToKey(_newsKey);
+                        } else if (_helpTourStep == 7) {
+                          _scrollToKey(_insuranceKey);
+                        }
+                      });
+                    }
+                  },
+                  onSkip: () {
+                    setState(() {
+                      _showHelpTour = false;
+                    });
+                  },
+                );
+              },
+            ),
+        ],
       ),
     );
   }
@@ -842,6 +1036,36 @@ class _BerandaPageState extends State<BerandaPage> {
             ),
             Row(
               children: [
+                // Help Icon
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: InkWell(
+                    onTap: () {
+                      _startHelpTour();
+                    },
+                    borderRadius: BorderRadius.circular(12),
+                    child: const Center(
+                      child: Icon(
+                        Icons.help_outline_rounded,
+                        color: Color(0xFF1A1A1A),
+                        size: 24,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
                 // Notification Icon
                 Container(
                   width: 44,
@@ -965,117 +1189,57 @@ class _BerandaPageState extends State<BerandaPage> {
             ),
           ],
         ),
-        const SizedBox(height: 12),
-        // Environmental & Status Tags Row
-        Row(
-          children: [
-            // Indoor/Outdoor switch chip
-            InkWell(
-              onTap: () {
-                setState(() {
-                  _isIndoor = !_isIndoor;
-                });
-              },
-              borderRadius: BorderRadius.circular(20),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: _isIndoor ? const Color(0xFFFFF3E0) : const Color(0xFFE8F5E9),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: _isIndoor ? const Color(0xFFFFB74D) : const Color(0xFF81C784),
-                    width: 1,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.02),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      _isIndoor ? Icons.home_rounded : Icons.wb_sunny_rounded,
-                      color: _isIndoor ? const Color(0xFFE65100) : const Color(0xFF1B5E20),
-                      size: 14,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      _isIndoor ? 'Dalam Ruangan' : 'Luar Ruangan',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: _isIndoor ? const Color(0xFFE65100) : const Color(0xFF1B5E20),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            // Environment type chip
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: _environmentType == 'Pegunungan'
-                    ? const Color(0xFFE8EAF6)
-                    : _environmentType == 'Pantai'
-                        ? const Color(0xFFE0F7FA)
-                        : const Color(0xFFE8F5E9).withOpacity(0.5),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: _environmentType == 'Pegunungan'
-                      ? const Color(0xFF9FA8DA)
-                      : _environmentType == 'Pantai'
-                          ? const Color(0xFF80DEEA)
-                          : const Color(0xFFC8E6C9),
-                  width: 1,
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    _environmentType == 'Pegunungan'
-                        ? Icons.terrain_rounded
-                        : _environmentType == 'Pantai'
-                            ? Icons.beach_access_rounded
-                            : Icons.landscape_rounded,
-                    color: _environmentType == 'Pegunungan'
-                        ? const Color(0xFF1A237E)
-                        : _environmentType == 'Pantai'
-                            ? const Color(0xFF006064)
-                            : const Color(0xFF2E7D32),
-                    size: 14,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    _environmentType == 'Pegunungan'
-                        ? 'Dekat ${_nearbyMountainName}'
-                        : _environmentType == 'Pantai'
-                            ? 'Dekat Pantai'
-                            : 'Wilayah Darat',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                      color: _environmentType == 'Pegunungan'
-                          ? const Color(0xFF1A237E)
-                          : _environmentType == 'Pantai'
-                              ? const Color(0xFF006064)
-                              : const Color(0xFF2E7D32),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
       ],
     );
+  }
+
+  Widget _buildEnvironmentStatusCard() {
+    return EnvironmentStatusCard(
+      isIndoor: _isIndoor,
+      environmentType: _environmentType,
+      nearbyMountainName: _nearbyMountainName,
+      onIndoorToggle: () {
+        setState(() {
+          _isIndoor = !_isIndoor;
+        });
+      },
+      chipsKey: _chipsKey,
+    );
+  }
+
+  void _startHelpTour() {
+    setState(() {
+      _showHelpTour = true;
+      _helpTourStep = 1;
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToKey(_chipsKey);
+    });
+  }
+
+  void _scrollToKey(GlobalKey key) {
+    final context = key.currentContext;
+    if (context != null) {
+      Scrollable.ensureVisible(
+        context,
+        duration: const Duration(milliseconds: 500),
+        alignment: 0.5,
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  Rect? _getWidgetRect(GlobalKey key) {
+    try {
+      final RenderBox? renderBox = key.currentContext?.findRenderObject() as RenderBox?;
+      if (renderBox != null) {
+        final offset = renderBox.localToGlobal(Offset.zero);
+        return offset & renderBox.size;
+      }
+    } catch (e) {
+      debugPrint("Error getting widget rect: $e");
+    }
+    return null;
   }
 
 
@@ -1219,6 +1383,7 @@ class _BerandaPageState extends State<BerandaPage> {
         : const Color(0xFFE8F5E9);
 
     return Container(
+      key: _mapCardKey,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
@@ -1607,6 +1772,7 @@ class _BerandaPageState extends State<BerandaPage> {
 
   Widget _buildSurvivalKitSection() {
     return Column(
+      key: _survivalKitKey,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
@@ -1874,6 +2040,7 @@ class _BerandaPageState extends State<BerandaPage> {
 
   Widget _buildInsuranceSection() {
     return Container(
+      key: _insuranceKey,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -2021,6 +2188,7 @@ class _BerandaPageState extends State<BerandaPage> {
 
   Widget _buildWeatherCard() {
     return Column(
+      key: _weatherKey,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
@@ -2303,6 +2471,7 @@ class _BerandaPageState extends State<BerandaPage> {
     final bool hasWarning = warningMsg.contains("Waspada");
 
     return Container(
+      key: _earlyWarningKey,
       decoration: BoxDecoration(
         color: hasWarning ? const Color(0xFFFFF3E0) : const Color(0xFFE8F5E9),
         borderRadius: BorderRadius.circular(16),
@@ -2374,6 +2543,7 @@ class _BerandaPageState extends State<BerandaPage> {
 
   Widget _buildNewsSection() {
     return Column(
+      key: _newsKey,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Section Header
@@ -2652,57 +2822,10 @@ class VibrationWavePainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-class MountainData {
-  final String name;
-  final double latitude;
-  final double longitude;
 
-  const MountainData(this.name, this.latitude, this.longitude);
-}
 
-const List<MountainData> indonesianMountains = [
-  // Sumatra
-  MountainData('Gunung Sinabung', 3.17, 98.392),
-  MountainData('Gunung Sibayak', 3.23, 98.52),
-  MountainData('Gunung Kerinci', -1.697, 101.264),
-  MountainData('Gunung Marapi', -0.381, 100.473),
-  MountainData('Gunung Talang', -0.978, 100.679),
-  MountainData('Gunung Dempo', -4.03, 103.13),
-  MountainData('Gunung Krakatau', -6.102, 105.423),
-  // Jawa
-  MountainData('Gunung Salak', -6.716, 106.732),
-  MountainData('Gunung Gede', -6.79, 106.98),
-  MountainData('Gunung Pangrango', -6.78, 106.96),
-  MountainData('Gunung Tangkuban Parahu', -6.76, 107.6),
-  MountainData('Gunung Papandayan', -7.32, 107.73),
-  MountainData('Gunung Galunggung', -7.25, 108.058),
-  MountainData('Gunung Ciremai', -6.892, 108.408),
-  MountainData('Gunung Slamet', -7.242, 109.208),
-  MountainData('Gunung Sindoro', -7.301, 109.997),
-  MountainData('Gunung Sumbing', -7.384, 110.07),
-  MountainData('Gunung Merbabu', -7.45, 110.43),
-  MountainData('Gunung Merapi', -7.54, 110.446),
-  MountainData('Gunung Lawu', -7.625, 111.193),
-  MountainData('Gunung Kelud', -7.93, 112.308),
-  MountainData('Gunung Bromo', -7.942, 112.953),
-  MountainData('Gunung Semeru', -8.108, 112.922),
-  MountainData('Gunung Welirang', -7.725, 112.575),
-  MountainData('Gunung Arjuno', -7.725, 112.58),
-  MountainData('Gunung Ijen', -8.058, 114.242),
-  MountainData('Gunung Raung', -8.125, 114.042),
-  // Bali & Nusa Tenggara
-  MountainData('Gunung Agung', -8.343, 115.508),
-  MountainData('Gunung Batur', -8.242, 115.378),
-  MountainData('Gunung Rinjani', -8.411, 116.458),
-  MountainData('Gunung Tambora', -8.25, 118.0),
-  MountainData('Gunung Lewotobi', -8.542, 122.775),
-  // Sulawesi & Maluku
-  MountainData('Gunung Lokon', 1.358, 124.792),
-  MountainData('Gunung Soputan', 1.112, 124.73),
-  MountainData('Gunung Karangetang', 2.78, 125.4),
-  MountainData('Gunung Gamalama', 0.8, 127.325),
-  MountainData('Gunung Ibu', 1.488, 127.63),
-  MountainData('Gunung Dukono', 1.685, 127.894),
-];
+
+
+
 
 
