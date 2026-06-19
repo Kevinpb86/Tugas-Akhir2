@@ -7,7 +7,7 @@ from app.config.database import Base
 from app.config.config import settings
 
 from app.db_models.earthquake import Earthquake
-from app.db_models.seismic_activity import SeismicAnalysis, SeismicCluster
+from app.db_models.seismic_analysis import SeismicAnalysis
 from app.db_models.user import User
 
 # this is the Alembic Config object, which provides
