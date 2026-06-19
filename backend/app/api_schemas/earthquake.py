@@ -10,12 +10,8 @@ class EarthquakeData(BaseModel):
     source: str = "bmkg" # Bisa 'bmkg' atau 'usgs'
 
 class AnomaliData(BaseModel):
+    magnitude: float
+    depth: float
     latitude: float
     longitude: float
-    depth: float
-    gap: float
-    dmin: float
-    nst: float
-    bulan: int
-    jam: int
 

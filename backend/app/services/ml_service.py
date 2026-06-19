@@ -1,6 +1,8 @@
 import os
+import warnings
 import joblib
 import numpy as np
+from sklearn.exceptions import InconsistentVersionWarning
 import requests
 from fastapi import HTTPException
 from typing import Optional
@@ -11,7 +13,7 @@ MODEL_BMKG_PATH = os.path.join(MODEL_DIR, "bmkg_model.pkl")
 SCALER_BMKG_PATH = os.path.join(MODEL_DIR, "scaler_bmkg.pkl")
 MODEL_USGS_PATH = os.path.join(MODEL_DIR, "usgs_model.pkl")
 SCALER_USGS_PATH = os.path.join(MODEL_DIR, "scaler_usgs.pkl")
-MODEL_ANOMALI_PATH = os.path.join(MODEL_DIR, "model_anomali.pkl")
+MODEL_ANOMALI_PATH = os.path.join(MODEL_DIR, "isolation_forest_bmkg.pkl")
 SCALER_ANOMALI_PATH = os.path.join(MODEL_DIR, "scaler_anomali.pkl")
 
 ml_models = {
@@ -26,6 +28,7 @@ anomali_model = None
 anomali_scaler = None
 
 def load_ml_models():
+    warnings.filterwarnings("ignore", category=InconsistentVersionWarning)
     global anomali_model, anomali_scaler
     try:
         if os.path.exists(MODEL_BMKG_PATH):

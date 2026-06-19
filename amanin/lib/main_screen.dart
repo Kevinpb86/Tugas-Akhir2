@@ -16,6 +16,8 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
+  final GlobalKey _bottomNavKey = GlobalKey();
+
   late final List<Widget> _pages;
 
   @override
@@ -23,6 +25,7 @@ class _MainScreenState extends State<MainScreen> {
     super.initState();
     _pages = [
       BerandaPage(
+        bottomNavKey: _bottomNavKey,
         onNavigateToCuaca: () {
           _onItemTapped(1);
         },
@@ -66,6 +69,7 @@ class _MainScreenState extends State<MainScreen> {
 
   Widget _buildFloatingBottomNavigationBar() {
     return Container(
+      key: _bottomNavKey,
       margin: const EdgeInsets.only(left: 16, right: 16, bottom: 20),
       decoration: BoxDecoration(
         color: Colors.white,
