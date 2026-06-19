@@ -21,3 +21,4 @@ def generate_fingerprint(
     )
 
     return hashlib.sha1(payload.encode("utf-8")).hexdigest()
+

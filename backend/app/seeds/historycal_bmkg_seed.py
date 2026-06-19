@@ -1,17 +1,21 @@
 import pandas as pd
 
+from app.auth.security import generate_fingerprint
 from app.config.database import SessionLocal
 from app.db_models.earthquake import Earthquake
+from app.db_models.seismic_analysis import SeismicAnalysis
 from app.repositories.earthquake_repo import EarthquakeRepository
-from app.auth.security import generate_fingerprint
+from app.services.extarct_features import NNDService
 
 
 CSV_PATH = "data/df_combined_catalog_for_mysql.csv"
+MC = 4.7
 
 
 def run_seed():
     db = SessionLocal()
     repo = EarthquakeRepository(db)
+    nnd_service = NNDService(db)
 
     try:
         if repo.count() > 0:
@@ -19,9 +23,24 @@ def run_seed():
             return
 
         df = pd.read_csv(CSV_PATH)
-        df["datetime"] = (pd.to_datetime(df["datetime"], utc=True).dt.tz_localize(None))
 
-        data = []
+        df["datetime"] = (
+            pd.to_datetime(df["datetime"], utc=True)
+            .dt.tz_localize(None)
+        )
+
+        df = (
+            df[df["magnitude"] >= MC]
+            .sort_values("datetime")
+            .reset_index(drop=True)
+        )
+
+        print(
+            f"Applied Mc filter ({MC}): "
+            f"{len(df)} records"
+        )
+
+        processed = 0
 
         for _, row in df.iterrows():
 
@@ -33,28 +52,59 @@ def run_seed():
                 depth=float(row["depth"]),
             )
 
-            data.append(
-                Earthquake(
-                    event_time=row["datetime"],
-                    latitude=row["latitude"],
-                    longitude=row["longitude"],
-                    depth=row["depth"],
-                    magnitude=row["magnitude"],
-                    wilayah=row["wilayah"],
-                    dirasakan=(
-                        row["dirasakan"]
-                        if pd.notna(row["dirasakan"])
-                        else None
-                    ),
-                    source=row["source"],
-                    status="processed",
-                    fingerprint=fingerprint,
-                )
+            earthquake = Earthquake(
+                event_time=row["datetime"],
+                latitude=float(row["latitude"]),
+                longitude=float(row["longitude"]),
+                depth=float(row["depth"]),
+                magnitude=float(row["magnitude"]),
+                wilayah=row["wilayah"],
+                dirasakan=(
+                    row["dirasakan"]
+                    if pd.notna(row["dirasakan"])
+                    else None
+                ),
+                source=row["source"],
+                status="pending",
+                fingerprint=fingerprint,
             )
 
-        repo.bulk_insert(data)
+            db.add(earthquake)
 
-        print(f"Seed success: {len(data)} records")
+            # supaya earthquake.id tersedia
+            db.flush()
+
+            # hitung NND terhadap event historis sebelumnya
+            nnd_result = nnd_service.compute(earthquake)
+
+            if nnd_result is not None:
+
+                analysis = SeismicAnalysis(
+                    earthquake_id=earthquake.id,
+                    parent_earthquake_id=nnd_result["parent_earthquake_id"],
+                    n_value=nnd_result["N+"],
+                    log_n=nnd_result["log_N+"],
+                    log_t=nnd_result["log_T+"],
+                    log_r=nnd_result["log_R+"],
+                    dm=nnd_result["dm+"],
+                )
+
+                db.add(analysis)
+
+                earthquake.status = "processed"
+
+            else:
+                # event pertama tidak punya parent
+                earthquake.status = "processed"
+
+            processed += 1
+
+            if processed % 100 == 0:
+                print(f"Processed {processed}/{len(df)}")
+
+        db.commit()
+
+        print(f"Seed success: {processed} records")
 
     except Exception as e:
         db.rollback()
