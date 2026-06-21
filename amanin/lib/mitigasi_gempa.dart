@@ -78,7 +78,11 @@ class MitigasiGempaPage extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
-        _buildImagePlaceholder('Foto ilustrasi berlindung (4:3 • ~400×300px)', const Color(0xFFF44336)),
+        _buildImagePlaceholder(
+          'Foto ilustrasi berlindung (4:3 • ~400×300px)',
+          const Color(0xFFF44336),
+          assetPath: 'assets/images/titik_aman_edu.png',
+        ),
         const SizedBox(height: 20),
         _buildGroup(
           color: const Color(0xFFF44336),
@@ -144,21 +148,32 @@ class MitigasiGempaPage extends StatelessWidget {
     );
   }
 
-  Widget _buildImagePlaceholder(String label, Color color) {
+  Widget _buildImagePlaceholder(String label, Color color, {String? assetPath}) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
       child: AspectRatio(
         aspectRatio: 4 / 3,
-        child: Image.network(
-          'https://placehold.co/400x300/${color.toARGB32().toRadixString(16).substring(2)}/ffffff/png?text=${Uri.encodeComponent(label)}',
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) => Container(
-            color: const Color(0xFFF0F4F8),
-            child: Center(
-              child: Icon(Icons.broken_image_outlined, color: Colors.grey[400], size: 40),
-            ),
-          ),
-        ),
+        child: assetPath != null
+            ? Image.asset(
+                assetPath,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Container(
+                  color: const Color(0xFFF0F4F8),
+                  child: Center(
+                    child: Icon(Icons.broken_image_outlined, color: Colors.grey[400], size: 40),
+                  ),
+                ),
+              )
+            : Image.network(
+                'https://placehold.co/400x300/${color.toARGB32().toRadixString(16).substring(2)}/ffffff/png?text=${Uri.encodeComponent(label)}',
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Container(
+                  color: const Color(0xFFF0F4F8),
+                  child: Center(
+                    child: Icon(Icons.broken_image_outlined, color: Colors.grey[400], size: 40),
+                  ),
+                ),
+              ),
       ),
     );
   }

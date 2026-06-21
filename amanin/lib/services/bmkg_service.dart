@@ -153,9 +153,9 @@ class BmkgService {
 
   static const String _cuacaUrl = 'https://api.bmkg.go.id/publik/prakiraan-cuaca';
 
-  // Mendapatkan cuaca (default Jakarta Pusat - Gambir: 31.71.01.1001)
-  // Bisa diganti adm4 cilacap jika dibutuhkan
-  static Future<CuacaModel> fetchCurrentWeather([String adm4 = '31.71.01.1001']) async {
+  // Mendapatkan cuaca (default Bojongsoang: 32.04.08.2002)
+  // Bisa diganti adm4 jika dibutuhkan
+  static Future<CuacaModel> fetchCurrentWeather([String adm4 = '32.04.08.2002']) async {
     try {
       final response = await http.get(Uri.parse('$_cuacaUrl?adm4=$adm4'));
       if (response.statusCode == 200) {

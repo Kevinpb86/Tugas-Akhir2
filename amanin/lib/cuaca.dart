@@ -3,6 +3,7 @@ import 'beranda.dart';
 import 'edukasi.dart'; // Import for navigation consistency if needed
 import 'gempa.dart';
 import 'asuransi.dart';
+import 'main.dart'; // For userCityNameNotifier
 
 import 'services/bmkg_service.dart';
 
@@ -26,7 +27,7 @@ class _CuacaPageState extends State<CuacaPage> {
 
   Future<void> _fetchWeatherData() async {
     try {
-      final cuaca = await BmkgService.fetchCurrentWeather('31.71.01.1001'); // Jakarta Pusat, Gambir
+      final cuaca = await BmkgService.fetchCurrentWeather('32.04.08.2002'); // Bojongsoang
       if (mounted) {
         setState(() {
           _latestCuaca = cuaca;
@@ -64,13 +65,18 @@ class _CuacaPageState extends State<CuacaPage> {
                children: [
                  const Icon(Icons.location_on, size: 12, color: Color(0xFF2196F3)),
                  const SizedBox(width: 4),
-                 Text(
-                   _isLoading ? '...' : (_latestCuaca?.kota ?? 'Jakarta Pusat'),
-                   style: const TextStyle(
-                     color: Color(0xFF2196F3),
-                     fontSize: 12,
-                     fontWeight: FontWeight.w500,
-                   ),
+                 ValueListenableBuilder<String>(
+                   valueListenable: userCityNameNotifier,
+                   builder: (context, cityName, _) {
+                     return Text(
+                       cityName,
+                       style: const TextStyle(
+                         color: Color(0xFF2196F3),
+                         fontSize: 12,
+                         fontWeight: FontWeight.w500,
+                       ),
+                     );
+                   },
                  ),
                ],
              ),
