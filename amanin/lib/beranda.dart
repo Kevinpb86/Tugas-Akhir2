@@ -8,6 +8,7 @@ import 'utils/earthquake_map.dart';
 import 'utils/map_utils.dart';
 import 'fullscreen_map.dart';
 import 'cuaca.dart';
+import 'edukasi_bahaya.dart';
 import 'akun.dart';
 import 'fitur.dart';
 import 'login.dart';
@@ -193,8 +194,9 @@ class _BerandaPageState extends State<BerandaPage> {
                         onPressed: () {
                           Navigator.of(context).pop();
                           setState(() {
-                            _currentCityName = 'Lokasi ditolak (Default Jakarta)';
+                            _currentCityName = 'Lokasi ditolak (Default Bojongsoang)';
                           });
+                          userCityNameNotifier.value = 'Bojongsoang';
                         },
                         child: const Text(
                           'Tolak',
@@ -436,7 +438,13 @@ class _BerandaPageState extends State<BerandaPage> {
                   child: ElevatedButton.icon(
                     onPressed: () {
                       Navigator.of(context).pop();
-                      _startHelpTour();
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => EdukasiBahayaPage(
+                            cityName: _currentCityName,
+                          ),
+                        ),
+                      );
                     },
                     icon: const Icon(Icons.menu_book_rounded, size: 18),
                     label: const Text(
@@ -462,7 +470,6 @@ class _BerandaPageState extends State<BerandaPage> {
                   child: OutlinedButton(
                     onPressed: () {
                       Navigator.of(context).pop();
-                      _startHelpTour();
                     },
                     style: OutlinedButton.styleFrom(
                       foregroundColor: const Color(0xFF1E88E5),
@@ -548,6 +555,7 @@ class _BerandaPageState extends State<BerandaPage> {
         setState(() {
           _currentCityName = cityName;
         });
+        userCityNameNotifier.value = cityName;
         _determineUserEnvironment(position, fullAddr);
       }
     } catch (e) {
@@ -621,8 +629,8 @@ class _BerandaPageState extends State<BerandaPage> {
   Future<void> _fetchWeatherData() async {
     try {
       final cuaca = await BmkgService.fetchCurrentWeather(
-        '31.71.01.1001',
-      ); // Jakarta Pusat, Gambir
+        '32.04.08.2002',
+      ); // Bojongsoang
       if (mounted) {
         setState(() {
           _latestCuaca = cuaca;
@@ -2179,7 +2187,7 @@ class _BerandaPageState extends State<BerandaPage> {
           style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF1A1A1A),
+                              color: Color(0xFF1A1A1A),
           ),
         ),
       ],
@@ -2191,36 +2199,13 @@ class _BerandaPageState extends State<BerandaPage> {
       key: _weatherKey,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              'Cuaca Lokal',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1A1A1A),
-              ),
-            ),
-            Row(
-              children: [
-                const Icon(
-                  Icons.location_on_outlined,
-                  size: 16,
-                  color: Color(0xFF757575),
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  _isLoadingCuaca ? '...' : (_latestCuaca?.kota ?? 'Cilacap'),
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF757575),
-                  ),
-                ),
-              ],
-            ),
-          ],
+        const Text(
+          'Cuaca Lokal',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF1A1A1A),
+          ),
         ),
         const SizedBox(height: 12),
         MouseRegion(
@@ -2242,51 +2227,52 @@ class _BerandaPageState extends State<BerandaPage> {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    Color(0xFFE1F5FE), // Sangat muda
-                    Color(0xFFB3E5FC), // Agak biru
+                    Color(0xFF00BCD4), // Vivid Cyan (Matches button exactly)
+                    Color(0xFF00838F), // Darker Cyan for premium gradient depth
                   ],
                 ),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.04),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
+                    color: const Color(0xFF00BCD4).withValues(alpha: 0.25),
+                    blurRadius: 16,
+                    offset: const Offset(0, 8),
                   ),
                 ],
               ),
               child: Padding(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Main Weather Info
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 4,
+                                horizontal: 8,
+                                vertical: 3,
                               ),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF2196F3),
-                                borderRadius: BorderRadius.circular(12),
+                                color: Colors.white.withValues(alpha: 0.25),
+                                borderRadius: BorderRadius.circular(8),
                               ),
                               child: const Text(
                                 'SAAT INI',
                                 style: TextStyle(
-                                  fontSize: 9,
+                                  fontSize: 8,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white,
-                                  letterSpacing: 0.5,
+                                  letterSpacing: 0.8,
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 12),
+                            const SizedBox(height: 10),
                             Text(
                               _isLoadingCuaca
                                   ? '...'
@@ -2294,90 +2280,128 @@ class _BerandaPageState extends State<BerandaPage> {
                                         ? _latestCuaca!.cuaca
                                         : 'Berawan'),
                               style: const TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF1A1A1A),
+                                fontSize: 22,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                                height: 1.1,
+                                letterSpacing: -0.3,
                               ),
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Terasa seperti ${_isLoadingCuaca ? "..." : (_latestCuaca != null ? _latestCuaca!.suhu + 2 : 34)}°C', // Simple feel logic
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: Color(0xFF757575),
+                              'Terasa seperti ${_isLoadingCuaca ? "..." : (_latestCuaca != null ? _latestCuaca!.suhu + 2 : 34)}°C',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.white.withValues(alpha: 0.85),
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                           ],
                         ),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            Text(
-                              _isLoadingCuaca
-                                  ? '--'
-                                  : (_latestCuaca?.suhu.toString() ?? '32'),
-                              style: const TextStyle(
-                                fontSize: 48,
-                                fontWeight: FontWeight.w300,
-                                color: Color(0xFF1A1A1A),
-                                height: 1,
-                              ),
+                            ValueListenableBuilder<String>(
+                              valueListenable: userCityNameNotifier,
+                              builder: (context, cityName, _) {
+                                return Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 3,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                      color: Colors.white.withValues(alpha: 0.1),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(
+                                        Icons.location_on_outlined,
+                                        size: 11,
+                                        color: Colors.white,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        cityName,
+                                        style: const TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
                             ),
-                            const SizedBox(width: 4),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
+                            const SizedBox(height: 8),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                const Text(
-                                  '°',
-                                  style: TextStyle(
-                                    fontSize: 24,
+                                Text(
+                                  _isLoadingCuaca
+                                      ? '--'
+                                      : '${_latestCuaca?.suhu.toString() ?? '32'}°',
+                                  style: const TextStyle(
+                                    fontSize: 48,
                                     fontWeight: FontWeight.w300,
-                                    color: Color(0xFF1A1A1A),
+                                    color: Colors.white,
                                     height: 1,
                                   ),
                                 ),
-                                const SizedBox(height: 8),
+                                const SizedBox(width: 8),
                                 Container(
-                                  width: 36,
-                                  height: 36,
+                                  width: 40,
+                                  height: 40,
                                   decoration: BoxDecoration(
-                                    color: Colors.black.withValues(alpha: 0.4),
-                                    borderRadius: BorderRadius.circular(8),
+                                    color: Colors.white.withValues(alpha: 0.2),
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: Colors.white.withValues(alpha: 0.1),
+                                      width: 1,
+                                    ),
                                   ),
                                   child: _isLoadingCuaca
-                                      ? const SizedBox(
-                                          width: 16,
-                                          height: 16,
-                                          child: CircularProgressIndicator(
-                                            color: Colors.white,
-                                            strokeWidth: 2,
+                                      ? const Center(
+                                          child: SizedBox(
+                                            width: 14,
+                                            height: 14,
+                                            child: CircularProgressIndicator(
+                                              color: Colors.white,
+                                              strokeWidth: 1.5,
+                                            ),
                                           ),
                                         )
-                                      : (_latestCuaca != null &&
+                                      : (_latestQuake != null &&
+                                                _latestCuaca != null &&
                                                 _latestCuaca!.image.isNotEmpty
-                                            ? Center(
-                                                child: Image.network(
-                                                  _latestCuaca!.image,
-                                                  width: 24,
-                                                  height: 24,
-                                                  // Handle network image failure gracefully
-                                                  errorBuilder:
-                                                      (
-                                                        context,
-                                                        error,
-                                                        stackTrace,
-                                                      ) => const Icon(
-                                                        Icons.cloud,
-                                                        color: Colors.white,
-                                                        size: 24,
-                                                      ),
-                                                ),
-                                              )
-                                            : const Icon(
-                                                Icons.cloud,
-                                                color: Colors.white,
-                                                size: 24,
-                                              )),
+                                             ? Center(
+                                                 child: Image.network(
+                                                   _latestCuaca!.image,
+                                                   width: 24,
+                                                   height: 24,
+                                                   errorBuilder:
+                                                       (
+                                                         context,
+                                                         error,
+                                                         stackTrace,
+                                                       ) => const Icon(
+                                                         Icons.cloud_outlined,
+                                                         color: Colors.white,
+                                                         size: 20,
+                                                       ),
+                                                 ),
+                                               )
+                                             : const Icon(
+                                                 Icons.cloud_outlined,
+                                                 color: Colors.white,
+                                                 size: 20,
+                                               )),
                                 ),
                               ],
                             ),
@@ -2385,33 +2409,34 @@ class _BerandaPageState extends State<BerandaPage> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 14),
+                    Container(
+                      height: 1,
+                      color: Colors.white.withValues(alpha: 0.15),
+                    ),
+                    const SizedBox(height: 14),
                     // Bottom Details
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         _buildWeatherDetail(
-                          Icons.water_drop,
+                          Icons.water_drop_outlined,
                           _isLoadingCuaca
                               ? '--%'
                               : '${_latestCuaca?.kelembapan ?? 94}%',
                           'Air',
-                          const Color(0xFF2196F3),
                         ),
                         _buildWeatherDetail(
-                          Icons.air,
+                          Icons.air_rounded,
                           _isLoadingCuaca
                               ? '--'
                               : (_latestCuaca?.kecAngin.toString() ?? '3.6'),
                           'km/h',
-                          const Color(0xFF4CAF50),
                         ),
                         _buildWeatherDetail(
-                          Icons.wb_sunny,
-                          // UV index API nya gaada ya, kita hide kalo gaada data / kasi default Sedang
+                          Icons.wb_sunny_outlined,
                           'UV 6',
                           'Sedang',
-                          const Color(0xFFFF9800),
                         ),
                       ],
                     ),
@@ -2429,32 +2454,65 @@ class _BerandaPageState extends State<BerandaPage> {
     IconData icon,
     String value,
     String label,
-    Color color,
   ) {
     return Expanded(
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 4),
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.8),
+          color: Colors.white.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(16),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 24),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1A1A1A),
-              ),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.18),
+            width: 1.2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.02),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
             ),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: const TextStyle(fontSize: 10, color: Color(0xFF757575)),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: Colors.white, size: 20),
+            ),
+            const SizedBox(width: 8),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  value,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    letterSpacing: 0.2,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.white.withValues(alpha: 0.7),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
