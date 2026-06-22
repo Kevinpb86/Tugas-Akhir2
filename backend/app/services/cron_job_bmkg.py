@@ -13,6 +13,8 @@ from app.services.fetch_bmkg_service import BMKGService
 from app.services.extarct_features import NNDService
 from app.services.rf_service import MLService
 
+MC = 4.7
+
 def run_job():
 
     db = SessionLocal()
@@ -63,7 +65,7 @@ def run_job():
             # COMPUTE NND
             # ==================================================
 
-            nnd_result = nnd_service.compute(quake)
+            nnd_result = nnd_service.compute(quake, mc=MC)
             prediction_result = None
 
             if nnd_result:

@@ -6,7 +6,7 @@ from dateutil import parser
 
 from app.db_models.earthquake import Earthquake
 from app.auth.security import generate_fingerprint
-
+from app.utils.time_utils import datetime_to_datenum
 
 class BMKGService:
 
@@ -33,6 +33,8 @@ class BMKGService:
             # filter future earthquake
             if event_time > now:
                 continue
+            
+            serial_time = datetime_to_datenum(event_time)
 
             lat, lon = map(
                 float,
@@ -64,13 +66,14 @@ class BMKGService:
 
             eq = Earthquake(
                 event_time=event_time,
+                time = serial_time,
                 latitude=lat,
                 longitude=lon,
                 depth=depth,
                 magnitude=magnitude,
                 wilayah=data.get("Wilayah"),
                 dirasakan=data.get("Dirasakan"),
-                source="BMKG",
+                source="BMKG_API",
                 status="pending",
                 fingerprint=fingerprint
             )
