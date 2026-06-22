@@ -6,9 +6,10 @@ from app.db_models.earthquake import Earthquake
 from app.db_models.seismic_analysis import SeismicAnalysis
 from app.repositories.earthquake_repo import EarthquakeRepository
 from app.services.extarct_features import NNDService
+from app.utils.time_utils import datetime_to_datenum
 
 
-CSV_PATH = "data/df_combined_catalog_for_mysql.csv"
+CSV_PATH = "data/historical_data_bmkg_2021-2026.csv"
 MC = 4.7
 
 
@@ -29,16 +30,7 @@ def run_seed():
             .dt.tz_localize(None)
         )
 
-        df = (
-            df[df["magnitude"] >= MC]
-            .sort_values("datetime")
-            .reset_index(drop=True)
-        )
-
-        print(
-            f"Applied Mc filter ({MC}): "
-            f"{len(df)} records"
-        )
+        df = df.sort_values("datetime").reset_index(drop=True)
 
         processed = 0
 
@@ -54,6 +46,7 @@ def run_seed():
 
             earthquake = Earthquake(
                 event_time=row["datetime"],
+                time=datetime_to_datenum(row["datetime"]),
                 latitude=float(row["latitude"]),
                 longitude=float(row["longitude"]),
                 depth=float(row["depth"]),
@@ -75,7 +68,10 @@ def run_seed():
             db.flush()
 
             # hitung NND terhadap event historis sebelumnya
-            nnd_result = nnd_service.compute(earthquake)
+            nnd_result = None
+
+            if earthquake.magnitude >= MC:
+                nnd_result = nnd_service.compute(earthquake, mc=MC)
 
             if nnd_result is not None:
 
@@ -91,11 +87,14 @@ def run_seed():
 
                 db.add(analysis)
 
-                earthquake.status = "processed"
+                if earthquake.magnitude < MC:
+                    earthquake.status = "below_mc"
 
-            else:
-                # event pertama tidak punya parent
-                earthquake.status = "processed"
+                elif nnd_result is not None:
+                    earthquake.status = "processed"
+
+                else:
+                    earthquake.status = "processed"
 
             processed += 1
 

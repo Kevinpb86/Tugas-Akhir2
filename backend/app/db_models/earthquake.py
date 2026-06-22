@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, Float, String, DateTime, Text
+from sqlalchemy import Column, Integer, Float, String, DateTime, Text, Double
 from datetime import datetime
 
 from app.config.database import Base
@@ -11,6 +11,9 @@ class Earthquake(Base):
 
     # waktu gempa
     event_time = Column(DateTime, nullable=False, index=True)
+
+    # waktu matlab untuk fitur nnd
+    time = Column(Double, nullable=False, index=True)
 
     # koordinat
     latitude = Column(Float, nullable=False)

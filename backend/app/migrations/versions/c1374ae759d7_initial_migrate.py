@@ -1,8 +1,8 @@
 """initial migrate
 
-Revision ID: b3ffb6bfaa31
+Revision ID: c1374ae759d7
 Revises: 
-Create Date: 2026-06-17 22:54:43.656585
+Create Date: 2026-06-20 12:42:44.146453
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'b3ffb6bfaa31'
+revision: str = 'c1374ae759d7'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -24,6 +24,7 @@ def upgrade() -> None:
     op.create_table('earthquakes',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('event_time', sa.DateTime(), nullable=False),
+    sa.Column('time', sa.Float(), nullable=False),
     sa.Column('latitude', sa.Float(), nullable=False),
     sa.Column('longitude', sa.Float(), nullable=False),
     sa.Column('depth', sa.Float(), nullable=False),
@@ -39,6 +40,7 @@ def upgrade() -> None:
     op.create_index(op.f('ix_earthquakes_event_time'), 'earthquakes', ['event_time'], unique=False)
     op.create_index(op.f('ix_earthquakes_fingerprint'), 'earthquakes', ['fingerprint'], unique=True)
     op.create_index(op.f('ix_earthquakes_id'), 'earthquakes', ['id'], unique=False)
+    op.create_index(op.f('ix_earthquakes_time'), 'earthquakes', ['time'], unique=False)
     op.create_table('users',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('full_name', sa.String(length=100), nullable=False),
@@ -77,6 +79,7 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_users_id'), table_name='users')
     op.drop_index(op.f('ix_users_email'), table_name='users')
     op.drop_table('users')
+    op.drop_index(op.f('ix_earthquakes_time'), table_name='earthquakes')
     op.drop_index(op.f('ix_earthquakes_id'), table_name='earthquakes')
     op.drop_index(op.f('ix_earthquakes_fingerprint'), table_name='earthquakes')
     op.drop_index(op.f('ix_earthquakes_event_time'), table_name='earthquakes')
