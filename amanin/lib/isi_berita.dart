@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 
 class IsiBeritaPage extends StatelessWidget {
   final NewsModel news;
-  
+
   const IsiBeritaPage({super.key, required this.news});
 
   String _formatDate(String utcDate) {
@@ -66,8 +66,8 @@ class IsiBeritaPage extends StatelessWidget {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(16),
                   child: Image.network(
-                    news.photoUrl.isNotEmpty 
-                        ? news.photoUrl 
+                    news.photoUrl.isNotEmpty
+                        ? news.photoUrl
                         : 'https://via.placeholder.com/400x200?text=No+Image',
                     width: double.infinity,
                     height: 220,
@@ -77,20 +77,27 @@ class IsiBeritaPage extends StatelessWidget {
                         width: double.infinity,
                         height: 220,
                         color: Colors.grey[300],
-                        child: const Icon(Icons.broken_image, size: 64, color: Colors.grey),
+                        child: const Icon(
+                          Icons.broken_image,
+                          size: 64,
+                          color: Colors.grey,
+                        ),
                       );
                     },
                   ),
                 ),
               ),
               const SizedBox(height: 20),
-              
+
               // Meta info
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFE0F2FE),
                       borderRadius: BorderRadius.circular(12),
@@ -118,7 +125,7 @@ class IsiBeritaPage extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 16),
-              
+
               // Title
               Text(
                 news.title,
@@ -130,7 +137,7 @@ class IsiBeritaPage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 24),
-              
+
               // Summary Box (Ringkasan Utama)
               Container(
                 padding: const EdgeInsets.all(16),
@@ -151,7 +158,11 @@ class IsiBeritaPage extends StatelessWidget {
                   children: [
                     Row(
                       children: const [
-                        Icon(Icons.file_copy_outlined, color: Color(0xFF0284C7), size: 20),
+                        Icon(
+                          Icons.file_copy_outlined,
+                          color: Color(0xFF0284C7),
+                          size: 20,
+                        ),
                         SizedBox(width: 8),
                         Text(
                           'Ringkasan Utama',
@@ -176,7 +187,7 @@ class IsiBeritaPage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 24),
-              
+
               // Mock Main Body Content because API only gives snippet
               const Text(
                 'Kondisi cuaca ekstrem yang dipicu oleh siklon tropis di Samudra Hindia diperkirakan akan memberikan dampak signifikan bagi pemukiman di sepanjang garis pantai. Pihak berwenang telah meningkatkan status kewaspadaan menjadi Level 3.',
@@ -196,7 +207,7 @@ class IsiBeritaPage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 32),
-              
+
               // Critical Action Points Box (Poin Tindakan Kritis)
               Container(
                 padding: const EdgeInsets.all(20),
@@ -209,7 +220,11 @@ class IsiBeritaPage extends StatelessWidget {
                   children: [
                     Row(
                       children: const [
-                        Icon(Icons.warning_amber_rounded, color: Color(0xFFB45309), size: 24),
+                        Icon(
+                          Icons.warning_amber_rounded,
+                          color: Color(0xFFB45309),
+                          size: 24,
+                        ),
                         SizedBox(width: 8),
                         Text(
                           'Poin Tindakan Kritis',
@@ -223,30 +238,30 @@ class IsiBeritaPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 20),
                     _buildActionPoint(
-                      '1', 
-                      'Pindahkan barang elektronik ke lantai atas atau tempat yang lebih tinggi.'
+                      '1',
+                      'Pindahkan barang elektronik ke lantai atas atau tempat yang lebih tinggi.',
                     ),
                     const SizedBox(height: 16),
                     _buildActionPoint(
-                      '2', 
-                      'Pastikan dokumen penting terbungkus plastik kedap air di dalam tas darurat.'
+                      '2',
+                      'Pastikan dokumen penting terbungkus plastik kedap air di dalam tas darurat.',
                     ),
                     const SizedBox(height: 16),
                     _buildActionPoint(
-                      '3', 
-                      'Matikan aliran listrik utama di rumah jika air mulai masuk ke pekarangan.'
+                      '3',
+                      'Matikan aliran listrik utama di rumah jika air mulai masuk ke pekarangan.',
                     ),
                     const SizedBox(height: 16),
                     _buildActionPoint(
-                      '4', 
-                      'Hafalkan rute evakuasi terdekat menuju Balai Desa atau Gedung Olahraga.'
+                      '4',
+                      'Hafalkan rute evakuasi terdekat menuju Balai Desa atau Gedung Olahraga.',
                     ),
                   ],
                 ),
               ),
-              
+
               const SizedBox(height: 32),
-              
+
               // Button to read full original news
               SizedBox(
                 width: double.infinity,

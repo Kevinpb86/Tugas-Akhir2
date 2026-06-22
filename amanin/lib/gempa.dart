@@ -28,7 +28,8 @@ class GempaPage extends StatefulWidget {
 class _GempaPageState extends State<GempaPage> {
   String _currentCityName = 'Memuat lokasi...';
   Position? _userPosition;
-  int _selectedFilterIndex = 0; // 0: Terkini, 1: M >= 5, 2: Jarak Jauh, 3: Jarak Dekat
+  int _selectedFilterIndex =
+      0; // 0: Terkini, 1: M >= 5, 2: Jarak Jauh, 3: Jarak Dekat
   GempaModel? _latestQuake;
   List<GempaModel> _recentQuakes = [];
   bool _isLoadingQuake = true;
@@ -57,21 +58,23 @@ class _GempaPageState extends State<GempaPage> {
     try {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) return;
-      
+
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) return;
       }
-      
+
       if (permission == LocationPermission.deniedForever) return;
-      
+
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
-      
-      print("[Gempa] GPS coordinates: lat=${position.latitude}, lon=${position.longitude}, accuracy=${position.accuracy}m");
-      
+
+      print(
+        "[Gempa] GPS coordinates: lat=${position.latitude}, lon=${position.longitude}, accuracy=${position.accuracy}m",
+      );
+
       String cityName = 'Jakarta Pusat';
       try {
         List<Placemark> placemarks = await placemarkFromCoordinates(
@@ -80,22 +83,53 @@ class _GempaPageState extends State<GempaPage> {
         );
         if (placemarks.isNotEmpty) {
           Placemark place = placemarks[0];
-          print("[Gempa] Geocoding result: subLocality=${place.subLocality}, locality=${place.locality}, subAdmin=${place.subAdministrativeArea}, admin=${place.administrativeArea}");
-          cityName = place.locality ?? place.subLocality ?? place.subAdministrativeArea ?? 'Jakarta Pusat';
-          cityName = cityName.replaceAll('Kabupaten ', '').replaceAll('Kota ', '').replaceAll(' City', '').replaceAll('Kecamatan ', '').replaceAll('Kelurahan ', '').replaceAll('Desa ', '');
+          print(
+            "[Gempa] Geocoding result: subLocality=${place.subLocality}, locality=${place.locality}, subAdmin=${place.subAdministrativeArea}, admin=${place.administrativeArea}",
+          );
+          cityName =
+              place.locality ??
+              place.subLocality ??
+              place.subAdministrativeArea ??
+              'Jakarta Pusat';
+          cityName = cityName
+              .replaceAll('Kabupaten ', '')
+              .replaceAll('Kota ', '')
+              .replaceAll(' City', '')
+              .replaceAll('Kecamatan ', '')
+              .replaceAll('Kelurahan ', '')
+              .replaceAll('Desa ', '');
         }
       } catch (e) {
         print("[Gempa] Geocoding package error: $e, falling back to Nominatim");
         try {
-          final url = Uri.parse('https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.latitude}&lon=${position.longitude}&zoom=16&addressdetails=1');
-          final response = await http.get(url, headers: {'User-Agent': 'AmaninApp/1.0'});
+          final url = Uri.parse(
+            'https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.latitude}&lon=${position.longitude}&zoom=16&addressdetails=1',
+          );
+          final response = await http.get(
+            url,
+            headers: {'User-Agent': 'AmaninApp/1.0'},
+          );
           if (response.statusCode == 200) {
             final data = json.decode(response.body);
             print("[Gempa] Nominatim full address: ${data['address']}");
             if (data['address'] != null) {
               final addr = data['address'];
-              cityName = addr['town'] ?? addr['subdistrict'] ?? addr['suburb'] ?? addr['city_district'] ?? addr['city'] ?? addr['county'] ?? addr['state'] ?? 'Jakarta Pusat';
-              cityName = cityName.replaceAll('Kabupaten ', '').replaceAll('Kota ', '').replaceAll(' City', '').replaceAll('Kecamatan ', '').replaceAll('Kelurahan ', '').replaceAll('Desa ', '');
+              cityName =
+                  addr['town'] ??
+                  addr['subdistrict'] ??
+                  addr['suburb'] ??
+                  addr['city_district'] ??
+                  addr['city'] ??
+                  addr['county'] ??
+                  addr['state'] ??
+                  'Jakarta Pusat';
+              cityName = cityName
+                  .replaceAll('Kabupaten ', '')
+                  .replaceAll('Kota ', '')
+                  .replaceAll(' City', '')
+                  .replaceAll('Kecamatan ', '')
+                  .replaceAll('Kelurahan ', '')
+                  .replaceAll('Desa ', '');
               print("[Gempa] Final city name: $cityName");
             }
           }
@@ -103,7 +137,7 @@ class _GempaPageState extends State<GempaPage> {
           print("Nominatim fallback error: $fallbackError");
         }
       }
-      
+
       if (mounted) {
         setState(() {
           _currentCityName = cityName;
@@ -165,10 +199,20 @@ class _GempaPageState extends State<GempaPage> {
             double lonA = double.tryParse(a.bujur) ?? 0;
             double latB = double.tryParse(b.lintang) ?? 0;
             double lonB = double.tryParse(b.bujur) ?? 0;
-            
-            double distA = Geolocator.distanceBetween(_userPosition!.latitude, _userPosition!.longitude, latA, lonA);
-            double distB = Geolocator.distanceBetween(_userPosition!.latitude, _userPosition!.longitude, latB, lonB);
-            
+
+            double distA = Geolocator.distanceBetween(
+              _userPosition!.latitude,
+              _userPosition!.longitude,
+              latA,
+              lonA,
+            );
+            double distB = Geolocator.distanceBetween(
+              _userPosition!.latitude,
+              _userPosition!.longitude,
+              latB,
+              lonB,
+            );
+
             if (_selectedFilterIndex == 2) {
               // Jarak Jauh: Descending distance
               return distB.compareTo(distA);
@@ -370,7 +414,9 @@ class _GempaPageState extends State<GempaPage> {
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFF00BCD4).withValues(alpha: 0.3),
+                                color: const Color(
+                                  0xFF00BCD4,
+                                ).withValues(alpha: 0.3),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
                               ),
@@ -411,40 +457,47 @@ class _GempaPageState extends State<GempaPage> {
 
   Widget _buildChip(int index, String label) {
     final bool isActive = _selectedFilterIndex == index;
-    return GestureDetector(
-      onTap: () {
-        if (_selectedFilterIndex != index) {
-          setState(() {
-            _selectedFilterIndex = index;
-          });
-          _fetchRecentEarthquakeData();
-        }
-      },
-      child: Container(
-        margin: const EdgeInsets.only(right: 12),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isActive ? const Color(0xFFE3F2FD) : Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isActive ? const Color(0xFF2196F3) : const Color(0xFFEEEEEE),
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: () {
+          if (_selectedFilterIndex != index) {
+            setState(() {
+              _selectedFilterIndex = index;
+            });
+            _fetchRecentEarthquakeData();
+          }
+        },
+        child: Container(
+          margin: const EdgeInsets.only(right: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: isActive ? const Color(0xFFE3F2FD) : Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isActive
+                  ? const Color(0xFF2196F3)
+                  : const Color(0xFFEEEEEE),
+            ),
+            boxShadow: isActive
+                ? [
+                    BoxShadow(
+                      color: const Color(0xFF2196F3).withOpacity(0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
           ),
-          boxShadow: isActive
-              ? [
-                  BoxShadow(
-                    color: const Color(0xFF2196F3).withOpacity(0.1),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ]
-              : null,
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isActive ? const Color(0xFF2196F3) : const Color(0xFF757575),
-            fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
-            fontSize: 13,
+          child: Text(
+            label,
+            style: TextStyle(
+              color: isActive
+                  ? const Color(0xFF2196F3)
+                  : const Color(0xFF757575),
+              fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
+              fontSize: 13,
+            ),
           ),
         ),
       ),
@@ -542,7 +595,8 @@ class _GempaPageState extends State<GempaPage> {
                       onTap: () {
                         if (_latestQuake != null) {
                           final gempa = _latestQuake!;
-                          final String shareText = 'Info Gempa dirasakan Mag:${gempa.magnitude}, ${gempa.tanggal} ${gempa.jam.replaceAll(' WIB', '')} WIB, Lok:${gempa.lintang}, ${gempa.bujur} (${gempa.wilayah}), Kedlmn:${gempa.kedalaman} ::AMANIN\nInformasi selengkapnya lihat di\nhttps://amanin.app/';
+                          final String shareText =
+                              'Info Gempa dirasakan Mag:${gempa.magnitude}, ${gempa.tanggal} ${gempa.jam.replaceAll(' WIB', '')} WIB, Lok:${gempa.lintang}, ${gempa.bujur} (${gempa.wilayah}), Kedlmn:${gempa.kedalaman} ::AMANIN\nInformasi selengkapnya lihat di\nhttps://amanin.app/';
                           Share.share(shareText);
                         }
                       },
@@ -570,34 +624,37 @@ class _GempaPageState extends State<GempaPage> {
                   Positioned(
                     bottom: 16,
                     right: 16,
-                    child: GestureDetector(
-                      onTap: () {
-                        if (_latestQuake != null) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  FullscreenMapPage(gempa: _latestQuake!),
-                            ),
-                          );
-                        }
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 10,
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.open_in_full_rounded,
-                          size: 16,
-                          color: Color(0xFF1A1A1A),
+                    child: MouseRegion(
+                      cursor: SystemMouseCursors.click,
+                      child: GestureDetector(
+                        onTap: () {
+                          if (_latestQuake != null) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    FullscreenMapPage(gempa: _latestQuake!),
+                              ),
+                            );
+                          }
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 10,
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.open_in_full_rounded,
+                            size: 16,
+                            color: Color(0xFF1A1A1A),
+                          ),
                         ),
                       ),
                     ),
@@ -829,7 +886,8 @@ class _GempaPageState extends State<GempaPage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => RiwayatGempaPage(quakes: _recentQuakes),
+                    builder: (context) =>
+                        RiwayatGempaPage(quakes: _recentQuakes),
                   ),
                 );
               },

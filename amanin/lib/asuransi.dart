@@ -54,7 +54,10 @@ class AsuransiWebPage extends StatelessWidget {
               children: [
                 _buildHeroSection(),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 24,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -72,7 +75,8 @@ class AsuransiWebPage extends StatelessWidget {
                         iconColor: const Color(0xFF4CAF50),
                         bgColor: const Color(0xFFE8F5E9),
                         title: 'Klaim Cepat 24 Jam',
-                        desc: 'Proses klaim mudah dan dana cair dalam 1x24 jam setelah verifikasi.',
+                        desc:
+                            'Proses klaim mudah dan dana cair dalam 1x24 jam setelah verifikasi.',
                       ),
                       const SizedBox(height: 12),
                       _buildFeatureCard(
@@ -80,7 +84,8 @@ class AsuransiWebPage extends StatelessWidget {
                         iconColor: const Color(0xFFFF5252),
                         bgColor: const Color(0xFFFFEAEA),
                         title: 'Cover Gempa & Banjir',
-                        desc: 'Perlindungan menyeluruh termasuk kerusakan akibat gempa bumi dan banjir.',
+                        desc:
+                            'Perlindungan menyeluruh termasuk kerusakan akibat gempa bumi dan banjir.',
                       ),
                       const SizedBox(height: 12),
                       _buildFeatureCard(
@@ -88,7 +93,8 @@ class AsuransiWebPage extends StatelessWidget {
                         iconColor: const Color(0xFF42A5F5),
                         bgColor: const Color(0xFFE3F2FD),
                         title: 'Premi Terjangkau',
-                        desc: 'Biaya ringan mulai dari harga secangkir kopi, perlindungan maksimal.',
+                        desc:
+                            'Biaya ringan mulai dari harga secangkir kopi, perlindungan maksimal.',
                       ),
                       const SizedBox(height: 24),
                       _buildTrustSection(),
@@ -138,7 +144,10 @@ class AsuransiWebPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFE3F2FD),
                   borderRadius: BorderRadius.circular(20),
@@ -204,10 +213,7 @@ class AsuransiWebPage extends StatelessWidget {
         children: [
           Container(
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: bgColor,
-              shape: BoxShape.circle,
-            ),
+            decoration: BoxDecoration(color: bgColor, shape: BoxShape.circle),
             child: Icon(icon, color: iconColor),
           ),
           const SizedBox(width: 16),
@@ -253,10 +259,7 @@ class AsuransiWebPage extends StatelessWidget {
         children: [
           const Text(
             'Dipercaya oleh lebih dari',
-            style: TextStyle(
-              fontSize: 13,
-              color: Color(0xFF757575),
-            ),
+            style: TextStyle(fontSize: 13, color: Color(0xFF757575)),
           ),
           const SizedBox(height: 8),
           Row(
@@ -275,10 +278,7 @@ class AsuransiWebPage extends StatelessWidget {
               SizedBox(width: 4),
               Text(
                 'Keluarga Indonesia',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Color(0xFF424242),
-                ),
+                style: TextStyle(fontSize: 14, color: Color(0xFF424242)),
               ),
             ],
           ),
@@ -311,7 +311,7 @@ class AsuransiWebPage extends StatelessWidget {
                 ),
               ),
             ],
-          )
+          ),
         ],
       ),
     );
@@ -338,12 +338,15 @@ class AsuransiWebPage extends StatelessWidget {
     return Align(
       alignment: Alignment.bottomCenter,
       child: Container(
-        padding: const EdgeInsets.only(top: 16, left: 20, right: 20, bottom: 24),
+        padding: const EdgeInsets.only(
+          top: 16,
+          left: 20,
+          right: 20,
+          bottom: 24,
+        ),
         decoration: BoxDecoration(
           color: Colors.white,
-          border: Border(
-            top: BorderSide(color: Colors.grey.shade200),
-          ),
+          border: Border(top: BorderSide(color: Colors.grey.shade200)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.05),
@@ -363,10 +366,7 @@ class AsuransiWebPage extends StatelessWidget {
                   children: [
                     const Text(
                       'Mulai dari',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF757575),
-                      ),
+                      style: TextStyle(fontSize: 12, color: Color(0xFF757575)),
                     ),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.baseline,
@@ -392,7 +392,10 @@ class AsuransiWebPage extends StatelessWidget {
                   ],
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFE8F5E9),
                     borderRadius: BorderRadius.circular(12),
@@ -427,7 +430,10 @@ class AsuransiWebPage extends StatelessWidget {
                   children: const [
                     Text(
                       'Daftar Sekarang',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     SizedBox(width: 8),
                     Icon(Icons.arrow_forward, size: 16),
@@ -438,10 +444,7 @@ class AsuransiWebPage extends StatelessWidget {
             const SizedBox(height: 12),
             const Text(
               'Syarat & Ketentuan berlaku. OJK Terdaftar.',
-              style: TextStyle(
-                fontSize: 10,
-                color: Color(0xFF9E9E9E),
-              ),
+              style: TextStyle(fontSize: 10, color: Color(0xFF9E9E9E)),
             ),
           ],
         ),

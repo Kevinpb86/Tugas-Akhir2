@@ -67,17 +67,35 @@ class EnvironmentResult {
 }
 
 class EnvironmentDetector {
-  static double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+  static double calculateDistance(
+    double lat1,
+    double lon1,
+    double lat2,
+    double lon2,
+  ) {
     const p = 0.017453292519943295; // Pi / 180
-    final a = 0.5 - math.cos((lat2 - lat1) * p) / 2 +
-        math.cos(lat1 * p) * math.cos(lat2 * p) *
-        (1 - math.cos((lon2 - lon1) * p)) / 2;
+    final a =
+        0.5 -
+        math.cos((lat2 - lat1) * p) / 2 +
+        math.cos(lat1 * p) *
+            math.cos(lat2 * p) *
+            (1 - math.cos((lon2 - lon1) * p)) /
+            2;
     return 12742 * math.asin(math.sqrt(a)); // 2 * R; R = 6371 km
   }
 
   static bool checkIfNearBeach(String address) {
     final cleanAddress = address.toLowerCase();
-    final keywords = ['pantai', 'beach', 'pesisir', 'coast', 'laut', 'ocean', 'bay', 'teluk'];
+    final keywords = [
+      'pantai',
+      'beach',
+      'pesisir',
+      'coast',
+      'laut',
+      'ocean',
+      'bay',
+      'teluk',
+    ];
     for (var word in keywords) {
       if (cleanAddress.contains(word)) {
         return true;
@@ -99,7 +117,12 @@ class EnvironmentDetector {
     String detectedMountain = '';
     double closestMountainDistance = double.infinity;
     for (var m in indonesianMountains) {
-      final dist = calculateDistance(latitude, longitude, m.latitude, m.longitude);
+      final dist = calculateDistance(
+        latitude,
+        longitude,
+        m.latitude,
+        m.longitude,
+      );
       if (dist < 10.0 && dist < closestMountainDistance) {
         closestMountainDistance = dist;
         detectedMountain = m.name;
@@ -183,15 +206,18 @@ class EnvironmentStatusCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 12,
+                    ),
                     decoration: BoxDecoration(
-                      color: isIndoor 
-                          ? const Color(0xFFFFF8E1) 
+                      color: isIndoor
+                          ? const Color(0xFFFFF8E1)
                           : const Color(0xFFE8F5E9),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: isIndoor 
-                            ? const Color(0xFFFFD54F) 
+                        color: isIndoor
+                            ? const Color(0xFFFFD54F)
                             : const Color(0xFF81C784),
                         width: 1.5,
                       ),
@@ -201,14 +227,18 @@ class EnvironmentStatusCard extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.all(6),
                           decoration: BoxDecoration(
-                            color: isIndoor 
-                                ? const Color(0xFFFFECB3) 
+                            color: isIndoor
+                                ? const Color(0xFFFFECB3)
                                 : const Color(0xFFC8E6C9),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
-                            isIndoor ? Icons.home_rounded : Icons.wb_sunny_rounded,
-                            color: isIndoor ? const Color(0xFFE65100) : const Color(0xFF1B5E20),
+                            isIndoor
+                                ? Icons.home_rounded
+                                : Icons.wb_sunny_rounded,
+                            color: isIndoor
+                                ? const Color(0xFFE65100)
+                                : const Color(0xFF1B5E20),
                             size: 18,
                           ),
                         ),
@@ -232,7 +262,9 @@ class EnvironmentStatusCard extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
-                                  color: isIndoor ? const Color(0xFFE65100) : const Color(0xFF1B5E20),
+                                  color: isIndoor
+                                      ? const Color(0xFFE65100)
+                                      : const Color(0xFF1B5E20),
                                 ),
                               ),
                             ],
@@ -253,20 +285,23 @@ class EnvironmentStatusCard extends StatelessWidget {
               // 2. Territory Type Card (Row Layout)
               Expanded(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 12,
+                  ),
                   decoration: BoxDecoration(
                     color: environmentType == 'Pegunungan'
                         ? const Color(0xFFE8EAF6)
                         : environmentType == 'Pantai'
-                            ? const Color(0xFFE0F7FA)
-                            : const Color(0xFFF1F5F9),
+                        ? const Color(0xFFE0F7FA)
+                        : const Color(0xFFF1F5F9),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: environmentType == 'Pegunungan'
                           ? const Color(0xFF9FA8DA)
                           : environmentType == 'Pantai'
-                              ? const Color(0xFF80DEEA)
-                              : const Color(0xFFCBD5E1),
+                          ? const Color(0xFF80DEEA)
+                          : const Color(0xFFCBD5E1),
                       width: 1.5,
                     ),
                   ),
@@ -278,21 +313,21 @@ class EnvironmentStatusCard extends StatelessWidget {
                           color: environmentType == 'Pegunungan'
                               ? const Color(0xFFC5CAE9)
                               : environmentType == 'Pantai'
-                                  ? const Color(0xFFB2EBF2)
-                                  : const Color(0xFFE2E8F0),
+                              ? const Color(0xFFB2EBF2)
+                              : const Color(0xFFE2E8F0),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
                           environmentType == 'Pegunungan'
                               ? Icons.terrain_rounded
                               : environmentType == 'Pantai'
-                                  ? Icons.beach_access_rounded
-                                  : Icons.location_city_rounded,
+                              ? Icons.beach_access_rounded
+                              : Icons.location_city_rounded,
                           color: environmentType == 'Pegunungan'
                               ? const Color(0xFF1A237E)
                               : environmentType == 'Pantai'
-                                  ? const Color(0xFF006064)
-                                  : const Color(0xFF334155),
+                              ? const Color(0xFF006064)
+                              : const Color(0xFF334155),
                           size: 18,
                         ),
                       ),
@@ -308,23 +343,23 @@ class EnvironmentStatusCard extends StatelessWidget {
                                 fontSize: 10,
                                 color: Color(0xFF64748B),
                                 fontWeight: FontWeight.w500,
-                                                              ),
+                              ),
                             ),
                             const SizedBox(height: 2),
                             Text(
                               environmentType == 'Pegunungan'
                                   ? 'Dekat ${nearbyMountainName}'
                                   : environmentType == 'Pantai'
-                                      ? 'Pesisir Pantai'
-                                      : 'Perkotaan',
+                                  ? 'Pesisir Pantai'
+                                  : 'Perkotaan',
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
                                 color: environmentType == 'Pegunungan'
                                     ? const Color(0xFF1A237E)
                                     : environmentType == 'Pantai'
-                                        ? const Color(0xFF006064)
-                                        : const Color(0xFF334155),
+                                    ? const Color(0xFF006064)
+                                    : const Color(0xFF334155),
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,

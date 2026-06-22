@@ -45,7 +45,7 @@ class _RegisterPageState extends State<RegisterPage> {
         userEmailNotifier.value = googleUser.email;
         userPhotoUrlNotifier.value = googleUser.photoUrl ?? '';
         isLoggedInNotifier.value = true;
-        
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Daftar/Login Google Berhasil!')),
@@ -55,9 +55,9 @@ class _RegisterPageState extends State<RegisterPage> {
       }
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Daftar Google gagal: $error')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Daftar Google gagal: $error')));
       }
     }
   }
@@ -69,16 +69,17 @@ class _RegisterPageState extends State<RegisterPage> {
       if (result.status == LoginStatus.success) {
         // Success
         final userData = await FacebookAuth.instance.getUserData();
-        
+
         userNameNotifier.value = userData['name'] ?? 'Pengguna Facebook';
         userEmailNotifier.value = userData['email'] ?? '';
-        
-        if (userData['picture'] != null && userData['picture']['data'] != null) {
+
+        if (userData['picture'] != null &&
+            userData['picture']['data'] != null) {
           userPhotoUrlNotifier.value = userData['picture']['data']['url'] ?? '';
         }
 
         isLoggedInNotifier.value = true;
-        
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Daftar/Login Facebook Berhasil!')),
@@ -113,15 +114,11 @@ class _RegisterPageState extends State<RegisterPage> {
       extendBodyBehindAppBar: true,
       body: Stack(
         children: [
-
           Positioned.fill(
             child: Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [
-                    const Color(0xFF00BCD4),
-                    const Color(0xFF092C4C),
-                  ],
+                  colors: [const Color(0xFF00BCD4), const Color(0xFF092C4C)],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),
@@ -182,7 +179,10 @@ class _RegisterPageState extends State<RegisterPage> {
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.92),
                           borderRadius: BorderRadius.circular(32),
-                          border: Border.all(color: Colors.white.withOpacity(0.5), width: 1.5),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.5),
+                            width: 1.5,
+                          ),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withOpacity(0.15),
@@ -212,37 +212,37 @@ class _RegisterPageState extends State<RegisterPage> {
                               ),
                             ),
                             const SizedBox(height: 32),
-                        _buildInputField(
-                          label: 'Nama Lengkap',
-                          controller: _nameController,
-                          icon: Icons.person_outline,
-                          hintText: 'Masukkan nama lengkap',
-                        ),
-                        const SizedBox(height: 20),
-                        _buildInputField(
-                          label: 'Email',
-                          controller: _emailController,
-                          icon: Icons.email_outlined,
-                          hintText: 'Masukkan email Anda',
-                          keyboardType: TextInputType.emailAddress,
-                        ),
-                        const SizedBox(height: 20),
-                        _buildInputField(
-                          label: 'Kata Sandi',
-                          controller: _passwordController,
-                          icon: Icons.lock_outline,
-                          hintText: 'Buat kata sandi',
-                          isPassword: true,
-                        ),
-                        const SizedBox(height: 20),
-                        _buildInputField(
-                          label: 'Konfirmasi Kata Sandi',
-                          controller: _confirmPasswordController,
-                          icon: Icons.lock_outline,
-                          hintText: 'Ulangi kata sandi',
-                          isPassword: true,
-                          isConfirmPassword: true,
-                        ),
+                            _buildInputField(
+                              label: 'Nama Lengkap',
+                              controller: _nameController,
+                              icon: Icons.person_outline,
+                              hintText: 'Masukkan nama lengkap',
+                            ),
+                            const SizedBox(height: 20),
+                            _buildInputField(
+                              label: 'Email',
+                              controller: _emailController,
+                              icon: Icons.email_outlined,
+                              hintText: 'Masukkan email Anda',
+                              keyboardType: TextInputType.emailAddress,
+                            ),
+                            const SizedBox(height: 20),
+                            _buildInputField(
+                              label: 'Kata Sandi',
+                              controller: _passwordController,
+                              icon: Icons.lock_outline,
+                              hintText: 'Buat kata sandi',
+                              isPassword: true,
+                            ),
+                            const SizedBox(height: 20),
+                            _buildInputField(
+                              label: 'Konfirmasi Kata Sandi',
+                              controller: _confirmPasswordController,
+                              icon: Icons.lock_outline,
+                              hintText: 'Ulangi kata sandi',
+                              isPassword: true,
+                              isConfirmPassword: true,
+                            ),
                             const SizedBox(height: 24),
                             Container(
                               width: double.infinity,
@@ -252,43 +252,52 @@ class _RegisterPageState extends State<RegisterPage> {
                                 color: const Color(0xFF00BCD4),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xFF00BCD4).withOpacity(0.3),
+                                    color: const Color(
+                                      0xFF00BCD4,
+                                    ).withOpacity(0.3),
                                     blurRadius: 12,
                                     offset: const Offset(0, 6),
                                   ),
                                 ],
                               ),
-                          child: ElevatedButton(
-                            onPressed: _handleRegister,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.transparent,
-                              shadowColor: Colors.transparent,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
+                              child: ElevatedButton(
+                                onPressed: _handleRegister,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.transparent,
+                                  shadowColor: Colors.transparent,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Daftar Akun',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
                               ),
-                            ),
-                            child: const Text(
-                              'Daftar Akun',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
                             ),
                             const SizedBox(height: 32),
                             Row(
                               children: const [
-                                Expanded(child: Divider(color: Color(0xFFE0E0E0))),
+                                Expanded(
+                                  child: Divider(color: Color(0xFFE0E0E0)),
+                                ),
                                 Padding(
                                   padding: EdgeInsets.symmetric(horizontal: 16),
                                   child: Text(
                                     'Atau daftar dengan',
-                                    style: TextStyle(fontSize: 13, color: Color(0xFF9E9E9E)),
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: Color(0xFF9E9E9E),
+                                    ),
                                   ),
                                 ),
-                                Expanded(child: Divider(color: Color(0xFFE0E0E0))),
+                                Expanded(
+                                  child: Divider(color: Color(0xFFE0E0E0)),
+                                ),
                               ],
                             ),
                             const SizedBox(height: 24),
@@ -310,7 +319,11 @@ class _RegisterPageState extends State<RegisterPage> {
                                 ),
                                 const SizedBox(width: 16),
                                 _buildSocialButton(
-                                  const Icon(Icons.facebook, size: 28, color: Color(0xFF1877F2)),
+                                  const Icon(
+                                    Icons.facebook,
+                                    size: 28,
+                                    color: Color(0xFF1877F2),
+                                  ),
                                   'Facebook',
                                   _signInWithFacebook,
                                 ),
@@ -329,19 +342,24 @@ class _RegisterPageState extends State<RegisterPage> {
                         'Sudah punya akun? ',
                         style: TextStyle(color: Colors.white70, fontSize: 15),
                       ),
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(builder: (context) => const LoginPage()),
-                          );
-                        },
-                        child: const Text(
-                          'Masuk',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
+                      MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const LoginPage(),
+                              ),
+                            );
+                          },
+                          child: const Text(
+                            'Masuk',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            ),
                           ),
                         ),
                       ),
@@ -359,12 +377,11 @@ class _RegisterPageState extends State<RegisterPage> {
 
   Future<void> _handleRegister() async {
     if (_passwordController.text != _confirmPasswordController.text) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Kata sandi tidak cocok!')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Kata sandi tidak cocok!')));
       return;
     }
-
 
     showDialog(
       context: context,
@@ -388,7 +405,9 @@ class _RegisterPageState extends State<RegisterPage> {
       if (response.statusCode == 200 || response.statusCode == 201) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Pendaftaran Berhasil! Silakan login.')),
+            const SnackBar(
+              content: Text('Pendaftaran Berhasil! Silakan login.'),
+            ),
           );
           Navigator.pushReplacement(
             context,
@@ -406,9 +425,9 @@ class _RegisterPageState extends State<RegisterPage> {
     } catch (e) {
       if (mounted) Navigator.pop(context);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Terjadi kesalahan: ')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Terjadi kesalahan: ')));
       }
     }
   }
@@ -422,7 +441,9 @@ class _RegisterPageState extends State<RegisterPage> {
     bool isConfirmPassword = false,
     TextInputType? keyboardType,
   }) {
-    bool obscure = isConfirmPassword ? _obscureConfirmPassword : _obscurePassword;
+    bool obscure = isConfirmPassword
+        ? _obscureConfirmPassword
+        : _obscurePassword;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -448,12 +469,17 @@ class _RegisterPageState extends State<RegisterPage> {
             style: const TextStyle(fontSize: 15, color: Color(0xFF1A1A1A)),
             decoration: InputDecoration(
               hintText: hintText,
-              hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+              hintStyle: const TextStyle(
+                color: Color(0xFF94A3B8),
+                fontSize: 14,
+              ),
               prefixIcon: Icon(icon, color: const Color(0xFF94A3B8), size: 22),
               suffixIcon: isPassword
                   ? IconButton(
                       icon: Icon(
-                        obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                        obscure
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
                         color: const Color(0xFF94A3B8),
                         size: 22,
                       ),
@@ -477,7 +503,11 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  Widget _buildSocialButton(Widget iconWidget, String label, VoidCallback onTap) {
+  Widget _buildSocialButton(
+    Widget iconWidget,
+    String label,
+    VoidCallback onTap,
+  ) {
     return Container(
       width: 54,
       height: 54,
@@ -498,9 +528,7 @@ class _RegisterPageState extends State<RegisterPage> {
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
           onTap: onTap,
-          child: Center(
-            child: iconWidget,
-          ),
+          child: Center(child: iconWidget),
         ),
       ),
     );

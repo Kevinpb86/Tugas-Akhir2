@@ -70,7 +70,10 @@ class VideoEdukasiPage extends StatelessWidget {
                     'https://images.unsplash.com/photo-1544717305-2782549b5136?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
                   ),
                   fit: BoxFit.cover,
-                  colorFilter: ColorFilter.mode(Colors.black45, BlendMode.darken),
+                  colorFilter: ColorFilter.mode(
+                    Colors.black45,
+                    BlendMode.darken,
+                  ),
                 ),
               ),
               child: Stack(
@@ -96,17 +99,34 @@ class VideoEdukasiPage extends StatelessWidget {
                     child: Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.red,
                             borderRadius: BorderRadius.circular(4),
                           ),
-                          child: const Text('LIVE', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                          child: const Text(
+                            'LIVE',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                         const SizedBox(width: 8),
-                        const Text('04:35 / 12:00', style: TextStyle(color: Colors.white, fontSize: 12)),
+                        const Text(
+                          '04:35 / 12:00',
+                          style: TextStyle(color: Colors.white, fontSize: 12),
+                        ),
                         const Spacer(),
-                        const Icon(Icons.fullscreen, color: Colors.white, size: 20),
+                        const Icon(
+                          Icons.fullscreen,
+                          color: Colors.white,
+                          size: 20,
+                        ),
                       ],
                     ),
                   ),
@@ -115,7 +135,11 @@ class VideoEdukasiPage extends StatelessWidget {
                     left: 0,
                     right: 0,
                     child: Padding(
-                      padding: const EdgeInsets.only(bottom: 24, left: 12, right: 32),
+                      padding: const EdgeInsets.only(
+                        bottom: 24,
+                        left: 12,
+                        right: 32,
+                      ),
                       child: Container(
                         height: 2,
                         width: double.infinity,
@@ -128,11 +152,11 @@ class VideoEdukasiPage extends StatelessWidget {
                         ),
                       ),
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
-            
+
             Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -149,17 +173,39 @@ class VideoEdukasiPage extends StatelessWidget {
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      const Icon(Icons.visibility, size: 14, color: Colors.black54),
+                      const Icon(
+                        Icons.visibility,
+                        size: 14,
+                        color: Colors.black54,
+                      ),
                       const SizedBox(width: 4),
-                      const Text('12.5k x ditonton', style: TextStyle(fontSize: 12, color: Colors.black54)),
+                      const Text(
+                        '12.5k x ditonton',
+                        style: TextStyle(fontSize: 12, color: Colors.black54),
+                      ),
                       const SizedBox(width: 16),
-                      const Icon(Icons.access_time, size: 14, color: Colors.black54),
+                      const Icon(
+                        Icons.access_time,
+                        size: 14,
+                        color: Colors.black54,
+                      ),
                       const SizedBox(width: 4),
-                      const Text('2 hari lalu', style: TextStyle(fontSize: 12, color: Colors.black54)),
+                      const Text(
+                        '2 hari lalu',
+                        style: TextStyle(fontSize: 12, color: Colors.black54),
+                      ),
                       const Spacer(),
-                      const Icon(Icons.thumb_up_alt_outlined, size: 18, color: Colors.black54),
+                      const Icon(
+                        Icons.thumb_up_alt_outlined,
+                        size: 18,
+                        color: Colors.black54,
+                      ),
                       const SizedBox(width: 16),
-                      const Icon(Icons.bookmark_border, size: 18, color: Colors.black54),
+                      const Icon(
+                        Icons.bookmark_border,
+                        size: 18,
+                        color: Colors.black54,
+                      ),
                     ],
                   ),
                   const SizedBox(height: 20),
@@ -173,7 +219,14 @@ class VideoEdukasiPage extends StatelessWidget {
                           shape: BoxShape.circle,
                         ),
                         child: const Center(
-                          child: Text('A', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+                          child: Text(
+                            'A',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -181,18 +234,40 @@ class VideoEdukasiPage extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: const [
-                            Text('Amanin Official', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                            Text('Verified Education Partner', style: TextStyle(color: Colors.black54, fontSize: 11)),
+                            Text(
+                              'Amanin Official',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                            Text(
+                              'Verified Education Partner',
+                              style: TextStyle(
+                                color: Colors.black54,
+                                fontSize: 11,
+                              ),
+                            ),
                           ],
                         ),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFFE1F5FE),
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        child: const Text('Langganan', style: TextStyle(color: Color(0xFF03A9F4), fontWeight: FontWeight.bold, fontSize: 12)),
+                        child: const Text(
+                          'Langganan',
+                          style: TextStyle(
+                            color: Color(0xFF03A9F4),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -209,7 +284,11 @@ class VideoEdukasiPage extends StatelessWidget {
                       children: [
                         const Text(
                           'Panduan visual lengkap cara melakukan evakuasi mandiri saat terjadi gempa bumi. Video ini mencakup teknik "Drop, Cover, Hold On" dan cara mengamankan jalur evakuasi di dalam rumah.',
-                          style: TextStyle(color: Colors.black54, fontSize: 13, height: 1.5),
+                          style: TextStyle(
+                            color: Colors.black54,
+                            fontSize: 13,
+                            height: 1.5,
+                          ),
                         ),
                         const SizedBox(height: 12),
                         Wrap(
@@ -230,7 +309,10 @@ class VideoEdukasiPage extends StatelessWidget {
                     child: ElevatedButton.icon(
                       onPressed: () {},
                       icon: const Icon(Icons.open_in_new),
-                      label: const Text('Buka di YouTube', style: TextStyle(fontWeight: FontWeight.bold)),
+                      label: const Text(
+                        'Buka di YouTube',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF03A9F4),
                         foregroundColor: Colors.white,
@@ -254,19 +336,55 @@ class VideoEdukasiPage extends StatelessWidget {
                     children: [
                       Row(
                         children: const [
-                          Text('Komentar ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                          Text('(24)', style: TextStyle(color: Colors.black54, fontSize: 14)),
+                          Text(
+                            'Komentar ',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          Text(
+                            '(24)',
+                            style: TextStyle(
+                              color: Colors.black54,
+                              fontSize: 14,
+                            ),
+                          ),
                         ],
                       ),
-                      const Text('Lihat Semua', style: TextStyle(color: Color(0xFF03A9F4), fontSize: 12, fontWeight: FontWeight.bold)),
+                      const Text(
+                        'Lihat Semua',
+                        style: TextStyle(
+                          color: Color(0xFF03A9F4),
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 16),
-                  _buildCommentItem('BP', 'Budi Pratama', '1 jam lalu', 'Sangat informatif! Terima kasih Amanin, saya jadi lebih paham apa yang harus dilakukan.', const Color(0xFFFFE0B2), const Color(0xFFE65100)),
+                  _buildCommentItem(
+                    'BP',
+                    'Budi Pratama',
+                    '1 jam lalu',
+                    'Sangat informatif! Terima kasih Amanin, saya jadi lebih paham apa yang harus dilakukan.',
+                    const Color(0xFFFFE0B2),
+                    const Color(0xFFE65100),
+                  ),
                   const SizedBox(height: 12),
-                  _buildCommentItem('SR', 'Siti Rahayu', '3 jam lalu', 'Video ini sangat membantu untuk lansia seperti saya. Jelas dan mudah dimengerti.', const Color(0xFFE8F5E9), const Color(0xFF2E7D32)),
+                  _buildCommentItem(
+                    'SR',
+                    'Siti Rahayu',
+                    '3 jam lalu',
+                    'Video ini sangat membantu untuk lansia seperti saya. Jelas dan mudah dimengerti.',
+                    const Color(0xFFE8F5E9),
+                    const Color(0xFF2E7D32),
+                  ),
                   const SizedBox(height: 24),
-                  const Text('Video Selanjutnya', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  const Text(
+                    'Video Selanjutnya',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
                   const SizedBox(height: 16),
                   _buildNextVideoCard(),
                   const SizedBox(height: 32),
@@ -286,11 +404,21 @@ class VideoEdukasiPage extends StatelessWidget {
         color: const Color(0xFFF1F8FD),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Text(text, style: const TextStyle(color: Color(0xFF03A9F4), fontSize: 10)),
+      child: Text(
+        text,
+        style: const TextStyle(color: Color(0xFF03A9F4), fontSize: 10),
+      ),
     );
   }
 
-  Widget _buildCommentItem(String avatarText, String name, String time, String comment, Color bgColor, Color textColor) {
+  Widget _buildCommentItem(
+    String avatarText,
+    String name,
+    String time,
+    String comment,
+    Color bgColor,
+    Color textColor,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -311,17 +439,40 @@ class VideoEdukasiPage extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 child: Center(
-                  child: Text(avatarText, style: TextStyle(color: textColor, fontSize: 8, fontWeight: FontWeight.bold)),
+                  child: Text(
+                    avatarText,
+                    style: TextStyle(
+                      color: textColor,
+                      fontSize: 8,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(width: 8),
-              Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+              Text(
+                name,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ),
               const Spacer(),
-              Text(time, style: const TextStyle(color: Colors.black54, fontSize: 10)),
+              Text(
+                time,
+                style: const TextStyle(color: Colors.black54, fontSize: 10),
+              ),
             ],
           ),
           const SizedBox(height: 8),
-          Text(comment, style: const TextStyle(color: Colors.black87, fontSize: 13, height: 1.4)),
+          Text(
+            comment,
+            style: const TextStyle(
+              color: Colors.black87,
+              fontSize: 13,
+              height: 1.4,
+            ),
+          ),
         ],
       ),
     );
@@ -353,19 +504,29 @@ class VideoEdukasiPage extends StatelessWidget {
                       color: Colors.black54,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.play_arrow, color: Colors.white, size: 16),
+                    child: const Icon(
+                      Icons.play_arrow,
+                      color: Colors.white,
+                      size: 16,
+                    ),
                   ),
                 ),
                 Positioned(
                   bottom: 4,
                   right: 4,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.black87,
                       borderRadius: BorderRadius.circular(4),
                     ),
-                    child: const Text('03:20', style: TextStyle(color: Colors.white, fontSize: 8)),
+                    child: const Text(
+                      '03:20',
+                      style: TextStyle(color: Colors.white, fontSize: 8),
+                    ),
                   ),
                 ),
               ],
@@ -383,13 +544,27 @@ class VideoEdukasiPage extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
-                const Text('Amanin Official', style: TextStyle(color: Colors.black54, fontSize: 10)),
+                const Text(
+                  'Amanin Official',
+                  style: TextStyle(color: Colors.black54, fontSize: 10),
+                ),
                 const SizedBox(height: 4),
                 Row(
                   children: const [
-                    Icon(Icons.play_circle_fill, color: Color(0xFF03A9F4), size: 12),
+                    Icon(
+                      Icons.play_circle_fill,
+                      color: Color(0xFF03A9F4),
+                      size: 12,
+                    ),
                     SizedBox(width: 4),
-                    Text('Putar Sekarang', style: TextStyle(color: Color(0xFF03A9F4), fontSize: 10, fontWeight: FontWeight.bold)),
+                    Text(
+                      'Putar Sekarang',
+                      style: TextStyle(
+                        color: Color(0xFF03A9F4),
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ],
                 ),
               ],

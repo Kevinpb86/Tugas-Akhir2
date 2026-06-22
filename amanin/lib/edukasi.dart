@@ -32,21 +32,23 @@ class _EdukasiPageState extends State<EdukasiPage> {
     try {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) return;
-      
+
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) return;
       }
-      
+
       if (permission == LocationPermission.deniedForever) return;
-      
+
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
-      
-      print("[Edukasi] GPS coordinates: lat=${position.latitude}, lon=${position.longitude}, accuracy=${position.accuracy}m");
-      
+
+      print(
+        "[Edukasi] GPS coordinates: lat=${position.latitude}, lon=${position.longitude}, accuracy=${position.accuracy}m",
+      );
+
       String cityName = 'Jakarta Pusat';
       try {
         List<Placemark> placemarks = await placemarkFromCoordinates(
@@ -55,22 +57,54 @@ class _EdukasiPageState extends State<EdukasiPage> {
         );
         if (placemarks.isNotEmpty) {
           Placemark place = placemarks[0];
-          print("[Edukasi] Geocoding result: subLocality=${place.subLocality}, locality=${place.locality}, subAdmin=${place.subAdministrativeArea}, admin=${place.administrativeArea}");
-          cityName = place.locality ?? place.subLocality ?? place.subAdministrativeArea ?? 'Jakarta Pusat';
-          cityName = cityName.replaceAll('Kabupaten ', '').replaceAll('Kota ', '').replaceAll(' City', '').replaceAll('Kecamatan ', '').replaceAll('Kelurahan ', '').replaceAll('Desa ', '');
+          print(
+            "[Edukasi] Geocoding result: subLocality=${place.subLocality}, locality=${place.locality}, subAdmin=${place.subAdministrativeArea}, admin=${place.administrativeArea}",
+          );
+          cityName =
+              place.locality ??
+              place.subLocality ??
+              place.subAdministrativeArea ??
+              'Jakarta Pusat';
+          cityName = cityName
+              .replaceAll('Kabupaten ', '')
+              .replaceAll('Kota ', '')
+              .replaceAll(' City', '')
+              .replaceAll('Kecamatan ', '')
+              .replaceAll('Kelurahan ', '')
+              .replaceAll('Desa ', '');
         }
       } catch (e) {
-        print("[Edukasi] Geocoding package error: $e, falling back to Nominatim");
+        print(
+          "[Edukasi] Geocoding package error: $e, falling back to Nominatim",
+        );
         try {
-          final url = Uri.parse('https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.latitude}&lon=${position.longitude}&zoom=16&addressdetails=1');
-          final response = await http.get(url, headers: {'User-Agent': 'AmaninApp/1.0'});
+          final url = Uri.parse(
+            'https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.latitude}&lon=${position.longitude}&zoom=16&addressdetails=1',
+          );
+          final response = await http.get(
+            url,
+            headers: {'User-Agent': 'AmaninApp/1.0'},
+          );
           if (response.statusCode == 200) {
             final data = json.decode(response.body);
             print("[Edukasi] Nominatim full address: ${data['address']}");
             if (data['address'] != null) {
               final addr = data['address'];
-              cityName = addr['town'] ?? addr['subdistrict'] ?? addr['suburb'] ?? addr['city_district'] ?? addr['city'] ?? addr['county'] ?? addr['state'] ?? 'Jakarta Pusat';
-              cityName = cityName.replaceAll('Kabupaten ', '').replaceAll('Kota ', '').replaceAll('Kecamatan ', '').replaceAll('Kelurahan ', '').replaceAll('Desa ', '');
+              cityName =
+                  addr['town'] ??
+                  addr['subdistrict'] ??
+                  addr['suburb'] ??
+                  addr['city_district'] ??
+                  addr['city'] ??
+                  addr['county'] ??
+                  addr['state'] ??
+                  'Jakarta Pusat';
+              cityName = cityName
+                  .replaceAll('Kabupaten ', '')
+                  .replaceAll('Kota ', '')
+                  .replaceAll('Kecamatan ', '')
+                  .replaceAll('Kelurahan ', '')
+                  .replaceAll('Desa ', '');
               print("[Edukasi] Final city name: $cityName");
             }
           }
@@ -78,7 +112,7 @@ class _EdukasiPageState extends State<EdukasiPage> {
           print("Nominatim fallback error: $fallbackError");
         }
       }
-      
+
       if (mounted) {
         setState(() {
           _currentCityName = cityName;
@@ -302,7 +336,9 @@ class _EdukasiPageState extends State<EdukasiPage> {
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFF00BCD4).withValues(alpha: 0.3),
+                                color: const Color(
+                                  0xFF00BCD4,
+                                ).withValues(alpha: 0.3),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
                               ),
@@ -419,7 +455,10 @@ class _EdukasiPageState extends State<EdukasiPage> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -683,18 +722,21 @@ class _EdukasiPageState extends State<EdukasiPage> {
             color: Color(0xFF1A1A1A),
           ),
         ),
-        GestureDetector(
-          onTap: () {
-            setState(() {
-              _showSemuaVideo = true;
-            });
-          },
-          child: const Text(
-            'Lihat Semua',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF2196F3),
+        MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: GestureDetector(
+            onTap: () {
+              setState(() {
+                _showSemuaVideo = true;
+              });
+            },
+            child: const Text(
+              'Lihat Semua',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF2196F3),
+              ),
             ),
           ),
         ),
@@ -703,135 +745,157 @@ class _EdukasiPageState extends State<EdukasiPage> {
   }
 
   Widget _buildVideoCard(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const VideoEdukasiPage()),
-        );
-      },
-      child: Container(
-        decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFEEEEEE), width: 1),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Thumbnail placeholder
-          Container(
-            height: 160,
-            width: double.infinity,
-            decoration: const BoxDecoration(
-              color: Color(0xFF757575), // Placeholder color mimicking an image
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(24),
-                topRight: Radius.circular(24),
-              ),
-              image: DecorationImage(
-                image: NetworkImage(
-                  'https://images.unsplash.com/photo-1544717305-2782549b5136?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
-                ), // Beautiful woman placeholder mimicking the illustration
-                fit: BoxFit.cover,
-                colorFilter: ColorFilter.mode(Colors.black26, BlendMode.darken),
-              ),
-            ),
-            child: Stack(
-              children: [
-                Center(
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
-                          blurRadius: 10,
-                        ),
-                      ],
-                    ),
-                    child: const Icon(
-                      Icons.play_arrow,
-                      color: Color(0xFF2196F3),
-                      size: 32,
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const VideoEdukasiPage()),
+          );
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: const Color(0xFFEEEEEE), width: 1),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Thumbnail placeholder
+              Container(
+                height: 160,
+                width: double.infinity,
+                decoration: const BoxDecoration(
+                  color: Color(
+                    0xFF757575,
+                  ), // Placeholder color mimicking an image
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(24),
+                    topRight: Radius.circular(24),
+                  ),
+                  image: DecorationImage(
+                    image: NetworkImage(
+                      'https://images.unsplash.com/photo-1544717305-2782549b5136?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
+                    ), // Beautiful woman placeholder mimicking the illustration
+                    fit: BoxFit.cover,
+                    colorFilter: ColorFilter.mode(
+                      Colors.black26,
+                      BlendMode.darken,
                     ),
                   ),
                 ),
-                Positioned(
-                  bottom: 12,
-                  right: 12,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.7),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: const Text(
-                      '04:35',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
+                child: Stack(
+                  children: [
+                    Center(
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.1),
+                              blurRadius: 10,
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.play_arrow,
+                          color: Color(0xFF2196F3),
+                          size: 32,
+                        ),
                       ),
                     ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Simulasi Evakuasi Mandiri',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1A1A1A),
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Panduan visual cara melakukan evakuasi mandiri saat terjadi gempa bumi di area padat penduduk.',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                    height: 1.4,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Icon(Icons.visibility, size: 12, color: Colors.grey[400]),
-                    const SizedBox(width: 4),
-                    Text(
-                      '12.5k views',
-                      style: TextStyle(fontSize: 10, color: Colors.grey[500]),
-                    ),
-                    const SizedBox(width: 16),
-                    Icon(Icons.access_time, size: 12, color: Colors.grey[400]),
-                    const SizedBox(width: 4),
-                    Text(
-                      '2 hari lalu',
-                      style: TextStyle(fontSize: 10, color: Colors.grey[500]),
+                    Positioned(
+                      bottom: 12,
+                      right: 12,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.7),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Text(
+                          '04:35',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 ),
-              ],
-            ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Simulasi Evakuasi Mandiri',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1A1A1A),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Panduan visual cara melakukan evakuasi mandiri saat terjadi gempa bumi di area padat penduduk.',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                        height: 1.4,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.visibility,
+                          size: 12,
+                          color: Colors.grey[400],
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '12.5k views',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: Colors.grey[500],
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Icon(
+                          Icons.access_time,
+                          size: 12,
+                          color: Colors.grey[400],
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '2 hari lalu',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: Colors.grey[500],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   Widget _buildTsbCard() {
     return Container(
@@ -1034,7 +1098,9 @@ class _EdukasiPageState extends State<EdukasiPage> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const AsuransiWebPage()),
+                  MaterialPageRoute(
+                    builder: (context) => const AsuransiWebPage(),
+                  ),
                 );
               },
               style: ElevatedButton.styleFrom(
