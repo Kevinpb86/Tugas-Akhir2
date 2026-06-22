@@ -59,7 +59,7 @@ class _KlasifikasiSeismikPageState extends State<KlasifikasiSeismikPage> {
           _hasilKlasifikasi = hasil.riskLevel;
           _hasilLatitude = hasil.latitude;
           _hasilLongitude = hasil.longitude;
-          
+
           if (hasil.riskLevel == 'Tinggi' || hasil.predictionCode == 2) {
             _warnaKlasifikasi = Colors.red;
             _deskripsiKlasifikasi =
@@ -77,10 +77,7 @@ class _KlasifikasiSeismikPageState extends State<KlasifikasiSeismikPage> {
       } catch (e) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString()),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
         );
       } finally {
         if (mounted) {
@@ -123,7 +120,11 @@ class _KlasifikasiSeismikPageState extends State<KlasifikasiSeismikPage> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.memory, color: Color(0xFF1976D2), size: 32),
+                    const Icon(
+                      Icons.memory,
+                      color: Color(0xFF1976D2),
+                      size: 32,
+                    ),
                     const SizedBox(width: 16),
                     Expanded(
                       child: Column(
@@ -298,23 +299,23 @@ class _KlasifikasiSeismikPageState extends State<KlasifikasiSeismikPage> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          child: _isLoading 
-                            ? const SizedBox(
-                                height: 24,
-                                width: 24,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2,
+                          child: _isLoading
+                              ? const SizedBox(
+                                  height: 24,
+                                  width: 24,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Text(
+                                  'Klasifikasikan (SVM)',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
                                 ),
-                              )
-                            : const Text(
-                            'Klasifikasikan (SVM)',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
                         ),
                       ),
                     ],
@@ -332,11 +333,7 @@ class _KlasifikasiSeismikPageState extends State<KlasifikasiSeismikPage> {
                   ),
                   child: Column(
                     children: [
-                      Icon(
-                        Icons.analytics,
-                        color: _warnaKlasifikasi,
-                        size: 48,
-                      ),
+                      Icon(Icons.analytics, color: _warnaKlasifikasi, size: 48),
                       const SizedBox(height: 12),
                       const Text(
                         'Hasil Prediksi Kerentanan',
@@ -356,7 +353,8 @@ class _KlasifikasiSeismikPageState extends State<KlasifikasiSeismikPage> {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      if (_hasilLatitude != null && _hasilLongitude != null) ...[
+                      if (_hasilLatitude != null &&
+                          _hasilLongitude != null) ...[
                         Text(
                           'Koordinat Terdeteksi: Lintang ${_hasilLatitude!.toStringAsFixed(4)}, Bujur ${_hasilLongitude!.toStringAsFixed(4)}',
                           textAlign: TextAlign.center,

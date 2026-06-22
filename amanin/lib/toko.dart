@@ -37,22 +37,29 @@ class TokoAmaninPage extends StatelessWidget {
       children: [
         Row(
           children: [
-            GestureDetector(
-              onTap: () => Navigator.pop(context),
-              child: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
+            MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    size: 20,
+                    color: Color(0xFF1A1A1A),
+                  ),
                 ),
-                child: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: Color(0xFF1A1A1A)),
               ),
             ),
             const SizedBox(width: 16),
@@ -70,25 +77,21 @@ class TokoAmaninPage extends StatelessWidget {
                 const SizedBox(height: 4),
                 Row(
                   children: const [
-                Icon(
-                  Icons.location_on,
-                  color: Color(0xFF2196F3),
-                  size: 16,
-                ),
-                SizedBox(width: 4),
-                Text(
-                  'Jakarta Pusat',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF757575),
-                    fontWeight: FontWeight.w500,
-                  ),
+                    Icon(Icons.location_on, color: Color(0xFF2196F3), size: 16),
+                    SizedBox(width: 4),
+                    Text(
+                      'Jakarta Pusat',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF757575),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ],
-        ),
-        ],
         ),
         Row(
           children: [
@@ -97,10 +100,7 @@ class TokoAmaninPage extends StatelessWidget {
               hasNotification: true,
             ),
             const SizedBox(width: 12),
-            _buildIconButton(
-              icon: Icons.search,
-              hasNotification: false,
-            ),
+            _buildIconButton(icon: Icons.search, hasNotification: false),
           ],
         ),
       ],
@@ -128,11 +128,7 @@ class TokoAmaninPage extends StatelessWidget {
               ),
             ],
           ),
-          child: Icon(
-            icon,
-            color: const Color(0xFF1A1A1A),
-            size: 24,
-          ),
+          child: Icon(icon, color: const Color(0xFF1A1A1A), size: 24),
         ),
         if (hasNotification)
           Positioned(
@@ -168,14 +164,8 @@ class TokoAmaninPage extends StatelessWidget {
       child: TextField(
         decoration: InputDecoration(
           hintText: 'Cari perlengkapan darurat...',
-          hintStyle: const TextStyle(
-            color: Color(0xFF9E9E9E),
-            fontSize: 14,
-          ),
-          prefixIcon: const Icon(
-            Icons.search,
-            color: Color(0xFF9E9E9E),
-          ),
+          hintStyle: const TextStyle(color: Color(0xFF9E9E9E), fontSize: 14),
+          prefixIcon: const Icon(Icons.search, color: Color(0xFF9E9E9E)),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(30),
             borderSide: BorderSide.none,
@@ -219,26 +209,48 @@ class TokoAmaninPage extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            _buildCategoryItem('Alat', Icons.build, const Color(0xFFE3F2FD), const Color(0xFF2196F3)),
-            _buildCategoryItem('Makanan', Icons.local_drink, const Color(0xFFE8F5E9), const Color(0xFF4CAF50)),
-            _buildCategoryItem('Medis', Icons.medical_services, const Color(0xFFFFEBEE), const Color(0xFFEF5350)),
-            _buildCategoryItem('Penerangan', Icons.flashlight_on, const Color(0xFFFFF8E1), const Color(0xFFFFC107)),
+            _buildCategoryItem(
+              'Alat',
+              Icons.build,
+              const Color(0xFFE3F2FD),
+              const Color(0xFF2196F3),
+            ),
+            _buildCategoryItem(
+              'Makanan',
+              Icons.local_drink,
+              const Color(0xFFE8F5E9),
+              const Color(0xFF4CAF50),
+            ),
+            _buildCategoryItem(
+              'Medis',
+              Icons.medical_services,
+              const Color(0xFFFFEBEE),
+              const Color(0xFFEF5350),
+            ),
+            _buildCategoryItem(
+              'Penerangan',
+              Icons.flashlight_on,
+              const Color(0xFFFFF8E1),
+              const Color(0xFFFFC107),
+            ),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildCategoryItem(String title, IconData icon, Color bgColor, Color iconColor) {
+  Widget _buildCategoryItem(
+    String title,
+    IconData icon,
+    Color bgColor,
+    Color iconColor,
+  ) {
     return Column(
       children: [
         Container(
           width: 70,
           height: 70,
-          decoration: BoxDecoration(
-            color: bgColor,
-            shape: BoxShape.circle,
-          ),
+          decoration: BoxDecoration(color: bgColor, shape: BoxShape.circle),
           child: Icon(icon, color: iconColor, size: 30),
         ),
         const SizedBox(height: 8),
@@ -275,7 +287,10 @@ class TokoAmaninPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(12),
@@ -310,7 +325,10 @@ class TokoAmaninPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(8),
@@ -329,11 +347,7 @@ class TokoAmaninPage extends StatelessWidget {
           ),
           const SizedBox(width: 16),
           // Fallback icon for the calendar inside the promo
-          const Icon(
-            Icons.calendar_month,
-            color: Colors.white,
-            size: 60,
-          ),
+          const Icon(Icons.calendar_month, color: Colors.white, size: 60),
         ],
       ),
     );
@@ -364,13 +378,9 @@ class TokoAmaninPage extends StatelessWidget {
                   ),
                 ),
                 SizedBox(width: 4),
-                Icon(
-                  Icons.filter_list,
-                  size: 16,
-                  color: Color(0xFF757575),
-                ),
+                Icon(Icons.filter_list, size: 16, color: Color(0xFF757575)),
               ],
-            )
+            ),
           ],
         ),
         const SizedBox(height: 16),
@@ -466,20 +476,17 @@ class TokoAmaninPage extends StatelessWidget {
                   color: bgColor,
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: Center(
-                  child: Icon(
-                    icon,
-                    size: 50,
-                    color: iconColor,
-                  ),
-                ),
+                child: Center(child: Icon(icon, size: 50, color: iconColor)),
               ),
               if (isDiscount)
                 Positioned(
                   top: 8,
                   left: 8,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFF5252),
                       borderRadius: BorderRadius.circular(8),
@@ -514,11 +521,7 @@ class TokoAmaninPage extends StatelessWidget {
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    const Icon(
-                      Icons.star,
-                      color: Color(0xFFFFB300),
-                      size: 14,
-                    ),
+                    const Icon(Icons.star, color: Color(0xFFFFB300), size: 14),
                     const SizedBox(width: 4),
                     Text(
                       rating,
@@ -556,7 +559,9 @@ class TokoAmaninPage extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: isDiscount ? const Color(0xFFFF5252) : const Color(0xFF00BCD4),
+                        color: isDiscount
+                            ? const Color(0xFFFF5252)
+                            : const Color(0xFF00BCD4),
                       ),
                     ),
                     SizedBox(

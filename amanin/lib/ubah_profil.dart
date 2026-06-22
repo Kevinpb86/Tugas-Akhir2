@@ -23,7 +23,9 @@ class _UbahProfilPageState extends State<UbahProfilPage> {
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: userNameNotifier.value);
-    _photoUrlController = TextEditingController(text: userPhotoUrlNotifier.value);
+    _photoUrlController = TextEditingController(
+      text: userPhotoUrlNotifier.value,
+    );
     _emailController = TextEditingController(text: userEmailNotifier.value);
     _passwordController = TextEditingController();
     _confirmPasswordController = TextEditingController();
@@ -56,16 +58,18 @@ class _UbahProfilPageState extends State<UbahProfilPage> {
       userPhotoUrlNotifier.value = _photoUrlController.text;
       userEmailNotifier.value = _emailController.text;
       // Catatan: Pembaruan password ke backend API biasanya dilakukan di sini
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Profil berhasil diperbarui'),
           backgroundColor: const Color(0xFF2C3E50),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
       );
-      
+
       Navigator.pop(context);
     }
   }
@@ -102,7 +106,10 @@ class _UbahProfilPageState extends State<UbahProfilPage> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: Colors.white,
-                    border: Border.all(color: const Color(0xFF00BCD4), width: 3),
+                    border: Border.all(
+                      color: const Color(0xFF00BCD4),
+                      width: 3,
+                    ),
                     image: _photoUrlController.text.isNotEmpty
                         ? DecorationImage(
                             image: NetworkImage(_photoUrlController.text),
@@ -119,11 +126,7 @@ class _UbahProfilPageState extends State<UbahProfilPage> {
                     ],
                   ),
                   child: _photoUrlController.text.isEmpty
-                      ? const Icon(
-                          Icons.person,
-                          size: 60,
-                          color: Colors.grey,
-                        )
+                      ? const Icon(Icons.person, size: 60, color: Colors.grey)
                       : null,
                 ),
               ),
@@ -147,7 +150,10 @@ class _UbahProfilPageState extends State<UbahProfilPage> {
                     borderRadius: BorderRadius.circular(16),
                     borderSide: BorderSide.none,
                   ),
-                  prefixIcon: const Icon(Icons.person_outline, color: Color(0xFF00BCD4)),
+                  prefixIcon: const Icon(
+                    Icons.person_outline,
+                    color: Color(0xFF00BCD4),
+                  ),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -177,7 +183,10 @@ class _UbahProfilPageState extends State<UbahProfilPage> {
                     borderRadius: BorderRadius.circular(16),
                     borderSide: BorderSide.none,
                   ),
-                  prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFF00BCD4)),
+                  prefixIcon: const Icon(
+                    Icons.email_outlined,
+                    color: Color(0xFF00BCD4),
+                  ),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -207,10 +216,15 @@ class _UbahProfilPageState extends State<UbahProfilPage> {
                     borderRadius: BorderRadius.circular(16),
                     borderSide: BorderSide.none,
                   ),
-                  prefixIcon: const Icon(Icons.lock_outline_rounded, color: Color(0xFF00BCD4)),
+                  prefixIcon: const Icon(
+                    Icons.lock_outline_rounded,
+                    color: Color(0xFF00BCD4),
+                  ),
                   suffixIcon: IconButton(
                     icon: Icon(
-                      _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                      _obscurePassword
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
                       color: const Color(0xFF94A3B8),
                     ),
                     onPressed: () {
@@ -242,10 +256,15 @@ class _UbahProfilPageState extends State<UbahProfilPage> {
                     borderRadius: BorderRadius.circular(16),
                     borderSide: BorderSide.none,
                   ),
-                  prefixIcon: const Icon(Icons.lock_clock_outlined, color: Color(0xFF00BCD4)),
+                  prefixIcon: const Icon(
+                    Icons.lock_clock_outlined,
+                    color: Color(0xFF00BCD4),
+                  ),
                   suffixIcon: IconButton(
                     icon: Icon(
-                      _obscureConfirmPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                      _obscureConfirmPassword
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
                       color: const Color(0xFF94A3B8),
                     ),
                     onPressed: () {

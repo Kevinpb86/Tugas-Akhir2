@@ -28,7 +28,10 @@ class LocationWavePainter extends CustomPainter {
     if (isLeft) {
       // Small arc: center at x = size.width + 8
       canvas.drawArc(
-        Rect.fromCircle(center: Offset(size.width + 8, size.height / 2), radius: 16),
+        Rect.fromCircle(
+          center: Offset(size.width + 8, size.height / 2),
+          radius: 16,
+        ),
         2.3, // start angle
         1.68, // sweep angle
         false,
@@ -36,7 +39,10 @@ class LocationWavePainter extends CustomPainter {
       );
       // Large arc
       canvas.drawArc(
-        Rect.fromCircle(center: Offset(size.width + 8, size.height / 2), radius: 24),
+        Rect.fromCircle(
+          center: Offset(size.width + 8, size.height / 2),
+          radius: 24,
+        ),
         2.3,
         1.68,
         false,
@@ -138,25 +144,22 @@ class HelpTourOverlay extends StatelessWidget {
                 Icons.arrow_upward_rounded,
                 color: Colors.white,
                 size: 36,
-                shadows: [
-                  Shadow(
-                    color: Color(0xFF00BCD4),
-                    blurRadius: 12,
-                  ),
-                ],
+                shadows: [Shadow(color: Color(0xFF00BCD4), blurRadius: 12)],
               ),
             ),
           ),
           // Tooltip container
           Positioned(
-            top: 200, // Fixed top coordinate to keep tooltip readable during scrolls
+            top:
+                200, // Fixed top coordinate to keep tooltip readable during scrolls
             left: 20,
             right: 20,
             child: _buildTooltipBox(
               context,
               number: "1",
               title: "Deteksi Lingkungan Dinamis",
-              description: "Kartu ini memantau kondisi Anda secara cerdas. Panel 'Posisi Anda' dapat diketuk untuk beralih status secara manual, sedangkan panel 'Tipe Wilayah' mendeteksi otomatis tipe geografi Anda menggunakan koordinat GPS di seluruh Indonesia.",
+              description:
+                  "Kartu ini memantau kondisi Anda secara cerdas. Panel 'Posisi Anda' dapat diketuk untuk beralih status secara manual, sedangkan panel 'Tipe Wilayah' mendeteksi otomatis tipe geografi Anda menggunakan koordinat GPS di seluruh Indonesia.",
             ),
           ),
         ],
@@ -186,25 +189,22 @@ class HelpTourOverlay extends StatelessWidget {
                 Icons.arrow_downward_rounded,
                 color: Colors.white,
                 size: 36,
-                shadows: [
-                  Shadow(
-                    color: Color(0xFF00BCD4),
-                    blurRadius: 12,
-                  ),
-                ],
+                shadows: [Shadow(color: Color(0xFF00BCD4), blurRadius: 12)],
               ),
             ),
           ),
           // Tooltip container
           Positioned(
-            bottom: 125, // Fixed bottom coordinate to stay visible and readable during scrolls
+            bottom:
+                125, // Fixed bottom coordinate to stay visible and readable during scrolls
             left: 20,
             right: 20,
             child: _buildTooltipBox(
               context,
               number: "2",
               title: "Info Gempa Terkini",
-              description: "Menampilkan peta episentrum gempa bumi terkini beserta parameter detailnya (magnitudo, kedalaman, wilayah, jarak dari Anda, dan getaran yang dirasakan).",
+              description:
+                  "Menampilkan peta episentrum gempa bumi terkini beserta parameter detailnya (magnitudo, kedalaman, wilayah, jarak dari Anda, dan getaran yang dirasakan).",
             ),
           ),
         ],
@@ -234,12 +234,7 @@ class HelpTourOverlay extends StatelessWidget {
                 Icons.arrow_downward_rounded,
                 color: Colors.white,
                 size: 36,
-                shadows: [
-                  Shadow(
-                    color: Color(0xFF00BCD4),
-                    blurRadius: 12,
-                  ),
-                ],
+                shadows: [Shadow(color: Color(0xFF00BCD4), blurRadius: 12)],
               ),
             ),
           ),
@@ -252,7 +247,8 @@ class HelpTourOverlay extends StatelessWidget {
               context,
               number: "3",
               title: "Perlengkapan Siaga Bencana",
-              description: "Menyediakan akses cepat ke toko perlengkapan siaga darurat (tas 72 jam, radio engkol surya, P3K, dll.) dengan harga/diskon khusus mitra Amanin.",
+              description:
+                  "Menyediakan akses cepat ke toko perlengkapan siaga darurat (tas 72 jam, radio engkol surya, P3K, dll.) dengan harga/diskon khusus mitra Amanin.",
             ),
           ),
         ],
@@ -282,12 +278,7 @@ class HelpTourOverlay extends StatelessWidget {
                 Icons.arrow_downward_rounded,
                 color: Colors.white,
                 size: 36,
-                shadows: [
-                  Shadow(
-                    color: Color(0xFF00BCD4),
-                    blurRadius: 12,
-                  ),
-                ],
+                shadows: [Shadow(color: Color(0xFF00BCD4), blurRadius: 12)],
               ),
             ),
           ),
@@ -300,7 +291,8 @@ class HelpTourOverlay extends StatelessWidget {
               context,
               number: "4",
               title: "Informasi Cuaca Terkini",
-              description: "Menampilkan prakiraan cuaca, suhu, kelembaban, kecepatan angin, dan indeks radiasi UV secara real-time berdasarkan lokasi GPS perangkat Anda.",
+              description:
+                  "Menampilkan prakiraan cuaca, suhu, kelembaban, kecepatan angin, dan indeks radiasi UV secara real-time berdasarkan lokasi GPS perangkat Anda.",
             ),
           ),
         ],
@@ -330,12 +322,7 @@ class HelpTourOverlay extends StatelessWidget {
                 Icons.arrow_downward_rounded,
                 color: Colors.white,
                 size: 36,
-                shadows: [
-                  Shadow(
-                    color: Color(0xFF00BCD4),
-                    blurRadius: 12,
-                  ),
-                ],
+                shadows: [Shadow(color: Color(0xFF00BCD4), blurRadius: 12)],
               ),
             ),
           ),
@@ -348,7 +335,8 @@ class HelpTourOverlay extends StatelessWidget {
               context,
               number: "5",
               title: "Sistem Peringatan Dini",
-              description: "Kotak status peringatan dini yang otomatis berubah warna menjadi jingga/merah apabila terdapat peringatan cuaca buruk ekstrim dari BMKG di wilayah Anda.",
+              description:
+                  "Kotak status peringatan dini yang otomatis berubah warna menjadi jingga/merah apabila terdapat peringatan cuaca buruk ekstrim dari BMKG di wilayah Anda.",
             ),
           ),
         ],
@@ -378,12 +366,7 @@ class HelpTourOverlay extends StatelessWidget {
                 Icons.arrow_downward_rounded,
                 color: Colors.white,
                 size: 36,
-                shadows: [
-                  Shadow(
-                    color: Color(0xFF00BCD4),
-                    blurRadius: 12,
-                  ),
-                ],
+                shadows: [Shadow(color: Color(0xFF00BCD4), blurRadius: 12)],
               ),
             ),
           ),
@@ -396,7 +379,8 @@ class HelpTourOverlay extends StatelessWidget {
               context,
               number: "6",
               title: "Berita Kebencanaan Terbaru",
-              description: "Menyajikan artikel berita aktual seputar kejadian gempa bumi, tsunami, cuaca ekstrim, dan mitigasi bencana langsung dari sumber terpercaya.",
+              description:
+                  "Menyajikan artikel berita aktual seputar kejadian gempa bumi, tsunami, cuaca ekstrim, dan mitigasi bencana langsung dari sumber terpercaya.",
             ),
           ),
         ],
@@ -426,12 +410,7 @@ class HelpTourOverlay extends StatelessWidget {
                 Icons.arrow_downward_rounded,
                 color: Colors.white,
                 size: 36,
-                shadows: [
-                  Shadow(
-                    color: Color(0xFF00BCD4),
-                    blurRadius: 12,
-                  ),
-                ],
+                shadows: [Shadow(color: Color(0xFF00BCD4), blurRadius: 12)],
               ),
             ),
           ),
@@ -444,7 +423,8 @@ class HelpTourOverlay extends StatelessWidget {
               context,
               number: "7",
               title: "Asuransi Gempa & Bencana",
-              description: "Layanan Asuransi Pro-Siaga untuk memberikan perlindungan finansial bagi aset berharga Anda dari dampak bencana alam gempa bumi dan banjir.",
+              description:
+                  "Layanan Asuransi Pro-Siaga untuk memberikan perlindungan finansial bagi aset berharga Anda dari dampak bencana alam gempa bumi dan banjir.",
             ),
           ),
         ],
@@ -467,32 +447,30 @@ class HelpTourOverlay extends StatelessWidget {
           ),
           // Arrow pointing down
           Positioned(
-            bottom: size.height - (bottomNavRect?.top ?? (size.height - 100)) + 5,
+            bottom:
+                size.height - (bottomNavRect?.top ?? (size.height - 100)) + 5,
             left: size.width / 2 - 18,
             child: IgnorePointer(
               child: const Icon(
                 Icons.arrow_downward_rounded,
                 color: Colors.white,
                 size: 36,
-                shadows: [
-                  Shadow(
-                    color: Color(0xFF00BCD4),
-                    blurRadius: 12,
-                  ),
-                ],
+                shadows: [Shadow(color: Color(0xFF00BCD4), blurRadius: 12)],
               ),
             ),
           ),
           // Tooltip container
           Positioned(
-            bottom: size.height - (bottomNavRect?.top ?? (size.height - 100)) + 45,
+            bottom:
+                size.height - (bottomNavRect?.top ?? (size.height - 100)) + 45,
             left: 20,
             right: 20,
             child: _buildTooltipBox(
               context,
               number: "8",
               title: "Navigasi Menu Utama",
-              description: "Gunakan bar navigasi ini untuk beralih secara cepat ke fitur prakiraan cuaca detail, peta anomali gempa AI, dan pusat edukasi mitigasi bencana.",
+              description:
+                  "Gunakan bar navigasi ini untuk beralih secara cepat ke fitur prakiraan cuaca detail, peta anomali gempa AI, dan pusat edukasi mitigasi bencana.",
             ),
           ),
         ],
@@ -507,9 +485,14 @@ class HelpTourOverlay extends StatelessWidget {
               style: TextButton.styleFrom(
                 backgroundColor: Colors.black.withOpacity(0.4),
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
               ),
-              child: const Text("Lewati Panduan", style: TextStyle(fontWeight: FontWeight.bold)),
+              child: const Text(
+                "Lewati Panduan",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
           ),
         ),
@@ -517,7 +500,12 @@ class HelpTourOverlay extends StatelessWidget {
     );
   }
 
-  Widget _buildTooltipBox(BuildContext context, {required String number, required String title, required String description}) {
+  Widget _buildTooltipBox(
+    BuildContext context, {
+    required String number,
+    required String title,
+    required String description,
+  }) {
     final int currentStep = int.parse(number);
     return Center(
       child: Container(
@@ -543,7 +531,10 @@ class HelpTourOverlay extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       colors: [Color(0xFF00BCD4), Color(0xFF1E88E5)],
@@ -561,7 +552,11 @@ class HelpTourOverlay extends StatelessWidget {
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close_rounded, size: 18, color: Color(0xFF94A3B8)),
+                  icon: const Icon(
+                    Icons.close_rounded,
+                    size: 18,
+                    color: Color(0xFF94A3B8),
+                  ),
                   onPressed: onSkip,
                   constraints: const BoxConstraints(),
                   padding: EdgeInsets.zero,
@@ -623,14 +618,22 @@ class HelpTourOverlay extends StatelessWidget {
                     style: OutlinedButton.styleFrom(
                       foregroundColor: const Color(0xFF1E88E5),
                       side: const BorderSide(color: Color(0xFFE2E8F0)),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
                       minimumSize: const Size(0, 0),
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
                     child: const Text(
                       "Kembali",
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
                     ),
                   )
                 else
@@ -657,14 +660,22 @@ class HelpTourOverlay extends StatelessWidget {
                       backgroundColor: Colors.transparent,
                       shadowColor: Colors.transparent,
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 8,
+                      ),
                       minimumSize: const Size(0, 0),
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
                     child: Text(
                       currentStep == 8 ? "Selesai" : "Lanjut",
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
                     ),
                   ),
                 ),

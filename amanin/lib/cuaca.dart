@@ -27,7 +27,9 @@ class _CuacaPageState extends State<CuacaPage> {
 
   Future<void> _fetchWeatherData() async {
     try {
-      final cuaca = await BmkgService.fetchCurrentWeather('32.04.08.2002'); // Bojongsoang
+      final cuaca = await BmkgService.fetchCurrentWeather(
+        '32.04.08.2002',
+      ); // Bojongsoang
       if (mounted) {
         setState(() {
           _latestCuaca = cuaca;
@@ -51,7 +53,7 @@ class _CuacaPageState extends State<CuacaPage> {
       appBar: AppBar(
         title: Column(
           children: [
-             const Text(
+            const Text(
               'Cuaca Mingguan',
               style: TextStyle(
                 color: Color(0xFF1A1A1A),
@@ -59,27 +61,31 @@ class _CuacaPageState extends State<CuacaPage> {
                 fontSize: 16,
               ),
             ),
-             const SizedBox(height: 2),
-             Row(
-               mainAxisAlignment: MainAxisAlignment.center,
-               children: [
-                 const Icon(Icons.location_on, size: 12, color: Color(0xFF2196F3)),
-                 const SizedBox(width: 4),
-                 ValueListenableBuilder<String>(
-                   valueListenable: userCityNameNotifier,
-                   builder: (context, cityName, _) {
-                     return Text(
-                       cityName,
-                       style: const TextStyle(
-                         color: Color(0xFF2196F3),
-                         fontSize: 12,
-                         fontWeight: FontWeight.w500,
-                       ),
-                     );
-                   },
-                 ),
-               ],
-             ),
+            const SizedBox(height: 2),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.location_on,
+                  size: 12,
+                  color: Color(0xFF2196F3),
+                ),
+                const SizedBox(width: 4),
+                ValueListenableBuilder<String>(
+                  valueListenable: userCityNameNotifier,
+                  builder: (context, cityName, _) {
+                    return Text(
+                      cityName,
+                      style: const TextStyle(
+                        color: Color(0xFF2196F3),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
           ],
         ),
         centerTitle: true,
@@ -160,10 +166,7 @@ class _CuacaPageState extends State<CuacaPage> {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Color(0xFFE1F5FE),
-            Color(0xFFE1F5FE),
-          ],
+          colors: [Color(0xFFE1F5FE), Color(0xFFE1F5FE)],
         ),
         borderRadius: BorderRadius.circular(30),
         boxShadow: [
@@ -212,7 +215,11 @@ class _CuacaPageState extends State<CuacaPage> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    _isLoading ? '...' : (_latestCuaca?.cuaca.isNotEmpty == true ? _latestCuaca!.cuaca : 'Berawan'),
+                    _isLoading
+                        ? '...'
+                        : (_latestCuaca?.cuaca.isNotEmpty == true
+                              ? _latestCuaca!.cuaca
+                              : 'Berawan'),
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
@@ -232,22 +239,25 @@ class _CuacaPageState extends State<CuacaPage> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                   SizedBox(
-                     height: 80,
-                     width: 80,
-                     child: _isLoading 
-                          ? const Center(child: CircularProgressIndicator()) 
-                          : (_latestCuaca != null && _latestCuaca!.image.isNotEmpty 
+                  SizedBox(
+                    height: 80,
+                    width: 80,
+                    child: _isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : (_latestCuaca != null &&
+                                  _latestCuaca!.image.isNotEmpty
                               ? Center(
                                   child: Image.network(
                                     _latestCuaca!.image,
                                     width: 60,
                                     height: 60,
-                                    errorBuilder: (context, error, stackTrace) => const Icon(
-                                      Icons.cloud,
-                                      size: 50,
-                                      color: Color(0xFF90A4AE),
-                                    ),
+                                    errorBuilder:
+                                        (context, error, stackTrace) =>
+                                            const Icon(
+                                              Icons.cloud,
+                                              size: 50,
+                                              color: Color(0xFF90A4AE),
+                                            ),
                                   ),
                                 )
                               : Stack(
@@ -272,10 +282,14 @@ class _CuacaPageState extends State<CuacaPage> {
                                         height: 40,
                                         decoration: BoxDecoration(
                                           color: Colors.white,
-                                          borderRadius: BorderRadius.circular(20),
+                                          borderRadius: BorderRadius.circular(
+                                            20,
+                                          ),
                                           boxShadow: [
                                             BoxShadow(
-                                              color: Colors.black.withValues(alpha: 0.05),
+                                              color: Colors.black.withValues(
+                                                alpha: 0.05,
+                                              ),
                                               blurRadius: 10,
                                               offset: const Offset(0, 4),
                                             ),
@@ -285,11 +299,19 @@ class _CuacaPageState extends State<CuacaPage> {
                                     ),
                                   ],
                                 )),
-                   ),
+                  ),
                   const SizedBox(height: 8),
-                  _buildWeatherStat(Icons.water_drop, 'Kelembapan ${_isLoading ? "--" : _latestCuaca?.kelembapan ?? 65}%', const Color(0xFF2196F3)),
+                  _buildWeatherStat(
+                    Icons.water_drop,
+                    'Kelembapan ${_isLoading ? "--" : _latestCuaca?.kelembapan ?? 65}%',
+                    const Color(0xFF2196F3),
+                  ),
                   const SizedBox(height: 4),
-                  _buildWeatherStat(Icons.air, 'Angin ${_isLoading ? "--" : _latestCuaca?.kecAngin ?? 12} km/j', const Color(0xFF4DB6AC)),
+                  _buildWeatherStat(
+                    Icons.air,
+                    'Angin ${_isLoading ? "--" : _latestCuaca?.kecAngin ?? 12} km/j',
+                    const Color(0xFF4DB6AC),
+                  ),
                 ],
               ),
             ],
@@ -318,10 +340,11 @@ class _CuacaPageState extends State<CuacaPage> {
   }
 
   Widget _buildEarlyWarningCard() {
-    final String warningMsg = _isLoading 
-        ? "Memeriksa peringatan cuaca..." 
-        : (_latestCuaca?.peringatanDini ?? "Sedang tidak ada peringatan cuaca yang signifikan untuk saat ini.");
-        
+    final String warningMsg = _isLoading
+        ? "Memeriksa peringatan cuaca..."
+        : (_latestCuaca?.peringatanDini ??
+              "Sedang tidak ada peringatan cuaca yang signifikan untuk saat ini.");
+
     final bool hasWarning = warningMsg.contains("Waspada");
 
     return Container(
@@ -329,7 +352,9 @@ class _CuacaPageState extends State<CuacaPage> {
       decoration: BoxDecoration(
         color: hasWarning ? const Color(0xFFFFF3E0) : const Color(0xFFE8F5E9),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: hasWarning ? const Color(0xFFFFE0B2) : const Color(0xFFC8E6C9)),
+        border: Border.all(
+          color: hasWarning ? const Color(0xFFFFE0B2) : const Color(0xFFC8E6C9),
+        ),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -337,13 +362,17 @@ class _CuacaPageState extends State<CuacaPage> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: hasWarning ? const Color(0xFFFF9800) : const Color(0xFF4CAF50),
+              color: hasWarning
+                  ? const Color(0xFFFF9800)
+                  : const Color(0xFF4CAF50),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
-              hasWarning ? Icons.warning_amber_rounded : Icons.check_circle_outline_rounded, 
-              color: Colors.white, 
-              size: 20
+              hasWarning
+                  ? Icons.warning_amber_rounded
+                  : Icons.check_circle_outline_rounded,
+              color: Colors.white,
+              size: 20,
             ),
           ),
           const SizedBox(width: 16),
@@ -356,7 +385,9 @@ class _CuacaPageState extends State<CuacaPage> {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
-                    color: hasWarning ? const Color(0xFFE65100) : const Color(0xFF2E7D32),
+                    color: hasWarning
+                        ? const Color(0xFFE65100)
+                        : const Color(0xFF2E7D32),
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -364,7 +395,9 @@ class _CuacaPageState extends State<CuacaPage> {
                   warningMsg,
                   style: TextStyle(
                     fontSize: 12,
-                    color: hasWarning ? const Color(0xFFE65100) : const Color(0xFF388E3C),
+                    color: hasWarning
+                        ? const Color(0xFFE65100)
+                        : const Color(0xFF388E3C),
                     height: 1.4,
                   ),
                 ),
@@ -380,13 +413,15 @@ class _CuacaPageState extends State<CuacaPage> {
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
-    
+
     if (_latestCuaca == null || _latestCuaca!.dailyForecasts.isEmpty) {
       return const Center(child: Text("Data prakiraan belum tersedia."));
     }
 
     return Column(
-      children: _latestCuaca!.dailyForecasts.map((f) => _buildForecastItem(f)).toList(),
+      children: _latestCuaca!.dailyForecasts
+          .map((f) => _buildForecastItem(f))
+          .toList(),
     );
   }
 
@@ -399,7 +434,9 @@ class _CuacaPageState extends State<CuacaPage> {
         color: isEst ? Colors.white.withValues(alpha: 0.6) : Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isEst ? Colors.grey.withValues(alpha: 0.08) : Colors.grey.withValues(alpha: 0.12),
+          color: isEst
+              ? Colors.grey.withValues(alpha: 0.08)
+              : Colors.grey.withValues(alpha: 0.12),
           style: isEst ? BorderStyle.none : BorderStyle.solid,
         ),
         boxShadow: [
@@ -423,13 +460,19 @@ class _CuacaPageState extends State<CuacaPage> {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: isEst ? const Color(0xFF9E9E9E) : const Color(0xFF424242),
+                    color: isEst
+                        ? const Color(0xFF9E9E9E)
+                        : const Color(0xFF424242),
                   ),
                 ),
                 if (isEst)
                   const Text(
                     'estimasi',
-                    style: TextStyle(fontSize: 9, color: Color(0xFFBDBDBD), fontStyle: FontStyle.italic),
+                    style: TextStyle(
+                      fontSize: 9,
+                      color: Color(0xFFBDBDBD),
+                      fontStyle: FontStyle.italic,
+                    ),
                   ),
               ],
             ),
@@ -469,7 +512,9 @@ class _CuacaPageState extends State<CuacaPage> {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: isEst ? const Color(0xFFBDBDBD) : const Color(0xFF1A1A1A),
+                    color: isEst
+                        ? const Color(0xFFBDBDBD)
+                        : const Color(0xFF1A1A1A),
                   ),
                 ),
                 const SizedBox(width: 6),
@@ -488,31 +533,91 @@ class _CuacaPageState extends State<CuacaPage> {
     );
   }
 
-
   Widget _buildInsuranceSection(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 20, offset: const Offset(0, 4))]),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Column(
         children: [
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: const BoxDecoration(color: Color(0xFFE3F2FD), shape: BoxShape.circle),
-            child: const Icon(Icons.security, color: Color(0xFF2196F3), size: 32),
+            decoration: const BoxDecoration(
+              color: Color(0xFFE3F2FD),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.security,
+              color: Color(0xFF2196F3),
+              size: 32,
+            ),
           ),
           const SizedBox(height: 16),
-          const Text('Asuransi Pro-Siaga', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A))),
+          const Text(
+            'Asuransi Pro-Siaga',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1A1A1A),
+            ),
+          ),
           const SizedBox(height: 8),
-          const Text('Perlindungan aset dan kesehatan keluarga dari dampak bencana alam.', textAlign: TextAlign.center, style: TextStyle(fontSize: 13, color: Color(0xFF757575), height: 1.4)),
+          const Text(
+            'Perlindungan aset dan kesehatan keluarga dari dampak bencana alam.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 13,
+              color: Color(0xFF757575),
+              height: 1.4,
+            ),
+          ),
           const SizedBox(height: 16),
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(color: const Color(0xFFF8F9FA), borderRadius: BorderRadius.circular(12)),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8F9FA),
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: Column(
               children: [
-                Row(children: const [Icon(Icons.check_circle, color: Color(0xFF4CAF50), size: 16), SizedBox(width: 8), Text('Klaim cepat 24 jam', style: TextStyle(fontSize: 12, color: Color(0xFF424242)))]),
+                Row(
+                  children: const [
+                    Icon(
+                      Icons.check_circle,
+                      color: Color(0xFF4CAF50),
+                      size: 16,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      'Klaim cepat 24 jam',
+                      style: TextStyle(fontSize: 12, color: Color(0xFF424242)),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 8),
-                Row(children: const [Icon(Icons.check_circle, color: Color(0xFF4CAF50), size: 16), SizedBox(width: 8), Text('Cover gempa & banjir', style: TextStyle(fontSize: 12, color: Color(0xFF424242)))]),
+                Row(
+                  children: const [
+                    Icon(
+                      Icons.check_circle,
+                      color: Color(0xFF4CAF50),
+                      size: 16,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      'Cover gempa & banjir',
+                      style: TextStyle(fontSize: 12, color: Color(0xFF424242)),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
@@ -524,15 +629,30 @@ class _CuacaPageState extends State<CuacaPage> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const AsuransiWebPage()),
+                  MaterialPageRoute(
+                    builder: (context) => const AsuransiWebPage(),
+                  ),
                 );
               },
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00BCD4), foregroundColor: Colors.white, elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-              child: const Text('Cek Asuransi Sekarang', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF00BCD4),
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text(
+                'Cek Asuransi Sekarang',
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+              ),
             ),
           ),
           const SizedBox(height: 12),
-          const Text('Disponsori • S&K berlaku', style: TextStyle(fontSize: 10, color: Color(0xFF9E9E9E))),
+          const Text(
+            'Disponsori • S&K berlaku',
+            style: TextStyle(fontSize: 10, color: Color(0xFF9E9E9E)),
+          ),
         ],
       ),
     );

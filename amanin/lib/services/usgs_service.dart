@@ -4,7 +4,8 @@ import 'package:intl/intl.dart';
 import 'bmkg_service.dart'; // To reuse GempaModel
 
 class UsgsService {
-  static const String _baseUrl = 'https://earthquake.usgs.gov/fdsnws/event/1/query';
+  static const String _baseUrl =
+      'https://earthquake.usgs.gov/fdsnws/event/1/query';
 
   // Region Indonesia
   static const double _minLat = -11.0;
@@ -17,7 +18,7 @@ class UsgsService {
     if (place == 'Unknown Location') return 'Lokasi Tidak Diketahui';
 
     String translated = place;
-    
+
     // Translate "of" to "dari"
     translated = translated.replaceAll(' of ', ' dari ');
 
@@ -54,7 +55,8 @@ class UsgsService {
 
   static Future<List<GempaModel>> fetchIndonesiaEarthquakes() async {
     try {
-      final String url = '$_baseUrl?format=geojson'
+      final String url =
+          '$_baseUrl?format=geojson'
           '&minlatitude=$_minLat'
           '&maxlatitude=$_maxLat'
           '&minlongitude=$_minLon'
@@ -67,13 +69,23 @@ class UsgsService {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final List<dynamic> allFeatures = data['features'];
-        
+
         // The bounding box includes parts of the Philippines and Malaysia.
         // We filter for 'indonesia' to ensure we only show relevant data.
-        final List<dynamic> features = allFeatures.where((f) {
-          final String place = (f['properties']['place'] ?? "").toString().toLowerCase();
-          return place.contains('indonesia') || place.contains('java') || place.contains('sumatra') || place.contains('sulawesi') || place.contains('papua') || place.contains('bali');
-        }).take(50).toList();
+        final List<dynamic> features = allFeatures
+            .where((f) {
+              final String place = (f['properties']['place'] ?? "")
+                  .toString()
+                  .toLowerCase();
+              return place.contains('indonesia') ||
+                  place.contains('java') ||
+                  place.contains('sumatra') ||
+                  place.contains('sulawesi') ||
+                  place.contains('papua') ||
+                  place.contains('bali');
+            })
+            .take(50)
+            .toList();
 
         return features.map((feature) {
           final props = feature['properties'];
@@ -81,9 +93,12 @@ class UsgsService {
           final coords = geometry['coordinates']; // [lon, lat, depth]
 
           // Convert time (ms) to BMKG style
-          final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(props['time']);
+          final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(
+            props['time'],
+          );
           final String tanggal = DateFormat('dd MMM yyyy').format(dateTime);
-          final String jam = '${DateFormat('HH:mm:ss').format(dateTime)} WIB'; // Assume WIB for uniformity
+          final String jam =
+              '${DateFormat('HH:mm:ss').format(dateTime)} WIB'; // Assume WIB for uniformity
 
           return GempaModel(
             tanggal: tanggal,
@@ -95,7 +110,9 @@ class UsgsService {
             magnitude: props['mag'].toString(),
             kedalaman: '${coords[2]} km',
             wilayah: _translatePlace(props['place'] ?? 'Unknown Location'),
-            potensi: props['tsunami'] == 1 ? 'Berpotensi Tsunami' : 'Tidak berpotensi tsunami',
+            potensi: props['tsunami'] == 1
+                ? 'Berpotensi Tsunami'
+                : 'Tidak berpotensi tsunami',
             dirasakan: props['felt'] != null ? 'Dirasakan' : '-',
             shakemap: '', // USGS doesn't give BMKG shakemap image path
           );

@@ -15,7 +15,7 @@ class AnomaliGempaModel {
   final String potensi;
   final String dirasakan;
   final String shakemap;
-  
+
   // Fitur tambahan dari Backend untuk Anomali
   final bool isAnomali;
   final String statusAnomali;
@@ -63,14 +63,20 @@ class AnomaliGempaModel {
 class AnomaliService {
   static Future<List<AnomaliGempaModel>> fetchAnomaliTerkini() async {
     try {
-      final response = await http.get(Uri.parse('${ApiConfig.baseUrl}/anomali-terkini'));
-      
+      final response = await http.get(
+        Uri.parse('${ApiConfig.baseUrl}/anomali-terkini'),
+      );
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final List<dynamic> gempaList = data['data'];
-        return gempaList.map((json) => AnomaliGempaModel.fromJson(json)).toList();
+        return gempaList
+            .map((json) => AnomaliGempaModel.fromJson(json))
+            .toList();
       } else {
-        throw Exception('Gagal memuat data anomali gempa terkini: ${response.statusCode}');
+        throw Exception(
+          'Gagal memuat data anomali gempa terkini: ${response.statusCode}',
+        );
       }
     } catch (e) {
       throw Exception('Terjadi kesalahan saat menghubungi backend: $e');

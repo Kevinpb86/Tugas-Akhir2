@@ -35,7 +35,7 @@ class DeteksiAnomaliPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            
+
             // FutureBuilder untuk mengambil data dari Backend
             FutureBuilder<List<AnomaliGempaModel>>(
               future: AnomaliService.fetchAnomaliTerkini(),
@@ -61,16 +61,19 @@ class DeteksiAnomaliPage extends StatelessWidget {
                     ),
                   );
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(child: Text('Tidak ada data gempa saat ini.'));
+                  return const Center(
+                    child: Text('Tidak ada data gempa saat ini.'),
+                  );
                 }
 
                 final gempaList = snapshot.data!;
-                
+
                 return ListView.separated(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: gempaList.length,
-                  separatorBuilder: (context, index) => const SizedBox(height: 10),
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: 10),
                   itemBuilder: (context, index) {
                     final gempa = gempaList[index];
                     final title = 'M ${gempa.magnitude} - ${gempa.wilayah}';
@@ -91,7 +94,7 @@ class DeteksiAnomaliPage extends StatelessWidget {
   }
 
   Widget _buildOutputCard({
-    required String title, 
+    required String title,
     required bool isAnomaly,
     required double score,
     required String time,
@@ -110,7 +113,7 @@ class DeteksiAnomaliPage extends StatelessWidget {
             color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 8,
             offset: const Offset(0, 2),
-          )
+          ),
         ],
       ),
       child: Row(
@@ -120,11 +123,15 @@ class DeteksiAnomaliPage extends StatelessWidget {
             padding: const EdgeInsets.all(10),
             margin: const EdgeInsets.only(top: 2),
             decoration: BoxDecoration(
-              color: isAnomaly ? Colors.red.withValues(alpha: 0.1) : Colors.green.withValues(alpha: 0.1),
+              color: isAnomaly
+                  ? Colors.red.withValues(alpha: 0.1)
+                  : Colors.green.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
-              isAnomaly ? Icons.warning_amber_rounded : Icons.check_circle_outline,
+              isAnomaly
+                  ? Icons.warning_amber_rounded
+                  : Icons.check_circle_outline,
               color: isAnomaly ? Colors.red : Colors.green,
             ),
           ),
@@ -135,7 +142,10 @@ class DeteksiAnomaliPage extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(
@@ -146,7 +156,9 @@ class DeteksiAnomaliPage extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                      isAnomaly ? 'Status: Anomali Terdeteksi' : 'Status: Normal',
+                      isAnomaly
+                          ? 'Status: Anomali Terdeteksi'
+                          : 'Status: Normal',
                       style: TextStyle(
                         color: isAnomaly ? Colors.red : Colors.green,
                         fontWeight: FontWeight.bold,

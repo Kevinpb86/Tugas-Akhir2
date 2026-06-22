@@ -32,7 +32,6 @@ class _AkunPageState extends State<AkunPage> {
     );
   }
 
-
   Widget _buildProfileHeader(BuildContext context) {
     return Container(
       width: double.infinity,
@@ -118,11 +117,7 @@ class _AkunPageState extends State<AkunPage> {
                       ],
                     ),
                     child: photoUrl.isEmpty
-                        ? const Icon(
-                            Icons.person,
-                            size: 60,
-                            color: Colors.grey,
-                          )
+                        ? const Icon(Icons.person, size: 60, color: Colors.grey)
                         : null,
                   );
                 },
@@ -130,28 +125,37 @@ class _AkunPageState extends State<AkunPage> {
               Positioned(
                 bottom: 0,
                 right: 0,
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const UbahProfilPage()),
-                    );
-                  },
-                  child: Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 5,
-                          offset: const Offset(0, 2),
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const UbahProfilPage(),
                         ),
-                      ],
+                      );
+                    },
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 5,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.edit,
+                        color: Color(0xFF00BCD4),
+                        size: 18,
+                      ),
                     ),
-                    child: const Icon(Icons.edit, color: Color(0xFF00BCD4), size: 18),
                   ),
                 ),
               ),
@@ -227,7 +231,9 @@ class _AkunPageState extends State<AkunPage> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const UbahProfilPage()),
+                    MaterialPageRoute(
+                      builder: (context) => const UbahProfilPage(),
+                    ),
                   );
                 },
               ),
@@ -325,7 +331,9 @@ class _AkunPageState extends State<AkunPage> {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: isDestructive ? const Color(0xFFFFF0F0) : const Color(0xFFF0F9FA),
+                  color: isDestructive
+                      ? const Color(0xFFFFF0F0)
+                      : const Color(0xFFF0F9FA),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
@@ -351,7 +359,9 @@ class _AkunPageState extends State<AkunPage> {
               ),
               Icon(
                 Icons.arrow_forward_ios,
-                color: isDestructive ? Colors.transparent : const Color(0xFFCFD8DC),
+                color: isDestructive
+                    ? Colors.transparent
+                    : const Color(0xFFCFD8DC),
                 size: 16,
               ),
             ],
@@ -421,7 +431,9 @@ class _AkunPageState extends State<AkunPage> {
             ),
             backgroundColor: const Color(0xFF2C3E50),
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
         );
       },
@@ -442,7 +454,7 @@ class _AkunPageState extends State<AkunPage> {
                     color: const Color(0xFF00BCD4).withOpacity(0.1),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
-                  )
+                  ),
                 ]
               : [],
         ),

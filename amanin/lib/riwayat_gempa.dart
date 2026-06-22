@@ -111,25 +111,43 @@ class RiwayatGempaPage extends StatelessWidget {
                             const SizedBox(height: 6),
                             Row(
                               children: [
-                                const Icon(Icons.access_time, size: 12, color: Color(0xFF9E9E9E)),
+                                const Icon(
+                                  Icons.access_time,
+                                  size: 12,
+                                  color: Color(0xFF9E9E9E),
+                                ),
                                 const SizedBox(width: 4),
                                 Text(
                                   '$date, $time',
-                                  style: const TextStyle(fontSize: 11, color: Color(0xFF757575)),
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: Color(0xFF757575),
+                                  ),
                                 ),
                                 const SizedBox(width: 12),
-                                const Icon(Icons.show_chart, size: 12, color: Color(0xFF9E9E9E)),
+                                const Icon(
+                                  Icons.show_chart,
+                                  size: 12,
+                                  color: Color(0xFF9E9E9E),
+                                ),
                                 const SizedBox(width: 4),
                                 Text(
                                   quake.kedalaman,
-                                  style: const TextStyle(fontSize: 11, color: Color(0xFF757575)),
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: Color(0xFF757575),
+                                  ),
                                 ),
                               ],
                             ),
-                            if (quake.dirasakan.isNotEmpty && quake.dirasakan != '-') ...[
+                            if (quake.dirasakan.isNotEmpty &&
+                                quake.dirasakan != '-') ...[
                               const SizedBox(height: 6),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 2,
+                                ),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFFFFF3E0),
                                   borderRadius: BorderRadius.circular(8),

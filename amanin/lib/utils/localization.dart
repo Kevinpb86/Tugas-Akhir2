@@ -6,7 +6,8 @@ class Localization {
   Localization(this.locale);
 
   static Localization of(BuildContext context) {
-    return Localizations.of<Localization>(context, Localization) ?? Localization(const Locale('id'));
+    return Localizations.of<Localization>(context, Localization) ??
+        Localization(const Locale('id'));
   }
 
   static const Map<String, Map<String, String>> _localizedValues = {
@@ -14,7 +15,7 @@ class Localization {
       // General
       'app_title': 'Amanin - Bencana',
       'loading': 'Memuat...',
-      
+
       // Bottom Nav
       'nav_home': 'Beranda',
       'nav_weather': 'Cuaca',
@@ -39,7 +40,8 @@ class Localization {
       // Account Page
       'account_title': 'Profil Pengguna',
       'account_not_logged_in': 'Belum Login',
-      'account_login_desc': 'Silakan login atau daftar untuk mengakses fitur lengkap Amanin.',
+      'account_login_desc':
+          'Silakan login atau daftar untuk mengakses fitur lengkap Amanin.',
       'account_btn_login': 'Masuk',
       'account_btn_register': 'Daftar Akun',
       'account_section_general': 'PENGATURAN UMUM',
@@ -62,23 +64,24 @@ class Localization {
       'login_or': 'atau masuk dengan',
       'login_no_account': 'Belum punya akun? ',
       'login_register_link': 'Daftar Sekarang',
-      
+
       'register_title': 'Daftar Akun',
       'register_welcome': 'Buat Akun Baru 🚀',
-      'register_subtitle': 'Daftar sekarang untuk mendapatkan informasi bencana terkini.',
+      'register_subtitle':
+          'Daftar sekarang untuk mendapatkan informasi bencana terkini.',
       'register_label_name': 'Nama Lengkap',
       'register_hint_name': 'Masukkan nama lengkap',
       'register_label_conf_pass': 'Konfirmasi Kata Sandi',
       'register_hint_conf_pass': 'Ulangi kata sandi',
       'register_or': 'atau daftar dengan',
       'register_have_account': 'Sudah punya akun? ',
-      'register_btn_submit': 'Daftar Sekarang'
+      'register_btn_submit': 'Daftar Sekarang',
     },
     'en': {
       // General
       'app_title': 'Amanin - Disaster',
       'loading': 'Loading...',
-      
+
       // Bottom Nav
       'nav_home': 'Home',
       'nav_weather': 'Weather',
@@ -103,7 +106,8 @@ class Localization {
       // Account Page
       'account_title': 'User Profile',
       'account_not_logged_in': 'Not Logged In',
-      'account_login_desc': 'Please login or register to access full features of Amanin.',
+      'account_login_desc':
+          'Please login or register to access full features of Amanin.',
       'account_btn_login': 'Login',
       'account_btn_register': 'Register',
       'account_section_general': 'GENERAL SETTINGS',
@@ -126,7 +130,7 @@ class Localization {
       'login_or': 'or login with',
       'login_no_account': 'Don\'t have an account? ',
       'login_register_link': 'Register Now',
-      
+
       'register_title': 'Register',
       'register_welcome': 'Create New Account 🚀',
       'register_subtitle': 'Register now to get latest disaster updates.',
@@ -136,7 +140,7 @@ class Localization {
       'register_hint_conf_pass': 'Repeat password',
       'register_or': 'or register with',
       'register_have_account': 'Already have an account? ',
-      'register_btn_submit': 'Register Now'
+      'register_btn_submit': 'Register Now',
     },
   };
 

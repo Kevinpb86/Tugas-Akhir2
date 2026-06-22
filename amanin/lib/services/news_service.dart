@@ -37,19 +37,20 @@ class NewsModel {
 }
 
 class NewsService {
-  static const String _baseUrl = 'https://real-time-news-data.p.rapidapi.com/search';
-  static const String _apiKey = '03eb68055fmsh5a0fafee3b58505p15903cjsnf0d70bddedd8';
+  static const String _baseUrl =
+      'https://real-time-news-data.p.rapidapi.com/search';
+  static const String _apiKey =
+      '03eb68055fmsh5a0fafee3b58505p15903cjsnf0d70bddedd8';
   static const String _apiHost = 'real-time-news-data.p.rapidapi.com';
 
   static Future<List<NewsModel>> fetchNews() async {
     try {
-      final uri = Uri.parse('$_baseUrl?query=bencana&limit=10&time_published=anytime&country=ID&lang=id');
+      final uri = Uri.parse(
+        '$_baseUrl?query=bencana&limit=10&time_published=anytime&country=ID&lang=id',
+      );
       final response = await http.get(
         uri,
-        headers: {
-          'x-rapidapi-key': _apiKey,
-          'x-rapidapi-host': _apiHost,
-        },
+        headers: {'x-rapidapi-key': _apiKey, 'x-rapidapi-host': _apiHost},
       );
 
       if (response.statusCode == 200) {

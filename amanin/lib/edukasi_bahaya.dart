@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'mitigasi_gempa.dart';
+import 'panduan_evakuasi_bahaya.dart';
 
 class EdukasiBahayaPage extends StatefulWidget {
   final String cityName;
@@ -10,23 +11,6 @@ class EdukasiBahayaPage extends StatefulWidget {
 }
 
 class _EdukasiBahayaPageState extends State<EdukasiBahayaPage> {
-  // Tas Siaga Bencana Checklist
-  final Map<String, bool> _survivalKitItems = {
-    'Dokumen Penting (Ijazah, Akta, Surat Tanah) dalam plastik kedap air': false,
-    'Kotak P3K & Obat-obatan pribadi': false,
-    'Senter kecil & baterai cadangan': false,
-    'Air minum kemasan (minimal untuk 3 hari)': false,
-    'Makanan instan/tahan lama': false,
-    'Uang tunai secukupnya': false,
-    'Masker medis & Peluit (untuk tanda darurat)': false,
-    'Powerbank & kabel pengisi daya ponsel': false,
-  };
-
-  double get _checklistProgress {
-    int checkedCount = _survivalKitItems.values.where((checked) => checked).length;
-    return checkedCount / _survivalKitItems.length;
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -120,129 +104,61 @@ class _EdukasiBahayaPageState extends State<EdukasiBahayaPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Section 1: Protokol Evakuasi Cepat
-                  _buildSectionTitle('Langkah Evakuasi Utama (3S)', Icons.flash_on_rounded, const Color(0xFFD32F2F)),
+                  _buildSectionTitle(
+                    'Langkah Evakuasi Utama (3S)',
+                    Icons.flash_on_rounded,
+                    const Color(0xFFD32F2F),
+                  ),
                   const SizedBox(height: 10),
                   _buildEvacuationCard(
-                    '1. SIAGA (Sebelum Guncangan)',
+                    '1. SIAGA (Sebelum Gempa)',
                     'Identifikasi tempat aman di rumah Anda (kolong meja kuat, pilar utama) dan tentukan jalur tercepat menuju ruang terbuka luas.',
                     Icons.home_work_rounded,
                     const Color(0xFF1976D2),
+                    0,
                   ),
                   const SizedBox(height: 10),
                   _buildEvacuationCard(
-                    '2. SELAMATKAN DIRI (Saat Guncangan)',
+                    '2. SELAMATKAN DIRI (Saat Gempa)',
                     'DROP, COVER, HOLD ON! Merunduklah, lindungi kepala dengan lengan/bantal, berlindung di bawah meja kokoh, dan jauhi jendela kaca.',
                     Icons.security_rounded,
                     const Color(0xFFF57C00),
+                    1,
                   ),
                   const SizedBox(height: 10),
                   _buildEvacuationCard(
-                    '3. SEGERA EVAKUASI (Setelah Guncangan)',
+                    '3. SEGERA EVAKUASI (Setelah Gempa)',
                     'Keluar gedung dengan tertib lewat jalur evakuasi. Jangan gunakan lift. Menujulah ke titik kumpul terbuka di luar area bangunan.',
                     Icons.directions_run_rounded,
                     const Color(0xFF388E3C),
+                    2,
                   ),
-
                   const SizedBox(height: 24),
-
-                  // Section 2: Tas Siaga Bencana (Checklist Interactive)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _buildSectionTitle('Tas Siaga Bencana (TSB)', Icons.backpack_rounded, const Color(0xFFE64A19)),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFE64A19).withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          '${(_checklistProgress * 100).toInt()}% Siap',
-                          style: const TextStyle(
-                            color: Color(0xFFE64A19),
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Tas darurat yang mudah diraih saat evakuasi mendadak. Centang item yang sudah Anda siapkan:',
-                    style: TextStyle(fontSize: 12, color: Color(0xFF555555), height: 1.4),
-                  ),
-                  const SizedBox(height: 12),
-                  
-                  // Progress Bar
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: LinearProgressIndicator(
-                      value: _checklistProgress,
-                      minHeight: 8,
-                      backgroundColor: const Color(0xFFE0E0E0),
-                      valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFE64A19)),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Checklist Card
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.04),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: _survivalKitItems.length,
-                      separatorBuilder: (context, index) => const Divider(height: 1, color: Color(0xFFF1F1F1)),
-                      itemBuilder: (context, index) {
-                        String itemKey = _survivalKitItems.keys.elementAt(index);
-                        bool isChecked = _survivalKitItems[itemKey]!;
-                        return CheckboxListTile(
-                          activeColor: const Color(0xFFE64A19),
-                          title: Text(
-                            itemKey,
-                            style: TextStyle(
-                              fontSize: 12.5,
-                              color: isChecked ? Colors.grey : const Color(0xFF2C3E50),
-                              decoration: isChecked ? TextDecoration.lineThrough : null,
-                            ),
-                          ),
-                          value: isChecked,
-                          onChanged: (bool? newValue) {
-                            setState(() {
-                              _survivalKitItems[itemKey] = newValue ?? false;
-                            });
-                          },
-                          controlAffinity: ListTileControlAffinity.leading,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-                        );
-                      },
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-
                   // Section 3: Kontak Darurat
-                  _buildSectionTitle('Panggilan Darurat Cepat', Icons.phone_in_talk_rounded, const Color(0xFF1976D2)),
+                  _buildSectionTitle(
+                    'Panggilan Darurat Cepat',
+                    Icons.phone_in_talk_rounded,
+                    const Color(0xFF1976D2),
+                  ),
                   const SizedBox(height: 10),
                   Row(
                     children: [
                       Expanded(
-                        child: _buildEmergencyContactCard('BASARNAS', '115', Icons.local_hospital_rounded, const Color(0xFFE64A19)),
+                        child: _buildEmergencyContactCard(
+                          'BASARNAS',
+                          '115',
+                          Icons.local_hospital_rounded,
+                          const Color(0xFFE64A19),
+                        ),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
-                        child: _buildEmergencyContactCard('Panggilan Darurat', '112', Icons.phone_android_rounded, const Color(0xFF388E3C)),
+                        child: _buildEmergencyContactCard(
+                          'Panggilan Darurat',
+                          '112',
+                          Icons.phone_android_rounded,
+                          const Color(0xFF388E3C),
+                        ),
                       ),
                     ],
                   ),
@@ -261,7 +177,9 @@ class _EdukasiBahayaPageState extends State<EdukasiBahayaPage> {
                           borderRadius: BorderRadius.circular(16),
                         ),
                         elevation: 2,
-                        shadowColor: const Color(0xFFD32F2F).withValues(alpha: 0.3),
+                        shadowColor: const Color(
+                          0xFFD32F2F,
+                        ).withValues(alpha: 0.3),
                       ),
                       onPressed: () {
                         Navigator.of(context).push(
@@ -277,7 +195,10 @@ class _EdukasiBahayaPageState extends State<EdukasiBahayaPage> {
                           SizedBox(width: 8),
                           Text(
                             'Pelajari Panduan Lengkap Mitigasi',
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
                           ),
                         ],
                       ),
@@ -310,7 +231,13 @@ class _EdukasiBahayaPageState extends State<EdukasiBahayaPage> {
     );
   }
 
-  Widget _buildEvacuationCard(String title, String body, IconData icon, Color color) {
+  Widget _buildEvacuationCard(
+    String title,
+    String body,
+    IconData icon,
+    Color color,
+    int tabIndex,
+  ) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -324,49 +251,74 @@ class _EdukasiBahayaPageState extends State<EdukasiBahayaPage> {
           ),
         ],
       ),
-      padding: const EdgeInsets.all(14),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: color, size: 22),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.bold,
-                    color: color,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => PanduanEvakuasiBahayaPage(
+                    cityName: widget.cityName,
+                    initialTabIndex: tabIndex,
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  body,
-                  style: const TextStyle(
-                    fontSize: 11.5,
-                    color: Color(0xFF4B5563),
-                    height: 1.45,
+              );
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(icon, color: color, size: 22),
                   ),
-                ),
-              ],
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.bold,
+                            color: color,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          body,
+                          style: const TextStyle(
+                            fontSize: 11.5,
+                            color: Color(0xFF4B5563),
+                            height: 1.45,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _buildEmergencyContactCard(String name, String phone, IconData icon, Color color) {
+  Widget _buildEmergencyContactCard(
+    String name,
+    String phone,
+    IconData icon,
+    Color color,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
       decoration: BoxDecoration(
