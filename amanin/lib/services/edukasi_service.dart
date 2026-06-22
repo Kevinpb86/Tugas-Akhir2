@@ -26,11 +26,14 @@ class EdukasiService {
     if (response.statusCode == 200) {
       final jsonResponse = jsonDecode(response.body);
       if (jsonResponse['status'] == 'success') {
-        final videosList = List<Map<String, dynamic>>.from(jsonResponse['data']);
+        final videosList = List<Map<String, dynamic>>.from(
+          jsonResponse['data'],
+        );
         final nextToken = jsonResponse['nextPageToken'];
-        
+
         Map<String, dynamic>? featured;
-        if (jsonResponse.containsKey('featuredVideo') && jsonResponse['featuredVideo'] != null) {
+        if (jsonResponse.containsKey('featuredVideo') &&
+            jsonResponse['featuredVideo'] != null) {
           featured = Map<String, dynamic>.from(jsonResponse['featuredVideo']);
         }
 

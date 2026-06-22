@@ -40,7 +40,12 @@ class CuacaModel {
     required this.dailyForecasts,
   });
 
-  factory CuacaModel.fromJson(Map<String, dynamic> jsonCuaca, String namaKota, String peringatan, List<DailyForecast> daily) {
+  factory CuacaModel.fromJson(
+    Map<String, dynamic> jsonCuaca,
+    String namaKota,
+    String peringatan,
+    List<DailyForecast> daily,
+  ) {
     return CuacaModel(
       suhu: jsonCuaca['t'] ?? 0,
       cuaca: jsonCuaca['weather_desc'] ?? '',
@@ -128,75 +133,89 @@ class BmkgService {
         final List<dynamic> gempaList = data['Infogempa']['gempa'];
         return gempaList.map((json) => GempaModel.fromJson(json)).toList();
       } else {
-        throw Exception('Gagal memuat data gempa terkini: ${response.statusCode}');
+        throw Exception(
+          'Gagal memuat data gempa terkini: ${response.statusCode}',
+        );
       }
     } catch (e) {
       throw Exception('Terjadi kesalahan: $e');
     }
   }
-  
+
   // Mendapatkan daftar 15 gempabumi dirasakan (gempadirasakan)
   static Future<List<GempaModel>> fetchFeltEarthquakeList() async {
     try {
-      final response = await http.get(Uri.parse('$_baseUrl/gempadirasakan.json'));
+      final response = await http.get(
+        Uri.parse('$_baseUrl/gempadirasakan.json'),
+      );
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final List<dynamic> gempaList = data['Infogempa']['gempa'];
         return gempaList.map((json) => GempaModel.fromJson(json)).toList();
       } else {
-        throw Exception('Gagal memuat data gempa dirasakan: ${response.statusCode}');
+        throw Exception(
+          'Gagal memuat data gempa dirasakan: ${response.statusCode}',
+        );
       }
     } catch (e) {
       throw Exception('Terjadi kesalahan: $e');
     }
   }
 
-  static const String _cuacaUrl = 'https://api.bmkg.go.id/publik/prakiraan-cuaca';
+  static const String _cuacaUrl =
+      'https://api.bmkg.go.id/publik/prakiraan-cuaca';
 
-  // Mendapatkan cuaca (default Jakarta Pusat - Gambir: 31.71.01.1001)
-  // Bisa diganti adm4 cilacap jika dibutuhkan
-  static Future<CuacaModel> fetchCurrentWeather([String adm4 = '31.71.01.1001']) async {
+  // Mendapatkan cuaca (default Bojongsoang: 32.04.08.2002)
+  // Bisa diganti adm4 jika dibutuhkan
+  static Future<CuacaModel> fetchCurrentWeather([
+    String adm4 = '32.04.08.2002',
+  ]) async {
     try {
       final response = await http.get(Uri.parse('$_cuacaUrl?adm4=$adm4'));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        final namaKota = data['lokasi']['kotkab'] ?? data['lokasi']['provinsi'] ?? 'Kota Tidak Diketahui';
-        
+        final namaKota =
+            data['lokasi']['kotkab'] ??
+            data['lokasi']['provinsi'] ??
+            'Kota Tidak Diketahui';
+
         final List<dynamic> days = data['data'][0]['cuaca'];
         List<dynamic> allIntervals = [];
         List<DailyForecast> parsedDaily = [];
-        String peringatanMsg = "Sedang tidak ada peringatan cuaca yang signifikan untuk saat ini.";
+        String peringatanMsg =
+            "Sedang tidak ada peringatan cuaca yang signifikan untuk saat ini.";
         bool isPeringatanSet = false;
 
         for (var i = 0; i < days.length; i++) {
           final dayIntervals = days[i];
           allIntervals.addAll(dayIntervals);
-          
+
           int maxT = -100;
           int minT = 100;
           Map<String, int> condCounts = {};
           String reprCond = '';
           String reprIcon = '';
-          
+
           for (var interval in dayIntervals) {
             final t = interval['t'] as int;
             if (t > maxT) maxT = t;
             if (t < minT) minT = t;
-            
+
             final code = interval['weather'] as int;
             final desc = interval['weather_desc'] as String;
             final icon = interval['image'] as String;
-            
+
             condCounts[desc] = (condCounts[desc] ?? 0) + 1;
-            
+
             // Aturan Peringatan Dini (Cuaca ekstrem: Hujan Petir / Hujan Lebat)
             // 65: Hujan Lebat, 95/97: Hujan Petir
             if ((code == 65 || code == 95 || code == 97) && !isPeringatanSet) {
               isPeringatanSet = true;
-              peringatanMsg = "Waspada potensi $desc di kawasan $namaKota dan sekitarnya.";
+              peringatanMsg =
+                  "Waspada potensi $desc di kawasan $namaKota dan sekitarnya.";
             }
           }
-          
+
           // Cari kondisi dominan
           int maxCount = 0;
           for (var interval in dayIntervals) {
@@ -207,15 +226,27 @@ class BmkgService {
               reprIcon = interval['image'] as String;
             }
           }
-          
+
           String dayName;
           final startDateTime = dayIntervals[0]['local_datetime'] as String;
           // Ambil tanggal dari interval pertama hari tersebut
           final dayDate = DateTime.parse(startDateTime.replaceAll(' ', 'T'));
           final todayDate = DateTime.now();
-          final diffDays = dayDate.difference(DateTime(todayDate.year, todayDate.month, todayDate.day)).inDays;
-          
-          const List<String> namaHari = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+          final diffDays = dayDate
+              .difference(
+                DateTime(todayDate.year, todayDate.month, todayDate.day),
+              )
+              .inDays;
+
+          const List<String> namaHari = [
+            'Minggu',
+            'Senin',
+            'Selasa',
+            'Rabu',
+            'Kamis',
+            'Jumat',
+            'Sabtu',
+          ];
           if (diffDays == 0) {
             dayName = 'Hari ini';
           } else if (diffDays == 1) {
@@ -223,52 +254,71 @@ class BmkgService {
           } else {
             dayName = namaHari[dayDate.weekday % 7];
           }
-          
-          parsedDaily.add(DailyForecast(
-            dayName: dayName,
-            condition: reprCond,
-            imagePath: reprIcon,
-            maxTemp: maxT,
-            minTemp: minT,
-          ));
+
+          parsedDaily.add(
+            DailyForecast(
+              dayName: dayName,
+              condition: reprCond,
+              imagePath: reprIcon,
+              maxTemp: maxT,
+              minTemp: minT,
+            ),
+          );
         }
 
         // Tambahkan estimasi 4 hari lagi (total 7 hari) dari pola hari terakhir API
         if (parsedDaily.isNotEmpty) {
           final lastDay = parsedDaily.last;
-          const List<String> namaHari = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+          const List<String> namaHari = [
+            'Minggu',
+            'Senin',
+            'Selasa',
+            'Rabu',
+            'Kamis',
+            'Jumat',
+            'Sabtu',
+          ];
           final today = DateTime.now();
           int addedDays = parsedDaily.length; // sudah ada 3 hari
           while (parsedDaily.length < 7) {
             final futureDate = today.add(Duration(days: addedDays));
             final fDayName = namaHari[futureDate.weekday % 7];
-            parsedDaily.add(DailyForecast(
-              dayName: fDayName,
-              condition: lastDay.condition,
-              imagePath: lastDay.imagePath,
-              maxTemp: lastDay.maxTemp,
-              minTemp: lastDay.minTemp,
-              isEstimate: true,
-            ));
+            parsedDaily.add(
+              DailyForecast(
+                dayName: fDayName,
+                condition: lastDay.condition,
+                imagePath: lastDay.imagePath,
+                maxTemp: lastDay.maxTemp,
+                minTemp: lastDay.minTemp,
+                isEstimate: true,
+              ),
+            );
             addedDays++;
           }
         }
-        
+
         DateTime now = DateTime.now();
         Map<String, dynamic>? currentCuaca;
-        
+
         for (var cuaca in allIntervals) {
-          DateTime dt = DateTime.parse(cuaca['local_datetime'].replaceAll(' ', 'T'));
+          DateTime dt = DateTime.parse(
+            cuaca['local_datetime'].replaceAll(' ', 'T'),
+          );
           // Cari interval terdekat yang ada di masa depan atau sekarang
           if (dt.isAfter(now.subtract(const Duration(hours: 2)))) {
             currentCuaca = cuaca;
             break;
           }
         }
-        
+
         currentCuaca ??= allIntervals[0];
-        
-        return CuacaModel.fromJson(currentCuaca!, namaKota.toString(), peringatanMsg, parsedDaily);
+
+        return CuacaModel.fromJson(
+          currentCuaca!,
+          namaKota.toString(),
+          peringatanMsg,
+          parsedDaily,
+        );
       } else {
         throw Exception('Gagal memuat data cuaca: ${response.statusCode}');
       }

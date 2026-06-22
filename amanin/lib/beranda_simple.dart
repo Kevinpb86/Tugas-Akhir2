@@ -171,7 +171,9 @@ class BerandaPageSimple extends StatelessWidget {
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFF00BCD4).withValues(alpha: 0.3),
+                                color: const Color(
+                                  0xFF00BCD4,
+                                ).withValues(alpha: 0.3),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
                               ),

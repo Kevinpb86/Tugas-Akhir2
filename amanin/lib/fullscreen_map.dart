@@ -15,7 +15,11 @@ class FullscreenMapPage extends StatefulWidget {
   final GempaModel gempa;
   final bool isAnomali;
 
-  const FullscreenMapPage({super.key, required this.gempa, this.isAnomali = false});
+  const FullscreenMapPage({
+    super.key,
+    required this.gempa,
+    this.isAnomali = false,
+  });
 
   @override
   State<FullscreenMapPage> createState() => _FullscreenMapPageState();
@@ -33,7 +37,7 @@ class _FullscreenMapPageState extends State<FullscreenMapPage> {
   void initState() {
     super.initState();
     _calculateDistance();
-    
+
     if (widget.isAnomali) {
       // Tunggu sebentar sebelum memunculkan notifikasi agar transisi smooth
       Future.delayed(const Duration(milliseconds: 300), () {
@@ -100,7 +104,7 @@ class _FullscreenMapPageState extends State<FullscreenMapPage> {
           return;
         }
       }
-      
+
       if (permission == LocationPermission.deniedForever) {
         setState(() {
           _distanceText = 'Izin lokasi ditolak permanen';
@@ -113,7 +117,9 @@ class _FullscreenMapPageState extends State<FullscreenMapPage> {
         desiredAccuracy: LocationAccuracy.high,
       );
 
-      print("[FullscreenMap] GPS coordinates: lat=${position.latitude}, lon=${position.longitude}, accuracy=${position.accuracy}m");
+      print(
+        "[FullscreenMap] GPS coordinates: lat=${position.latitude}, lon=${position.longitude}, accuracy=${position.accuracy}m",
+      );
 
       if (mounted) {
         setState(() {
@@ -124,7 +130,7 @@ class _FullscreenMapPageState extends State<FullscreenMapPage> {
       // Parse earthquake coordinates
       final coords = widget.gempa.coordinates.split(',');
       if (coords.length < 2) return;
-      
+
       final eqLat = double.tryParse(coords[0]) ?? 0.0;
       final eqLon = double.tryParse(coords[1]) ?? 0.0;
 
@@ -135,7 +141,7 @@ class _FullscreenMapPageState extends State<FullscreenMapPage> {
         eqLat,
         eqLon,
       );
-      
+
       int distanceInKm = (distanceInMeters / 1000).round();
 
       // Reverse geocoding for city name
@@ -147,24 +153,56 @@ class _FullscreenMapPageState extends State<FullscreenMapPage> {
         );
         if (placemarks.isNotEmpty) {
           Placemark place = placemarks[0];
-          print("[FullscreenMap] Geocoding result: subLocality=${place.subLocality}, locality=${place.locality}, subAdmin=${place.subAdministrativeArea}");
-          cityName = place.locality ?? place.subLocality ?? place.subAdministrativeArea ?? 'lokasi Anda';
+          print(
+            "[FullscreenMap] Geocoding result: subLocality=${place.subLocality}, locality=${place.locality}, subAdmin=${place.subAdministrativeArea}",
+          );
+          cityName =
+              place.locality ??
+              place.subLocality ??
+              place.subAdministrativeArea ??
+              'lokasi Anda';
           // Clean up "Kabupaten" or "Kota" prefix if needed
-          cityName = cityName.replaceAll('Kabupaten ', '').replaceAll('Kota ', '').replaceAll(' City', '').replaceAll('Kecamatan ', '').replaceAll('Kelurahan ', '').replaceAll('Desa ', '');
+          cityName = cityName
+              .replaceAll('Kabupaten ', '')
+              .replaceAll('Kota ', '')
+              .replaceAll(' City', '')
+              .replaceAll('Kecamatan ', '')
+              .replaceAll('Kelurahan ', '')
+              .replaceAll('Desa ', '');
         }
       } catch (e) {
-        print("[FullscreenMap] Geocoding package error: $e, falling back to Nominatim");
+        print(
+          "[FullscreenMap] Geocoding package error: $e, falling back to Nominatim",
+        );
         // Fallback for Web using OpenStreetMap Nominatim API
         try {
-          final url = Uri.parse('https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.latitude}&lon=${position.longitude}&zoom=16&addressdetails=1');
-          final response = await http.get(url, headers: {'User-Agent': 'AmaninApp/1.0'});
+          final url = Uri.parse(
+            'https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.latitude}&lon=${position.longitude}&zoom=16&addressdetails=1',
+          );
+          final response = await http.get(
+            url,
+            headers: {'User-Agent': 'AmaninApp/1.0'},
+          );
           if (response.statusCode == 200) {
             final data = json.decode(response.body);
             print("[FullscreenMap] Nominatim full address: ${data['address']}");
             if (data['address'] != null) {
               final addr = data['address'];
-              cityName = addr['town'] ?? addr['subdistrict'] ?? addr['suburb'] ?? addr['city_district'] ?? addr['city'] ?? addr['county'] ?? addr['state'] ?? 'lokasi Anda';
-              cityName = cityName.replaceAll('Kabupaten ', '').replaceAll('Kota ', '').replaceAll('Kecamatan ', '').replaceAll('Kelurahan ', '').replaceAll('Desa ', '');
+              cityName =
+                  addr['town'] ??
+                  addr['subdistrict'] ??
+                  addr['suburb'] ??
+                  addr['city_district'] ??
+                  addr['city'] ??
+                  addr['county'] ??
+                  addr['state'] ??
+                  'lokasi Anda';
+              cityName = cityName
+                  .replaceAll('Kabupaten ', '')
+                  .replaceAll('Kota ', '')
+                  .replaceAll('Kecamatan ', '')
+                  .replaceAll('Kelurahan ', '')
+                  .replaceAll('Desa ', '');
               print("[FullscreenMap] Final city name: $cityName");
             }
           }
@@ -206,43 +244,54 @@ class _FullscreenMapPageState extends State<FullscreenMapPage> {
               userLocation: _userLatLng,
             ),
           ),
-          
+
           // 2. Top Right Bagikan Button
           Positioned(
             top: MediaQuery.of(context).padding.top + 16,
             right: 16,
-            child: GestureDetector(
-              onTap: () {
-                final gempa = widget.gempa;
-                final String shareText = 'Info Gempa dirasakan Mag:${gempa.magnitude}, ${gempa.tanggal} ${gempa.jam.replaceAll(' WIB', '')} WIB, Lok:${gempa.lintang}, ${gempa.bujur} (${gempa.wilayah}), Kedlmn:${gempa.kedalaman} ::AMANIN\nInformasi selengkapnya lihat di\nhttps://amanin.app/';
-                Share.share(shareText);
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 10,
-                    )
-                  ]
+            child: MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: GestureDetector(
+                onTap: () {
+                  final gempa = widget.gempa;
+                  final String shareText =
+                      'Info Gempa dirasakan Mag:${gempa.magnitude}, ${gempa.tanggal} ${gempa.jam.replaceAll(' WIB', '')} WIB, Lok:${gempa.lintang}, ${gempa.bujur} (${gempa.wilayah}), Kedlmn:${gempa.kedalaman} ::AMANIN\nInformasi selengkapnya lihat di\nhttps://amanin.app/';
+                  Share.share(shareText);
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 10,
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.ios_share,
+                        size: 16,
+                        color: Color(0xFF1A1A1A),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Bagikan',
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF1A1A1A),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.ios_share, size: 16, color: Color(0xFF1A1A1A)),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Bagikan',
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF1A1A1A),
-                      )
-                    )
-                  ],
-                )
               ),
             ),
           ),
@@ -251,18 +300,24 @@ class _FullscreenMapPageState extends State<FullscreenMapPage> {
           Positioned(
             top: MediaQuery.of(context).padding.top + 16,
             left: 16,
-            child: GestureDetector(
-              onTap: () => Navigator.pop(context),
-              child: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10)
-                  ]
+            child: MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 10,
+                      ),
+                    ],
+                  ),
+                  child: const Icon(Icons.arrow_back, color: Color(0xFF1A1A1A)),
                 ),
-                child: const Icon(Icons.arrow_back, color: Color(0xFF1A1A1A)),
               ),
             ),
           ),
@@ -279,13 +334,20 @@ class _FullscreenMapPageState extends State<FullscreenMapPage> {
                     // Sheet 1: Real-time Stats
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(24),
                         boxShadow: [
-                          BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 20, offset: const Offset(0, 4))
-                        ]
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.08),
+                            blurRadius: 20,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
                       child: Column(
                         children: [
@@ -312,15 +374,30 @@ class _FullscreenMapPageState extends State<FullscreenMapPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
-                              _buildStatItem(Icons.show_chart, Colors.red, widget.gempa.magnitude, 'Magnitude'),
-                              _buildStatItem(Icons.waves, Colors.green, widget.gempa.kedalaman, 'Kedalaman'),
-                              _buildStatItem(Icons.location_on_outlined, Colors.orange, 'Lat $lat\nLon $lon', ''),
+                              _buildStatItem(
+                                Icons.show_chart,
+                                Colors.red,
+                                widget.gempa.magnitude,
+                                'Magnitude',
+                              ),
+                              _buildStatItem(
+                                Icons.waves,
+                                Colors.green,
+                                widget.gempa.kedalaman,
+                                'Kedalaman',
+                              ),
+                              _buildStatItem(
+                                Icons.location_on_outlined,
+                                Colors.orange,
+                                'Lat $lat\nLon $lon',
+                                '',
+                              ),
                             ],
-                          )
+                          ),
                         ],
                       ),
                     ),
-                    
+
                     const SizedBox(height: 12),
 
                     // Sheet 2: Details & Button
@@ -331,29 +408,45 @@ class _FullscreenMapPageState extends State<FullscreenMapPage> {
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(24),
                         boxShadow: [
-                          BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 20, offset: const Offset(0, 4))
-                        ]
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.08),
+                            blurRadius: 20,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildDetailRow(Icons.access_time, 'Waktu :', '${widget.gempa.tanggal}, ${widget.gempa.jam} WIB'),
+                          _buildDetailRow(
+                            Icons.access_time,
+                            'Waktu :',
+                            '${widget.gempa.tanggal}, ${widget.gempa.jam} WIB',
+                          ),
                           const SizedBox(height: 16),
-                          _buildDetailRow(Icons.my_location, 'Lokasi Gempa', widget.gempa.wilayah),
+                          _buildDetailRow(
+                            Icons.my_location,
+                            'Lokasi Gempa',
+                            widget.gempa.wilayah,
+                          ),
                           const SizedBox(height: 16),
                           _buildDetailRow(Icons.route, 'Jarak', _distanceText),
-                          
+
                           const SizedBox(height: 24),
-                          
+
                           // Orange Button
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton(
                               onPressed: () {},
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFFF9800), // Orange
+                                backgroundColor: const Color(
+                                  0xFFFF9800,
+                                ), // Orange
                                 foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(24),
                                 ),
@@ -367,111 +460,130 @@ class _FullscreenMapPageState extends State<FullscreenMapPage> {
                                 ),
                               ),
                             ),
-                          )
+                          ),
                         ],
                       ),
-                    )
+                    ),
                   ],
                 ),
               ),
             ),
           ),
-          
+
           // 5. In-App Popup Notification (Top)
           AnimatedPositioned(
             duration: const Duration(milliseconds: 400),
             curve: Curves.easeOutCubic,
-            top: _showNotification ? MediaQuery.of(context).padding.top + 16 : -150,
+            top: _showNotification
+                ? MediaQuery.of(context).padding.top + 16
+                : -150,
             left: 20,
             right: 20,
-            child: GestureDetector(
-              onVerticalDragUpdate: (details) {
-                if (details.primaryDelta! < -5) {
-                  // Swipe up detected
-                  setState(() {
-                    _showNotification = false;
-                  });
-                  _progressTimer?.cancel();
-                }
-              },
-              child: Material(
-                color: Colors.transparent,
-                child: Container(
-                  clipBehavior: Clip.hardEdge,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.red.withOpacity(0.15),
-                        blurRadius: 20,
-                        offset: const Offset(0, 10),
-                      )
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: Colors.red.shade50,
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(Icons.warning_amber_rounded, color: Colors.red.shade600, size: 24),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Status Waspada',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 14, 
-                                      color: Colors.red.shade700, 
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    'Pola kekuatan dan kedalaman gempa ini tidak biasa',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 12, 
-                                      color: const Color(0xFF424242),
-                                      height: 1.3,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            )
-                          ],
+            child: MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: GestureDetector(
+                onVerticalDragUpdate: (details) {
+                  if (details.primaryDelta! < -5) {
+                    // Swipe up detected
+                    setState(() {
+                      _showNotification = false;
+                    });
+                    _progressTimer?.cancel();
+                  }
+                },
+                child: Material(
+                  color: Colors.transparent,
+                  child: Container(
+                    clipBehavior: Clip.hardEdge,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.red.withOpacity(0.15),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
                         ),
-                      ),
-                      // Progress Bar Timer
-                      LinearProgressIndicator(
-                        value: _progressValue,
-                        backgroundColor: Colors.transparent,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.red.shade400),
-                        minHeight: 3,
-                      )
-                    ],
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Colors.red.shade50,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  Icons.warning_amber_rounded,
+                                  color: Colors.red.shade600,
+                                  size: 24,
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Status Waspada',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 14,
+                                        color: Colors.red.shade700,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      'Pola kekuatan dan kedalaman gempa ini tidak biasa',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 12,
+                                        color: const Color(0xFF424242),
+                                        height: 1.3,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Progress Bar Timer
+                        LinearProgressIndicator(
+                          value: _progressValue,
+                          backgroundColor: Colors.transparent,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.red.shade400,
+                          ),
+                          minHeight: 3,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-          )
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildStatItem(IconData icon, Color iconColor, String value, String label) {
+  Widget _buildStatItem(
+    IconData icon,
+    Color iconColor,
+    String value,
+    String label,
+  ) {
     return Column(
       children: [
         Row(
@@ -510,7 +622,7 @@ class _FullscreenMapPageState extends State<FullscreenMapPage> {
               color: const Color(0xFF1A1A1A),
             ),
           ),
-        ]
+        ],
       ],
     );
   }
@@ -519,7 +631,11 @@ class _FullscreenMapPageState extends State<FullscreenMapPage> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, color: const Color(0xFFFFB300), size: 20), // Yellow/Orange icon
+        Icon(
+          icon,
+          color: const Color(0xFFFFB300),
+          size: 20,
+        ), // Yellow/Orange icon
         const SizedBox(width: 12),
         Expanded(
           child: Column(
@@ -543,7 +659,7 @@ class _FullscreenMapPageState extends State<FullscreenMapPage> {
               ),
             ],
           ),
-        )
+        ),
       ],
     );
   }

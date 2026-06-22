@@ -14,7 +14,8 @@ class PulsatingMarker extends StatefulWidget {
   State<PulsatingMarker> createState() => _PulsatingMarkerState();
 }
 
-class _PulsatingMarkerState extends State<PulsatingMarker> with SingleTickerProviderStateMixin {
+class _PulsatingMarkerState extends State<PulsatingMarker>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
   @override
@@ -81,10 +82,7 @@ class _PulsatingMarkerState extends State<PulsatingMarker> with SingleTickerProv
         height: size,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          border: Border.all(
-            color: widget.color,
-            width: 2.0,
-          ),
+          border: Border.all(color: widget.color, width: 2.0),
         ),
       ),
     );

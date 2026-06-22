@@ -25,7 +25,8 @@ class EarthquakeMap extends StatelessWidget {
     final dLon = _deg2rad(b.longitude - a.longitude);
     final sinDLat = math.sin(dLat / 2);
     final sinDLon = math.sin(dLon / 2);
-    final x = sinDLat * sinDLat +
+    final x =
+        sinDLat * sinDLat +
         math.cos(_deg2rad(a.latitude)) *
             math.cos(_deg2rad(b.latitude)) *
             sinDLon *

@@ -29,7 +29,8 @@ class FiturPage extends StatelessWidget {
             context,
             icon: Icons.memory,
             title: 'Klasifikasi Kerentanan Seismik (SVM)',
-            description: 'Klasifikasi tingkat kerentanan seismik secara otomatis menggunakan Machine Learning.',
+            description:
+                'Klasifikasi tingkat kerentanan seismik secara otomatis menggunakan Machine Learning.',
             color: const Color(0xFFEF5350),
             onTap: () {
               Navigator.push(
@@ -45,7 +46,8 @@ class FiturPage extends StatelessWidget {
             context,
             icon: Icons.medical_services_outlined,
             title: 'Deteksi Anomali Gempa',
-            description: 'Deteksi pola anomali seismik secara otomatis sebagai indikator awal aktivitas gempa.',
+            description:
+                'Deteksi pola anomali seismik secara otomatis sebagai indikator awal aktivitas gempa.',
             color: const Color(0xFF66BB6A),
             onTap: () {
               Navigator.push(

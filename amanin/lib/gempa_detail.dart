@@ -84,19 +84,22 @@ class _GempaDetailPageState extends State<GempaDetailPage> {
                   onTap: () => Navigator.pop(context),
                 ),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 7,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.9),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                        color: status.color.withValues(alpha: 0.3)),
+                      color: status.color.withValues(alpha: 0.3),
+                    ),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withValues(alpha: 0.05),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
-                      )
+                      ),
                     ],
                   ),
                   child: Row(
@@ -113,7 +116,7 @@ class _GempaDetailPageState extends State<GempaDetailPage> {
                               color: status.color.withValues(alpha: 0.5),
                               blurRadius: 6,
                               spreadRadius: 1,
-                            )
+                            ),
                           ],
                         ),
                       ),
@@ -158,14 +161,15 @@ class _GempaDetailPageState extends State<GempaDetailPage> {
                 return Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius:
-                        const BorderRadius.vertical(top: Radius.circular(36)),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(36),
+                    ),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withValues(alpha: 0.08),
                         blurRadius: 24,
                         offset: const Offset(0, -4),
-                      )
+                      ),
                     ],
                   ),
                   child: SingleChildScrollView(
@@ -195,23 +199,29 @@ class _GempaDetailPageState extends State<GempaDetailPage> {
                         // Info Grid: Waktu & Kedalaman
                         Row(
                           children: [
-                            Expanded(child: _buildInfoTile(
-                              icon: Icons.access_time_rounded,
-                              iconColor: const Color(0xFF7C3AED),
-                              label: 'Waktu',
-                              value: gempa?.jam.split(' ').first ?? '--:--',
-                              unit: gempa?.jam.split(' ').last ?? 'WIB',
-                              bgColor: const Color(0xFFF5F3FF),
-                            )),
+                            Expanded(
+                              child: _buildInfoTile(
+                                icon: Icons.access_time_rounded,
+                                iconColor: const Color(0xFF7C3AED),
+                                label: 'Waktu',
+                                value: gempa?.jam.split(' ').first ?? '--:--',
+                                unit: gempa?.jam.split(' ').last ?? 'WIB',
+                                bgColor: const Color(0xFFF5F3FF),
+                              ),
+                            ),
                             const SizedBox(width: 12),
-                            Expanded(child: _buildInfoTile(
-                              icon: Icons.straighten_rounded,
-                              iconColor: const Color(0xFF00ACC1),
-                              label: 'Kedalaman',
-                              value: (gempa?.kedalaman ?? '0 km').split(' ').first,
-                              unit: 'km',
-                              bgColor: const Color(0xFFE0F7FA),
-                            )),
+                            Expanded(
+                              child: _buildInfoTile(
+                                icon: Icons.straighten_rounded,
+                                iconColor: const Color(0xFF00ACC1),
+                                label: 'Kedalaman',
+                                value: (gempa?.kedalaman ?? '0 km')
+                                    .split(' ')
+                                    .first,
+                                unit: 'km',
+                                bgColor: const Color(0xFFE0F7FA),
+                              ),
+                            ),
                           ],
                         ),
                         const SizedBox(height: 12),
@@ -268,29 +278,34 @@ class _GempaDetailPageState extends State<GempaDetailPage> {
     );
   }
 
-  Widget _buildGlassButton(
-      {required IconData icon, required VoidCallback onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(14),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Container(
-            padding: const EdgeInsets.all(11),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.85),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.9)),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.06),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                )
-              ],
+  Widget _buildGlassButton({
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: onTap,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(14),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Container(
+              padding: const EdgeInsets.all(11),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.85),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.9)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.06),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Icon(icon, color: const Color(0xFF1E293B), size: 18),
             ),
-            child: Icon(icon, color: const Color(0xFF1E293B), size: 18),
           ),
         ),
       ),
@@ -345,8 +360,10 @@ class _GempaDetailPageState extends State<GempaDetailPage> {
               ),
               const SizedBox(height: 4),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: status.color.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(8),
@@ -513,9 +530,10 @@ class _GempaDetailPageState extends State<GempaDetailPage> {
                 Text(
                   'Area',
                   style: GoogleFonts.poppins(
-                      color: const Color(0xFF94A3B8),
-                      fontSize: 10,
-                      fontWeight: FontWeight.w500),
+                    color: const Color(0xFF94A3B8),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(
@@ -544,17 +562,19 @@ class _GempaDetailPageState extends State<GempaDetailPage> {
         Text(
           label,
           style: GoogleFonts.poppins(
-              color: const Color(0xFF94A3B8),
-              fontSize: 10,
-              fontWeight: FontWeight.w500),
+            color: const Color(0xFF94A3B8),
+            fontSize: 10,
+            fontWeight: FontWeight.w500,
+          ),
         ),
         const SizedBox(height: 2),
         Text(
           value,
           style: GoogleFonts.poppins(
-              color: const Color(0xFF1E293B),
-              fontSize: 13,
-              fontWeight: FontWeight.bold),
+            color: const Color(0xFF1E293B),
+            fontSize: 13,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ],
     );
@@ -598,8 +618,11 @@ class _GempaDetailPageState extends State<GempaDetailPage> {
         children: [
           Row(
             children: [
-              const Icon(Icons.analytics_rounded,
-                  color: Color(0xFF64748B), size: 17),
+              const Icon(
+                Icons.analytics_rounded,
+                color: Color(0xFF64748B),
+                size: 17,
+              ),
               const SizedBox(width: 8),
               Text(
                 'Analisis Dampak',
@@ -639,37 +662,40 @@ class _GempaDetailPageState extends State<GempaDetailPage> {
                 Text(
                   item.label,
                   style: GoogleFonts.poppins(
-                      color: const Color(0xFF94A3B8),
-                      fontSize: 10,
-                      fontWeight: FontWeight.w500),
+                    color: const Color(0xFF94A3B8),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
                 Text(
                   item.value,
                   style: GoogleFonts.poppins(
-                      color: const Color(0xFF1E293B),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600),
+                    color: const Color(0xFF1E293B),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),
           ),
           if (item.badge != null && item.badgeColor != null)
             Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
               decoration: BoxDecoration(
                 color: item.badgeColor!.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
-                    color: item.badgeColor!.withValues(alpha: 0.3)),
+                  color: item.badgeColor!.withValues(alpha: 0.3),
+                ),
               ),
               child: Text(
                 item.badge!,
                 style: GoogleFonts.poppins(
-                    color: item.badgeColor,
-                    fontSize: 9,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.4),
+                  color: item.badgeColor,
+                  fontSize: 9,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.4,
+                ),
               ),
             ),
         ],
@@ -691,8 +717,11 @@ class _GempaDetailPageState extends State<GempaDetailPage> {
         children: [
           Row(
             children: [
-              const Icon(Icons.shield_rounded,
-                  color: Color(0xFFF57C00), size: 17),
+              const Icon(
+                Icons.shield_rounded,
+                color: Color(0xFFF57C00),
+                size: 17,
+              ),
               const SizedBox(width: 8),
               Text(
                 'Panduan Keselamatan',
@@ -705,29 +734,35 @@ class _GempaDetailPageState extends State<GempaDetailPage> {
             ],
           ),
           const SizedBox(height: 14),
-          ...tips.map((tip) => Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.only(top: 5),
-                      child: Icon(Icons.circle,
-                          color: Color(0xFFF57C00), size: 5),
+          ...tips.map(
+            (tip) => Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.only(top: 5),
+                    child: Icon(
+                      Icons.circle,
+                      color: Color(0xFFF57C00),
+                      size: 5,
                     ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        tip,
-                        style: GoogleFonts.poppins(
-                            color: const Color(0xFF4A3800),
-                            fontSize: 12,
-                            height: 1.5),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      tip,
+                      style: GoogleFonts.poppins(
+                        color: const Color(0xFF4A3800),
+                        fontSize: 12,
+                        height: 1.5,
                       ),
                     ),
-                  ],
-                ),
-              )),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -740,14 +775,23 @@ class _GempaDetailPageState extends State<GempaDetailPage> {
     }
     if (mag < 4.0) {
       return _MagnitudeStatus(
-          'Gempa Ringan', const Color(0xFF00ACC1), Icons.sentiment_satisfied_rounded);
+        'Gempa Ringan',
+        const Color(0xFF00ACC1),
+        Icons.sentiment_satisfied_rounded,
+      );
     }
     if (mag < 6.0) {
       return _MagnitudeStatus(
-          'Gempa Sedang', const Color(0xFFFF9800), Icons.warning_amber_rounded);
+        'Gempa Sedang',
+        const Color(0xFFFF9800),
+        Icons.warning_amber_rounded,
+      );
     }
     return _MagnitudeStatus(
-        'Gempa Kuat', const Color(0xFFF44336), Icons.warning_rounded);
+      'Gempa Kuat',
+      const Color(0xFFF44336),
+      Icons.warning_rounded,
+    );
   }
 
   String _getMagnitudeWarning(double? mag) {

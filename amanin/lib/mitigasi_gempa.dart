@@ -12,7 +12,11 @@ class MitigasiGempaPage extends StatelessWidget {
         appBar: AppBar(
           title: const Text(
             'Mitigasi Gempa Bumi',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
           ),
           backgroundColor: const Color(0xFF2196F3),
           iconTheme: const IconThemeData(color: Colors.white),
@@ -48,15 +52,30 @@ class MitigasiGempaPage extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       children: [
         // Foto placeholder
-        _buildImagePlaceholder('Foto persiapan tas siaga (4:3 • ~400×300px)', const Color(0xFF2196F3)),
+        _buildImagePlaceholder(
+          'Foto persiapan tas siaga (4:3 • ~400×300px)',
+          const Color(0xFF2196F3),
+        ),
         const SizedBox(height: 20),
         _buildGroup(
           color: const Color(0xFFF44336),
           label: 'PRIORITAS UTAMA',
           items: [
-            _ActionItem(number: 1, text: 'Siapkan tas siaga bencana berisi dokumen penting, obat, dan makanan untuk 3 hari.'),
-            _ActionItem(number: 2, text: 'Tentukan titik kumpul keluarga dan pastikan semua anggota keluarga tahu lokasinya.'),
-            _ActionItem(number: 3, text: 'Pelajari jalur evakuasi terdekat dari rumah dan tempat kerja.'),
+            _ActionItem(
+              number: 1,
+              text:
+                  'Siapkan tas siaga bencana berisi dokumen penting, obat, dan makanan untuk 3 hari.',
+            ),
+            _ActionItem(
+              number: 2,
+              text:
+                  'Tentukan titik kumpul keluarga dan pastikan semua anggota keluarga tahu lokasinya.',
+            ),
+            _ActionItem(
+              number: 3,
+              text:
+                  'Pelajari jalur evakuasi terdekat dari rumah dan tempat kerja.',
+            ),
           ],
         ),
         const SizedBox(height: 16),
@@ -64,9 +83,20 @@ class MitigasiGempaPage extends StatelessWidget {
           color: const Color(0xFF2196F3),
           label: 'PERSIAPAN TAMBAHAN',
           items: [
-            _ActionItem(number: 4, text: 'Kenali struktur bangunan tempat tinggal Anda.'),
-            _ActionItem(number: 5, text: 'Amankan perabot berat agar tidak mudah jatuh saat guncangan.'),
-            _ActionItem(number: 6, text: 'Simpan nomor darurat BPBD dan rumah sakit terdekat di ponsel.'),
+            _ActionItem(
+              number: 4,
+              text: 'Kenali struktur bangunan tempat tinggal Anda.',
+            ),
+            _ActionItem(
+              number: 5,
+              text:
+                  'Amankan perabot berat agar tidak mudah jatuh saat guncangan.',
+            ),
+            _ActionItem(
+              number: 6,
+              text:
+                  'Simpan nomor darurat BPBD dan rumah sakit terdekat di ponsel.',
+            ),
           ],
         ),
         const SizedBox(height: 20),
@@ -78,16 +108,26 @@ class MitigasiGempaPage extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
-        _buildImagePlaceholder('Foto ilustrasi berlindung (4:3 • ~400×300px)', const Color(0xFFF44336)),
-        const SizedBox(height: 20),
         _buildGroup(
           color: const Color(0xFFF44336),
           label: 'DI DALAM RUANGAN',
           items: [
-            _ActionItem(number: 1, text: 'Tetap tenang, jangan panik dan segera berlindung.'),
-            _ActionItem(number: 2, text: 'Berlindung di bawah meja yang kuat atau di sudut ruangan.'),
-            _ActionItem(number: 3, text: 'Lindungi kepala dan leher dengan tangan atau benda lunak.'),
-            _ActionItem(number: 4, text: 'Jauhi jendela, lemari, dan benda yang bisa jatuh.'),
+            _ActionItem(
+              number: 1,
+              text: 'Tetap tenang, jangan panik dan segera berlindung.',
+            ),
+            _ActionItem(
+              number: 2,
+              text: 'Berlindung di bawah meja yang kuat atau di sudut ruangan.',
+            ),
+            _ActionItem(
+              number: 3,
+              text: 'Lindungi kepala dan leher dengan tangan atau benda lunak.',
+            ),
+            _ActionItem(
+              number: 4,
+              text: 'Jauhi jendela, lemari, dan benda yang bisa jatuh.',
+            ),
           ],
         ),
         const SizedBox(height: 16),
@@ -95,9 +135,19 @@ class MitigasiGempaPage extends StatelessWidget {
           color: const Color(0xFFFF9800),
           label: 'DI LUAR RUANGAN',
           items: [
-            _ActionItem(number: 1, text: 'Jauhi gedung, tiang listrik, dan pohon tinggi.'),
-            _ActionItem(number: 2, text: 'Berlindung di area terbuka, jauh dari struktur bangunan.'),
-            _ActionItem(number: 3, text: 'Jangan masuk ke dalam gedung selama guncangan berlangsung.'),
+            _ActionItem(
+              number: 1,
+              text: 'Jauhi gedung, tiang listrik, dan pohon tinggi.',
+            ),
+            _ActionItem(
+              number: 2,
+              text: 'Berlindung di area terbuka, jauh dari struktur bangunan.',
+            ),
+            _ActionItem(
+              number: 3,
+              text:
+                  'Jangan masuk ke dalam gedung selama guncangan berlangsung.',
+            ),
           ],
         ),
         const SizedBox(height: 16),
@@ -105,8 +155,15 @@ class MitigasiGempaPage extends StatelessWidget {
           color: const Color(0xFF9C27B0),
           label: 'DI DALAM KENDARAAN',
           items: [
-            _ActionItem(number: 1, text: 'Menepi ke area aman, jauh dari jembatan dan flyover.'),
-            _ActionItem(number: 2, text: 'Matikan mesin, tetap di dalam kendaraan hingga guncangan berhenti.'),
+            _ActionItem(
+              number: 1,
+              text: 'Menepi ke area aman, jauh dari jembatan dan flyover.',
+            ),
+            _ActionItem(
+              number: 2,
+              text:
+                  'Matikan mesin, tetap di dalam kendaraan hingga guncangan berhenti.',
+            ),
           ],
         ),
         const SizedBox(height: 20),
@@ -118,15 +175,29 @@ class MitigasiGempaPage extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
-        _buildImagePlaceholder('Foto evakuasi / posko (4:3 • ~400×300px)', const Color(0xFF4CAF50)),
+        _buildImagePlaceholder(
+          'Foto evakuasi / posko (4:3 • ~400×300px)',
+          const Color(0xFF4CAF50),
+        ),
         const SizedBox(height: 20),
         _buildGroup(
           color: const Color(0xFFF44336),
           label: 'SEGERA LAKUKAN',
           items: [
-            _ActionItem(number: 1, text: 'Periksa kondisi diri dan orang di sekitar — berikan pertolongan pertama jika diperlukan.'),
-            _ActionItem(number: 2, text: 'Waspadai gempa susulan, segera keluar dari bangunan yang rusak.'),
-            _ActionItem(number: 3, text: 'Jika dekat pantai, segera menuju titik evakuasi tsunami.'),
+            _ActionItem(
+              number: 1,
+              text:
+                  'Periksa kondisi diri dan orang di sekitar — berikan pertolongan pertama jika diperlukan.',
+            ),
+            _ActionItem(
+              number: 2,
+              text:
+                  'Waspadai gempa susulan, segera keluar dari bangunan yang rusak.',
+            ),
+            _ActionItem(
+              number: 3,
+              text: 'Jika dekat pantai, segera menuju titik evakuasi tsunami.',
+            ),
           ],
         ),
         const SizedBox(height: 16),
@@ -134,9 +205,19 @@ class MitigasiGempaPage extends StatelessWidget {
           color: const Color(0xFF4CAF50),
           label: 'LANGKAH SELANJUTNYA',
           items: [
-            _ActionItem(number: 4, text: 'Periksa kerusakan bangunan sebelum masuk kembali.'),
-            _ActionItem(number: 5, text: 'Hindari menggunakan api atau listrik sebelum dipastikan aman oleh petugas.'),
-            _ActionItem(number: 6, text: 'Ikuti informasi resmi dari BMKG dan pemerintah daerah.'),
+            _ActionItem(
+              number: 4,
+              text: 'Periksa kerusakan bangunan sebelum masuk kembali.',
+            ),
+            _ActionItem(
+              number: 5,
+              text:
+                  'Hindari menggunakan api atau listrik sebelum dipastikan aman oleh petugas.',
+            ),
+            _ActionItem(
+              number: 6,
+              text: 'Ikuti informasi resmi dari BMKG dan pemerintah daerah.',
+            ),
           ],
         ),
         const SizedBox(height: 20),
@@ -144,21 +225,44 @@ class MitigasiGempaPage extends StatelessWidget {
     );
   }
 
-  Widget _buildImagePlaceholder(String label, Color color) {
+  Widget _buildImagePlaceholder(
+    String label,
+    Color color, {
+    String? assetPath,
+  }) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
       child: AspectRatio(
         aspectRatio: 4 / 3,
-        child: Image.network(
-          'https://placehold.co/400x300/${color.toARGB32().toRadixString(16).substring(2)}/ffffff/png?text=${Uri.encodeComponent(label)}',
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) => Container(
-            color: const Color(0xFFF0F4F8),
-            child: Center(
-              child: Icon(Icons.broken_image_outlined, color: Colors.grey[400], size: 40),
-            ),
-          ),
-        ),
+        child: assetPath != null
+            ? Image.asset(
+                assetPath,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Container(
+                  color: const Color(0xFFF0F4F8),
+                  child: Center(
+                    child: Icon(
+                      Icons.broken_image_outlined,
+                      color: Colors.grey[400],
+                      size: 40,
+                    ),
+                  ),
+                ),
+              )
+            : Image.network(
+                'https://placehold.co/400x300/${color.toARGB32().toRadixString(16).substring(2)}/ffffff/png?text=${Uri.encodeComponent(label)}',
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Container(
+                  color: const Color(0xFFF0F4F8),
+                  child: Center(
+                    child: Icon(
+                      Icons.broken_image_outlined,
+                      color: Colors.grey[400],
+                      size: 40,
+                    ),
+                  ),
+                ),
+              ),
       ),
     );
   }
@@ -208,7 +312,10 @@ class MitigasiGempaPage extends StatelessWidget {
               return Column(
                 children: [
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
