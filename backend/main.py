@@ -7,9 +7,7 @@ from app.api.auth import router as auth_router
 from app.api.predict import router as predict_router
 from app.api.health import router as health_router
 from app.api.edukasi import router as edukasi_router
-from app.api.earthquake_router import router as earthquake_router
 from app.api.analysis_router import router as analysis_router
-from app.api.cluster_router import router as cluster_router
 
 
 app = FastAPI()
@@ -37,9 +35,7 @@ app.include_router(predict_router)
 app.include_router(health_router)
 app.include_router(edukasi_router, prefix="/api/edukasi", tags=["Edukasi"])
 
-app.include_router(earthquake_router)
 app.include_router(analysis_router)
-app.include_router(cluster_router)
 @app.get("/")
 def root():
     return {"message": "AMANIN Backend Running"}

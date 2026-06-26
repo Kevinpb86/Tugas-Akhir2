@@ -1,25 +1,26 @@
 from datetime import datetime
-
+from typing import List, Optional
 from pydantic import BaseModel
 
 
-class AnalysisResponse(BaseModel):
-    earthquake_id: int
+class NetworkNode(BaseModel):
+    id: int
+    event_time: datetime
+    latitude: float
+    longitude: float
+    depth: float
+    magnitude: float
+    wilayah: Optional[str]
+    dirasakan: Optional[str]
+    prediction: Optional[str]
+    probability: Optional[float]
 
-    parent_earthquake_id: int | None
 
-    n_value: float | None
+class NetworkEdge(BaseModel):
+    source: int
+    target: int
 
-    log_n: float | None
-    log_t: float | None
-    log_r: float | None
 
-    dm: float | None
-
-    prediction: str | None
-    probability: float | None
-
-    created_at: datetime
-
-    class Config:
-        from_attributes = True
+class NetworkResponse(BaseModel):
+    nodes: List[NetworkNode]
+    edges: List[NetworkEdge]
