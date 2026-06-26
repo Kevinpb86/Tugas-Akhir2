@@ -72,6 +72,7 @@ class GempaModel {
   final String potensi;
   final String dirasakan;
   final String shakemap;
+  bool isAnomali;
 
   GempaModel({
     required this.tanggal,
@@ -86,6 +87,7 @@ class GempaModel {
     required this.potensi,
     required this.dirasakan,
     required this.shakemap,
+    this.isAnomali = false,
   });
 
   factory GempaModel.fromJson(Map<String, dynamic> json) {

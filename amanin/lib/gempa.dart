@@ -12,6 +12,7 @@ import 'login.dart';
 import 'asuransi.dart';
 import 'services/bmkg_service.dart';
 import 'services/usgs_service.dart';
+import 'services/anomali_service.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'dart:convert';
@@ -184,12 +185,29 @@ class _GempaPageState extends State<GempaPage> {
     if (!isAuto && mounted) setState(() => _isLoadingRecentQuakes = true);
     try {
       List<GempaModel> quakes;
-      // 0: Terkini, 1: M >= 5, 2: Jarak Jauh, 3: Jarak Dekat
+      // 0: Terkini, 1: M >= 5, 2: Jarak Jauh, 3: Jarak Dekat, 4: Anomali
       if (_selectedFilterIndex == 0) {
         quakes = await UsgsService.fetchIndonesiaEarthquakes();
       } else if (_selectedFilterIndex == 1) {
         // BMKG fetchEarthquakeList returns M 5.0+
         quakes = await BmkgService.fetchEarthquakeList();
+      } else if (_selectedFilterIndex == 4) {
+        final anomalies = await AnomaliService.fetchAnomaliTerkini();
+        quakes = anomalies.map((a) => GempaModel(
+          tanggal: a.tanggal,
+          jam: a.jam,
+          dateTime: a.dateTime,
+          coordinates: a.coordinates,
+          lintang: a.lintang,
+          bujur: a.bujur,
+          magnitude: a.magnitude,
+          kedalaman: a.kedalaman,
+          wilayah: a.wilayah,
+          potensi: a.potensi,
+          dirasakan: a.dirasakan,
+          shakemap: a.shakemap,
+          isAnomali: true,
+        )).toList();
       } else {
         // For Jarak Jauh and Jarak Dekat, fetch all available then sort
         quakes = await UsgsService.fetchIndonesiaEarthquakes();
@@ -230,6 +248,7 @@ class _GempaPageState extends State<GempaPage> {
           _isLoadingRecentQuakes = false;
         });
       }
+      _checkAnomaliesForRecentQuakes();
     } catch (e) {
       if (mounted) {
         setState(() {
@@ -237,6 +256,26 @@ class _GempaPageState extends State<GempaPage> {
         });
         print("Error fetching recent earthquakes: $e");
       }
+    }
+  }
+  Future<void> _checkAnomaliesForRecentQuakes() async {
+    try {
+      final anomalyList = await AnomaliService.fetchAnomaliTerkini();
+      if (!mounted) return;
+
+      setState(() {
+        for (var quake in _recentQuakes) {
+          final match = anomalyList
+              .where((a) => a.tanggal == quake.tanggal && a.jam == quake.jam)
+              .firstOrNull;
+
+          if (match != null) {
+            quake.isAnomali = match.isAnomali;
+          }
+        }
+      });
+    } catch (e) {
+      print("Error fetching anomaly list for recent quakes: $e");
     }
   }
 
@@ -450,6 +489,7 @@ class _GempaPageState extends State<GempaPage> {
           _buildChip(1, 'M ≥ 5'),
           _buildChip(2, 'Jarak Jauh'),
           _buildChip(3, 'Jarak Dekat'),
+          _buildChip(4, 'Anomali'),
         ],
       ),
     );
@@ -970,12 +1010,21 @@ class _GempaPageState extends State<GempaPage> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
+        border: quake.isAnomali
+            ? Border.all(color: Colors.red.shade300, width: 1.5)
+            : null,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
+          if (quake.isAnomali)
+            BoxShadow(
+              color: Colors.red.withValues(alpha: 0.1),
+              blurRadius: 8,
+              spreadRadius: 1,
+            ),
         ],
       ),
       child: Material(
@@ -1042,6 +1091,39 @@ class _GempaPageState extends State<GempaPage> {
                           height: 1.3,
                         ),
                       ),
+                      if (quake.isAnomali) ...[
+                        const SizedBox(height: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFEBEE),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: const Color(0xFFFFCDD2)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: const [
+                              Icon(
+                                Icons.warning_amber_rounded,
+                                size: 12,
+                                color: Color(0xFFD32F2F),
+                              ),
+                              SizedBox(width: 4),
+                              Text(
+                                'Anomali Terdeteksi',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFFD32F2F),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 6),
                       Row(
                         children: [

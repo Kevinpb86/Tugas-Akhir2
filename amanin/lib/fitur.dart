@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'klasifikasi_seismik.dart';
-import 'deteksi_anomali.dart';
 
 class FiturPage extends StatelessWidget {
   const FiturPage({super.key});
@@ -37,23 +36,6 @@ class FiturPage extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                   builder: (context) => const KlasifikasiSeismikPage(),
-                ),
-              );
-            },
-          ),
-          const SizedBox(height: 16),
-          _buildFeatureCard(
-            context,
-            icon: Icons.medical_services_outlined,
-            title: 'Deteksi Anomali Gempa',
-            description:
-                'Deteksi pola anomali seismik secara otomatis sebagai indikator awal aktivitas gempa.',
-            color: const Color(0xFF66BB6A),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const DeteksiAnomaliPage(),
                 ),
               );
             },

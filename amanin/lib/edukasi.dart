@@ -746,14 +746,9 @@ class _EdukasiPageState extends State<EdukasiPage> {
 
   Widget _buildVideoCard(BuildContext context) {
     return MouseRegion(
-      cursor: SystemMouseCursors.click,
+      cursor: SystemMouseCursors.basic,
       child: GestureDetector(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const VideoEdukasiPage()),
-          );
-        },
+        onTap: null, // Disabled click
         child: Container(
           decoration: BoxDecoration(
             color: Colors.white,
