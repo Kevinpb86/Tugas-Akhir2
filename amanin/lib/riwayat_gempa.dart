@@ -38,12 +38,21 @@ class RiwayatGempaPage extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(20),
+              border: quake.isAnomali
+                  ? Border.all(color: Colors.red.shade300, width: 1.5)
+                  : null,
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.03),
                   blurRadius: 15,
                   offset: const Offset(0, 5),
                 ),
+                if (quake.isAnomali)
+                  BoxShadow(
+                    color: Colors.red.withValues(alpha: 0.1),
+                    blurRadius: 8,
+                    spreadRadius: 1,
+                  ),
               ],
             ),
             child: Material(
@@ -108,6 +117,39 @@ class RiwayatGempaPage extends StatelessWidget {
                                 height: 1.3,
                               ),
                             ),
+                            if (quake.isAnomali) ...[
+                              const SizedBox(height: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFEBEE),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(color: const Color(0xFFFFCDD2)),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: const [
+                                    Icon(
+                                      Icons.warning_amber_rounded,
+                                      size: 12,
+                                      color: Color(0xFFD32F2F),
+                                    ),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      'Anomali Terdeteksi',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFFD32F2F),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                             const SizedBox(height: 6),
                             Row(
                               children: [
