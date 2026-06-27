@@ -1,29 +1,29 @@
 import 'package:flutter/material.dart';
 import 'mitigasi_gempa.dart';
-import 'panduan_evakuasi_bahaya.dart';
+import 'panduan_evakuasi_waspada.dart';
 
-class EdukasiBahayaPage extends StatefulWidget {
+class EdukasiWaspadaPage extends StatefulWidget {
   final String cityName;
   final String locationCategory;
 
-  const EdukasiBahayaPage({
+  const EdukasiWaspadaPage({
     super.key,
     required this.cityName,
     this.locationCategory = 'Dalam Ruangan',
   });
 
   @override
-  State<EdukasiBahayaPage> createState() => _EdukasiBahayaPageState();
+  State<EdukasiWaspadaPage> createState() => _EdukasiWaspadaPageState();
 }
 
-class _EdukasiBahayaPageState extends State<EdukasiBahayaPage> {
+class _EdukasiWaspadaPageState extends State<EdukasiWaspadaPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFAF9F6), // Warm off-white
       appBar: AppBar(
         title: const Text(
-          'Panduan Bahaya Tinggi',
+          'Panduan Status Waspada',
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -32,7 +32,7 @@ class _EdukasiBahayaPageState extends State<EdukasiBahayaPage> {
           ),
         ),
         centerTitle: true,
-        backgroundColor: const Color(0xFFD32F2F), // Warning Red
+        backgroundColor: const Color(0xFFFBC02D), // Warning Yellow
         iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
       ),
@@ -45,7 +45,7 @@ class _EdukasiBahayaPageState extends State<EdukasiBahayaPage> {
             Container(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Color(0xFFD32F2F), Color(0xFFC2185B)],
+                  colors: [Color(0xFFFBC02D), Color(0xFFF9A825)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -71,7 +71,7 @@ class _EdukasiBahayaPageState extends State<EdukasiBahayaPage> {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Peringatan Kategori Tinggi'.toUpperCase(),
+                    'Peringatan Kategori Waspada'.toUpperCase(),
                     style: const TextStyle(
                       color: Colors.white70,
                       fontSize: 11,
@@ -81,7 +81,7 @@ class _EdukasiBahayaPageState extends State<EdukasiBahayaPage> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'Zona Risiko Gempa Bumi Tinggi\n(${widget.cityName})',
+                    'Zona Risiko Gempa Bumi Waspada\n(${widget.cityName})',
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: Colors.white,
@@ -92,7 +92,7 @@ class _EdukasiBahayaPageState extends State<EdukasiBahayaPage> {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Wilayah Anda teridentifikasi memiliki tingkat kerawanan gempa bumi yang tinggi. Harap pelajari instruksi keselamatan di bawah ini dan siapkan rencana evakuasi mandiri.',
+                    'Wilayah Anda teridentifikasi memiliki tingkat kerawanan gempa bumi menengah/waspada. Tetap tenang, tingkatkan kewaspadaan, dan kenali lingkungan sekitar Anda.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.9),
@@ -111,14 +111,14 @@ class _EdukasiBahayaPageState extends State<EdukasiBahayaPage> {
                 children: [
                   // Section 1: Protokol Evakuasi Cepat
                   _buildSectionTitle(
-                    'Langkah Evakuasi Utama (3S)',
+                    'Langkah Keselamatan (3S)',
                     Icons.flash_on_rounded,
-                    const Color(0xFFD32F2F),
+                    const Color(0xFFFBC02D),
                   ),
                   const SizedBox(height: 10),
                   _buildEvacuationCard(
                     '1. SIAGA (Sebelum Gempa)',
-                    'Identifikasi tempat aman di rumah Anda (kolong meja kuat, pilar utama) dan tentukan jalur tercepat menuju ruang terbuka luas.',
+                    'Kenali tempat aman di sekitar Anda (kolong meja kuat, pilar utama) dan pahami jalur evakuasi di gedung tempat Anda berada.',
                     Icons.home_work_rounded,
                     const Color(0xFF1976D2),
                     0,
@@ -126,20 +126,21 @@ class _EdukasiBahayaPageState extends State<EdukasiBahayaPage> {
                   const SizedBox(height: 10),
                   _buildEvacuationCard(
                     '2. SELAMATKAN DIRI (Saat Gempa)',
-                    'DROP, COVER, HOLD ON! Merunduklah, lindungi kepala dengan lengan/bantal, berlindung di bawah meja kokoh, dan jauhi jendela kaca.',
+                    'DROP, COVER, HOLD ON! Merunduklah, lindungi kepala dengan lengan/bantal, berlindung di bawah meja kokoh, dan jauhi kaca.',
                     Icons.security_rounded,
-                    const Color(0xFFF57C00),
+                    const Color(0xFFFBC02D),
                     1,
                   ),
                   const SizedBox(height: 10),
                   _buildEvacuationCard(
                     '3. SEGERA EVAKUASI (Setelah Gempa)',
-                    'Keluar gedung dengan tertib lewat jalur evakuasi. Jangan gunakan lift. Menujulah ke titik kumpul terbuka di luar area bangunan.',
+                    'Tunggu guncangan berhenti, lalu keluar dengan tenang. Jangan gunakan lift. Berkumpullah di titik kumpul terbuka yang aman.',
                     Icons.directions_run_rounded,
                     const Color(0xFF388E3C),
                     2,
                   ),
                   const SizedBox(height: 24),
+                  
                   // Section 3: Kontak Darurat
                   _buildSectionTitle(
                     'Panggilan Darurat Cepat',
@@ -177,14 +178,14 @@ class _EdukasiBahayaPageState extends State<EdukasiBahayaPage> {
                     height: 50,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFD32F2F),
+                        backgroundColor: const Color(0xFFFBC02D),
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
                         elevation: 2,
                         shadowColor: const Color(
-                          0xFFD32F2F,
+                          0xFFFBC02D,
                         ).withValues(alpha: 0.3),
                       ),
                       onPressed: () {
@@ -265,7 +266,7 @@ class _EdukasiBahayaPageState extends State<EdukasiBahayaPage> {
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (context) => PanduanEvakuasiBahayaPage(
+                  builder: (context) => PanduanEvakuasiWaspadaPage(
                     cityName: widget.cityName,
                     initialTabIndex: tabIndex,
                     locationCategory: widget.locationCategory,

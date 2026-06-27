@@ -36,7 +36,7 @@ class EarthquakeRepository:
     
     def get_event(self, time, latitude, longitude, magnitude):
         return (
-            self.db.query(Earthquake).where(case(Earthquake.status == "Pending"))
+            self.db.query(Earthquake).filter(Earthquake.status == "Pending").all()
         )
     
     def get_all(

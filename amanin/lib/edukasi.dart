@@ -42,7 +42,7 @@ class _EdukasiPageState extends State<EdukasiPage> {
       if (permission == LocationPermission.deniedForever) return;
 
       Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
+        desiredAccuracy: LocationAccuracy.low,
       );
 
       print(

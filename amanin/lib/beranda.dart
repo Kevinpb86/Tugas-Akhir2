@@ -9,7 +9,11 @@ import 'utils/map_utils.dart';
 import 'fullscreen_map.dart';
 import 'cuaca.dart';
 import 'edukasi_bahaya.dart';
+import 'edukasi_waspada.dart';
+import 'edukasi_aman.dart';
 import 'panduan_evakuasi_bahaya.dart';
+import 'panduan_evakuasi_waspada.dart';
+import 'panduan_evakuasi_aman.dart';
 import 'akun.dart';
 import 'fitur.dart';
 import 'login.dart';
@@ -53,7 +57,7 @@ class _BerandaPageState extends State<BerandaPage> {
   String _currentCityName = 'Memuat lokasi...';
 
   bool _isIndoor = true;
-  String _environmentType = 'Perkotaan';
+  String _environmentType = 'Pesisir Pantai';
   String _nearbyMountainName = '';
 
   bool _showHelpTour = false;
@@ -90,7 +94,7 @@ class _BerandaPageState extends State<BerandaPage> {
     showDialog(
       context: context,
       barrierDismissible: false, // User wajib memilih salah satu tombol
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
         return Dialog(
           backgroundColor: Colors.transparent,
           elevation: 0,
@@ -189,7 +193,7 @@ class _BerandaPageState extends State<BerandaPage> {
                           padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
                         onPressed: () {
-                          Navigator.of(context).pop();
+                          Navigator.of(dialogContext).pop();
                           setState(() {
                             _currentCityName =
                                 'Lokasi ditolak (Default Bojongsoang)';
@@ -234,11 +238,24 @@ class _BerandaPageState extends State<BerandaPage> {
                             ),
                             padding: const EdgeInsets.symmetric(vertical: 12),
                           ),
-                          onPressed: () {
+                          onPressed: () async {
+                            Navigator.of(dialogContext).pop();
+
+                            showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (c) => const Center(
+                                child: CircularProgressIndicator(color: Colors.white),
+                              ),
+                            );
+
+                            await _requestLocationPermission();
+
+                            if (!mounted) return;
                             Navigator.of(context).pop();
-                            _requestLocationPermission();
-                            // Tampilkan popup peringatan gempa setelah izin lokasi
-                            _showEarthquakeWarningDialog();
+
+                            // Tampilkan popup peringatan gempa setelah izin lokasi dan status lingkungan didapatkan
+                            _showEarthquakeAmanDialog();
                           },
                           child: const Text(
                             'Izinkan',
@@ -265,7 +282,7 @@ class _BerandaPageState extends State<BerandaPage> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
         return Dialog(
           backgroundColor: Colors.transparent,
           elevation: 0,
@@ -413,6 +430,65 @@ class _BerandaPageState extends State<BerandaPage> {
                 ),
                 const SizedBox(height: 12),
 
+                // Status Lingkungan
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF3F4F6),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        _isIndoor ? Icons.home_rounded : Icons.wb_sunny_rounded,
+                        color: _isIndoor ? const Color(0xFFE65100) : const Color(0xFF1B5E20),
+                        size: 18,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        _isIndoor ? 'Dalam Ruangan' : 'Luar Ruangan',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: _isIndoor ? const Color(0xFFE65100) : const Color(0xFF1B5E20),
+                        ),
+                      ),
+                      const Spacer(),
+                      Icon(
+                        _environmentType == 'Pegunungan'
+                            ? Icons.terrain_rounded
+                            : _environmentType == 'Pantai'
+                            ? Icons.beach_access_rounded
+                            : Icons.location_city_rounded,
+                        color: const Color(0xFF4B5563),
+                        size: 18,
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          _environmentType == 'Pegunungan'
+                              ? (_nearbyMountainName.isNotEmpty ? 'Dekat $_nearbyMountainName' : 'Pegunungan')
+                              : _environmentType == 'Pantai'
+                              ? 'Pesisir Pantai'
+                              : 'Perkotaan',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF4B5563),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.right,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+
                 // Status Box
                 Container(
                   padding: const EdgeInsets.symmetric(
@@ -441,7 +517,7 @@ class _BerandaPageState extends State<BerandaPage> {
                       ),
                       Spacer(),
                       Text(
-                        'Waspada',
+                        'Bahaya',
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
@@ -458,11 +534,23 @@ class _BerandaPageState extends State<BerandaPage> {
                   width: double.infinity,
                   child: ElevatedButton.icon(
                     onPressed: () {
-                      Navigator.of(context).pop();
+                      Navigator.of(dialogContext).pop();
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (context) =>
-                              EdukasiBahayaPage(cityName: _currentCityName),
+                          builder: (context) {
+                            String locCat = 'Dalam Ruangan';
+                            if (_environmentType.contains('Pantai') || _environmentType.contains('Pesisir')) {
+                              locCat = 'Pesisir Pantai';
+                            } else if (_environmentType.contains('Gunung') || _environmentType.contains('Pegunungan')) {
+                              locCat = 'Pegunungan';
+                            } else {
+                              locCat = _isIndoor ? 'Dalam Ruangan' : 'Luar Ruangan';
+                            }
+                            return EdukasiBahayaPage(
+                              cityName: _currentCityName,
+                              locationCategory: locCat,
+                            );
+                          },
                         ),
                       );
                     },
@@ -492,7 +580,339 @@ class _BerandaPageState extends State<BerandaPage> {
                   width: double.infinity,
                   child: OutlinedButton(
                     onPressed: () {
-                      Navigator.of(context).pop();
+                      Navigator.of(dialogContext).pop();
+                    },
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFF1E88E5),
+                      side: const BorderSide(
+                        color: Color(0xFF1E88E5),
+                        width: 1.5,
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'Tutup',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showEarthquakeWaspadaDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 28),
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 340),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 24,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Icon Gempabumi (lingkaran merah dengan ikon bangunan + gelombang getaran)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const VibrationWaveWidget(isLeft: true),
+                    const SizedBox(width: 10),
+                    // Outer light pink circle
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFFFF8E1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Container(
+                        width: 56,
+                        height: 56,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFFBC02D),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.domain_disabled_rounded,
+                          color: Colors.white,
+                          size: 28,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    const VibrationWaveWidget(isLeft: false),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // Judul "Gempabumi"
+                const Text(
+                  'Gempabumi',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1F2937),
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                const SizedBox(height: 10),
+
+                // Badge "Kelas Bahaya Sedang"
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF8E1),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.warning_rounded,
+                        color: Color(0xFFFBC02D),
+                        size: 14,
+                      ),
+                      SizedBox(width: 6),
+                      Text(
+                        'Kelas Bahaya Sedang',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFFFBC02D),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Deskripsi
+                const Text(
+                  'Wilayahmu memiliki potensi bahaya gempa bumi yang perlu diwaspadai.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF4B5563),
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 14),
+
+                // Info Box (Pink background)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF8E1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.only(top: 2),
+                        child: Icon(
+                          Icons.info_outline_rounded,
+                          color: Color(0xFFFBC02D),
+                          size: 16,
+                        ),
+                      ),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Rekomendasi edukasi disesuaikan dengan kondisi bahaya gempa di wilayahmu.',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF1F2937),
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Status Lingkungan
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF3F4F6),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        _isIndoor ? Icons.home_rounded : Icons.wb_sunny_rounded,
+                        color: _isIndoor ? const Color(0xFFE65100) : const Color(0xFF1B5E20),
+                        size: 18,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        _isIndoor ? 'Dalam Ruangan' : 'Luar Ruangan',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: _isIndoor ? const Color(0xFFE65100) : const Color(0xFF1B5E20),
+                        ),
+                      ),
+                      const Spacer(),
+                      Icon(
+                        _environmentType == 'Pegunungan'
+                            ? Icons.terrain_rounded
+                            : _environmentType == 'Pantai'
+                            ? Icons.beach_access_rounded
+                            : Icons.location_city_rounded,
+                        color: const Color(0xFF4B5563),
+                        size: 18,
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          _environmentType == 'Pegunungan'
+                              ? (_nearbyMountainName.isNotEmpty ? 'Dekat $_nearbyMountainName' : 'Pegunungan')
+                              : _environmentType == 'Pantai'
+                              ? 'Pesisir Pantai'
+                              : 'Perkotaan',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF4B5563),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.right,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Status Box
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFE5E7EB)),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(
+                        Icons.monitor_heart,
+                        color: Color(0xFFFBC02D),
+                        size: 18,
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        'Status:',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Color(0xFF9CA3AF),
+                        ),
+                      ),
+                      Spacer(),
+                      Text(
+                        'Waspada',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFFFBC02D),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Tombol "Lihat Edukasi" (Solid Blue)
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.of(dialogContext).pop();
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) {
+                            String locCat = 'Dalam Ruangan';
+                            if (_environmentType.contains('Pantai') || _environmentType.contains('Pesisir')) {
+                              locCat = 'Pesisir Pantai';
+                            } else if (_environmentType.contains('Gunung') || _environmentType.contains('Pegunungan')) {
+                              locCat = 'Pegunungan';
+                            } else {
+                              locCat = _isIndoor ? 'Dalam Ruangan' : 'Luar Ruangan';
+                            }
+                            return EdukasiWaspadaPage(
+                              cityName: _currentCityName,
+                              locationCategory: locCat,
+                            );
+                          },
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.menu_book_rounded, size: 18),
+                    label: const Text(
+                      'Lihat Edukasi',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF1E88E5),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                // Tombol "Tutup" (Outline Blue)
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () {
+                      Navigator.of(dialogContext).pop();
                     },
                     style: OutlinedButton.styleFrom(
                       foregroundColor: const Color(0xFF1E88E5),
@@ -536,8 +956,21 @@ class _BerandaPageState extends State<BerandaPage> {
       if (permission == LocationPermission.deniedForever) return;
 
       Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
+        desiredAccuracy: LocationAccuracy.low,
+      ).timeout(const Duration(seconds: 3), onTimeout: () {
+        return Position(
+          latitude: -6.9559, // default Bojongsoang
+          longitude: 107.6499,
+          timestamp: DateTime.now(),
+          accuracy: 10000.0,
+          altitude: 0.0,
+          altitudeAccuracy: 0.0,
+          heading: 0.0,
+          headingAccuracy: 0.0,
+          speed: 0.0,
+          speedAccuracy: 0.0,
+        );
+      });
 
       print(
         "[Beranda] GPS coordinates: lat=${position.latitude}, lon=${position.longitude}, accuracy=${position.accuracy}m",
@@ -549,7 +982,7 @@ class _BerandaPageState extends State<BerandaPage> {
         List<Placemark> placemarks = await placemarkFromCoordinates(
           position.latitude,
           position.longitude,
-        );
+        ).timeout(const Duration(seconds: 2));
         if (placemarks.isNotEmpty) {
           Placemark place = placemarks[0];
           print(
@@ -582,7 +1015,7 @@ class _BerandaPageState extends State<BerandaPage> {
           final response = await http.get(
             url,
             headers: {'User-Agent': 'AmaninApp/1.0'},
-          );
+          ).timeout(const Duration(seconds: 3));
           if (response.statusCode == 200) {
             final data = json.decode(response.body);
             print("[Beranda] Nominatim full address: ${data['address']}");
@@ -635,8 +1068,8 @@ class _BerandaPageState extends State<BerandaPage> {
 
     if (mounted) {
       setState(() {
-        _isIndoor = result.isIndoor;
-        _environmentType = result.environmentType;
+        _isIndoor = true; // FORCE INDOOR FOR TESTING
+        _environmentType = 'Perkotaan'; // FORCE PERKOTAAN FOR TESTING
         _nearbyMountainName = result.nearbyMountainName;
       });
     }
@@ -1324,6 +1757,1155 @@ class _BerandaPageState extends State<BerandaPage> {
   }
 
   // --- COMPACT EARTHQUAKE WARNING BANNER ---
+  void _showEarthquakeAmanDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 28),
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 340),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 24,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Icon Gempabumi (lingkaran merah dengan ikon bangunan + gelombang getaran)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const VibrationWaveWidget(isLeft: true),
+                    const SizedBox(width: 10),
+                    // Outer light pink circle
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFE8F5E9),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Container(
+                        width: 56,
+                        height: 56,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF4CAF50),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.domain_disabled_rounded,
+                          color: Colors.white,
+                          size: 28,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    const VibrationWaveWidget(isLeft: false),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // Judul "Gempabumi"
+                const Text(
+                  'Gempabumi',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1F2937),
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                const SizedBox(height: 10),
+
+                // Badge "Kelas Bahaya Rendah"
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE8F5E9),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.warning_rounded,
+                        color: Color(0xFF4CAF50),
+                        size: 14,
+                      ),
+                      SizedBox(width: 6),
+                      Text(
+                        'Kelas Bahaya Rendah',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF4CAF50),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Deskripsi
+                const Text(
+                  'Wilayahmu saat ini dalam kondisi aman dari potensi bahaya gempa bumi yang signifikan.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF4B5563),
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 14),
+
+                // Info Box (Pink background)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE8F5E9),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.only(top: 2),
+                        child: Icon(
+                          Icons.info_outline_rounded,
+                          color: Color(0xFF4CAF50),
+                          size: 16,
+                        ),
+                      ),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Rekomendasi edukasi disesuaikan dengan kondisi bahaya gempa di wilayahmu.',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF1F2937),
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Status Lingkungan
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF3F4F6),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        _isIndoor ? Icons.home_rounded : Icons.wb_sunny_rounded,
+                        color: _isIndoor ? const Color(0xFFE65100) : const Color(0xFF1B5E20),
+                        size: 18,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        _isIndoor ? 'Dalam Ruangan' : 'Luar Ruangan',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: _isIndoor ? const Color(0xFFE65100) : const Color(0xFF1B5E20),
+                        ),
+                      ),
+                      const Spacer(),
+                      Icon(
+                        _environmentType == 'Pegunungan'
+                            ? Icons.terrain_rounded
+                            : _environmentType == 'Pantai'
+                            ? Icons.beach_access_rounded
+                            : Icons.location_city_rounded,
+                        color: const Color(0xFF4B5563),
+                        size: 18,
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          _environmentType == 'Pegunungan'
+                              ? (_nearbyMountainName.isNotEmpty ? 'Dekat $_nearbyMountainName' : 'Pegunungan')
+                              : _environmentType == 'Pantai'
+                              ? 'Pesisir Pantai'
+                              : 'Perkotaan',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF4B5563),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.right,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Status Box
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFE5E7EB)),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(
+                        Icons.monitor_heart,
+                        color: Color(0xFF4CAF50),
+                        size: 18,
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        'Status:',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Color(0xFF9CA3AF),
+                        ),
+                      ),
+                      Spacer(),
+                      Text(
+                        'Aman',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF4CAF50),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Tombol "Lihat Edukasi" (Solid Blue)
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.of(dialogContext).pop();
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) {
+                            String locCat = 'Dalam Ruangan';
+                            if (_environmentType.contains('Pantai') || _environmentType.contains('Pesisir')) {
+                              locCat = 'Pesisir Pantai';
+                            } else if (_environmentType.contains('Gunung') || _environmentType.contains('Pegunungan')) {
+                              locCat = 'Pegunungan';
+                            } else {
+                              locCat = _isIndoor ? 'Dalam Ruangan' : 'Luar Ruangan';
+                            }
+                            return EdukasiAmanPage(
+                              cityName: _currentCityName,
+                              locationCategory: locCat,
+                            );
+                          },
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.menu_book_rounded, size: 18),
+                    label: const Text(
+                      'Lihat Edukasi',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF1E88E5),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                // Tombol "Tutup" (Outline Blue)
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () {
+                      Navigator.of(dialogContext).pop();
+                    },
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFF1E88E5),
+                      side: const BorderSide(
+                        color: Color(0xFF1E88E5),
+                        width: 1.5,
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'Tutup',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  /*
+  Future<void> _requestLocationPermission() async {
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) return;
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) return;
+      }
+
+      if (permission == LocationPermission.deniedForever) return;
+
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.low,
+      ).timeout(const Duration(seconds: 3), onTimeout: () {
+        return Position(
+          latitude: -6.9559, // default Bojongsoang
+          longitude: 107.6499,
+          timestamp: DateTime.now(),
+          accuracy: 10000.0,
+          altitude: 0.0,
+          altitudeAccuracy: 0.0,
+          heading: 0.0,
+          headingAccuracy: 0.0,
+          speed: 0.0,
+          speedAccuracy: 0.0,
+        );
+      });
+
+      print(
+        "[Beranda] GPS coordinates: lat=${position.latitude}, lon=${position.longitude}, accuracy=${position.accuracy}m",
+      );
+
+      String cityName = 'Jakarta Pusat';
+      String fullAddr = '';
+      try {
+        List<Placemark> placemarks = await placemarkFromCoordinates(
+          position.latitude,
+          position.longitude,
+        ).timeout(const Duration(seconds: 2));
+        if (placemarks.isNotEmpty) {
+          Placemark place = placemarks[0];
+          print(
+            "[Beranda] Geocoding result: subLocality=${place.subLocality}, locality=${place.locality}, subAdmin=${place.subAdministrativeArea}, admin=${place.administrativeArea}",
+          );
+          cityName =
+              place.locality ??
+              place.subLocality ??
+              place.subAdministrativeArea ??
+              'Jakarta Pusat';
+          cityName = cityName
+              .replaceAll('Kabupaten ', '')
+              .replaceAll('Kota ', '')
+              .replaceAll(' City', '')
+              .replaceAll('Kecamatan ', '')
+              .replaceAll('Kelurahan ', '')
+              .replaceAll('Desa ', '');
+          fullAddr =
+              '${place.name} ${place.street} ${place.subLocality} ${place.locality} ${place.subAdministrativeArea} ${place.administrativeArea}';
+        }
+      } catch (e) {
+        print(
+          "[Beranda] Geocoding package error: $e, falling back to Nominatim",
+        );
+        // Fallback for Web using OpenStreetMap Nominatim API
+        try {
+          final url = Uri.parse(
+            'https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.latitude}&lon=${position.longitude}&zoom=16&addressdetails=1',
+          );
+          final response = await http.get(
+            url,
+            headers: {'User-Agent': 'AmaninApp/1.0'},
+          ).timeout(const Duration(seconds: 3));
+          if (response.statusCode == 200) {
+            final data = json.decode(response.body);
+            print("[Beranda] Nominatim full address: ${data['address']}");
+            fullAddr = data['display_name'] ?? '';
+            if (data['address'] != null) {
+              final addr = data['address'];
+              cityName =
+                  addr['town'] ??
+                  addr['subdistrict'] ??
+                  addr['suburb'] ??
+                  addr['city_district'] ??
+                  addr['city'] ??
+                  addr['county'] ??
+                  addr['state'] ??
+                  'Jakarta Pusat';
+              cityName = cityName
+                  .replaceAll('Kabupaten ', '')
+                  .replaceAll('Kota ', '')
+                  .replaceAll(' City', '')
+                  .replaceAll('Kecamatan ', '')
+                  .replaceAll('Kelurahan ', '')
+                  .replaceAll('Desa ', '');
+              print("[Beranda] Final city name: $cityName");
+            }
+          }
+        } catch (fallbackError) {
+          print("Nominatim fallback error: $fallbackError");
+        }
+      }
+
+      if (mounted) {
+        setState(() {
+          _currentCityName = cityName;
+        });
+        userCityNameNotifier.value = cityName;
+        _determineUserEnvironment(position, fullAddr);
+      }
+    } catch (e) {
+      print("Location permission error: $e");
+    }
+  }
+
+  void _determineUserEnvironment(Position position, String fullAddress) {
+    final result = EnvironmentDetector.determineEnvironment(
+      position.latitude,
+      position.longitude,
+      position.accuracy,
+      fullAddress,
+    );
+
+    if (mounted) {
+      setState(() {
+        _isIndoor = false; // FORCE OUTDOOR FOR TESTING
+        _environmentType = 'Pegunungan'; // FORCE GUNUNG FOR TESTING
+        _nearbyMountainName = result.nearbyMountainName;
+      });
+    }
+  }
+
+  Future<void> _fetchEarthquakeData() async {
+    try {
+      final quake = await BmkgService.fetchLatestEarthquake();
+
+      // Hitung parameter untuk Anomali
+      double mag = double.tryParse(quake.magnitude) ?? 0.0;
+      double depth =
+          double.tryParse(quake.kedalaman.replaceAll(RegExp(r'[^0-9.]'), '')) ??
+          0.0;
+      double lat = 0.0;
+      double lon = 0.0;
+
+      if (quake.coordinates.isNotEmpty) {
+        final coords = quake.coordinates.split(',');
+        if (coords.length == 2) {
+          lat = double.tryParse(coords[0]) ?? 0.0;
+          lon = double.tryParse(coords[1]) ?? 0.0;
+        }
+      }
+
+      // Jalankan pengecekan AI secara diam-diam
+      final bool isAnomali = await AnomaliService.checkSingleAnomali(
+        magnitude: mag,
+        kedalaman: depth,
+        lintang: lat,
+        bujur: lon,
+      );
+
+      if (mounted) {
+        setState(() {
+          _latestQuake = quake;
+          _isLatestQuakeAnomali = isAnomali;
+          if (lat != 0.0 && lon != 0.0) {
+            _earthquakeLocation = LatLng(lat, lon);
+          }
+          _isLoadingQuake = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingQuake = false;
+        });
+        print("Error fetching earthquake: $e");
+      }
+    }
+  }
+
+  Future<void> _fetchWeatherData() async {
+    try {
+      final cuaca = await BmkgService.fetchCurrentWeather(
+        '32.04.08.2002',
+      ); // Bojongsoang
+      if (mounted) {
+        setState(() {
+          _latestCuaca = cuaca;
+          _isLoadingCuaca = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingCuaca = false;
+        });
+        print("Error fetching weather: $e");
+      }
+    }
+  }
+
+  Future<void> _fetchNewsData() async {
+    try {
+      final news = await NewsService.fetchNews();
+      if (mounted) {
+        setState(() {
+          _newsList = news;
+          _isLoadingNews = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingNews = false;
+        });
+        print("Error fetching news: $e");
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F5F5),
+      body: Stack(
+        children: [
+          SafeArea(
+            bottom: false,
+            child: SingleChildScrollView(
+              controller: _scrollController,
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header Section
+                    _buildHeader(),
+                    const SizedBox(height: 24),
+
+                    // Compact Earthquake Warning Banner
+                    _buildEarthquakeWarningBanner(),
+                    const SizedBox(height: 16),
+
+                    // Earthquake Status Section
+                    _buildEarthquakeStatus(),
+                    const SizedBox(height: 16),
+
+                    // Merged Earthquake Card
+                    _buildEarthquakeCard(),
+                    const SizedBox(height: 20),
+
+                    // Environment Status Card
+                    _buildEnvironmentStatusCard(),
+                    const SizedBox(height: 24),
+
+                    // Survival Kit Card
+                    _buildSurvivalKitSection(),
+                    const SizedBox(height: 24),
+
+                    // Weather Card
+                    _buildWeatherCard(),
+                    const SizedBox(height: 16),
+
+                    // Early Warning Card
+                    _buildEarlyWarningCard(),
+                    const SizedBox(height: 24),
+
+                    // News Section
+                    _buildNewsSection(),
+                    const SizedBox(height: 24),
+
+                    // Asuransi Section
+                    _buildInsuranceSection(),
+                    const SizedBox(height: 24),
+
+                    // Fitur Section (Di Bawah)
+                    _buildFiturTambahanSection(),
+                    const SizedBox(
+                      height: 140,
+                    ), // padding for floating bottom nav
+                  ],
+                ),
+              ),
+            ),
+          ),
+          if (_showHelpTour)
+            AnimatedBuilder(
+              animation: _scrollController,
+              builder: (context, child) {
+                final chipsRect = _getWidgetRect(_chipsKey);
+                final mapCardRect = _getWidgetRect(_mapCardKey);
+                final survivalKitRect = _getWidgetRect(_survivalKitKey);
+                final weatherRect = _getWidgetRect(_weatherKey);
+                final earlyWarningRect = _getWidgetRect(_earlyWarningKey);
+                final newsRect = _getWidgetRect(_newsKey);
+                final insuranceRect = _getWidgetRect(_insuranceKey);
+                final bottomNavRect = widget.bottomNavKey != null
+                    ? _getWidgetRect(widget.bottomNavKey!)
+                    : null;
+
+                return HelpTourOverlay(
+                  step: _helpTourStep,
+                  chipsRect: chipsRect,
+                  mapCardRect: mapCardRect,
+                  survivalKitRect: survivalKitRect,
+                  weatherRect: weatherRect,
+                  earlyWarningRect: earlyWarningRect,
+                  newsRect: newsRect,
+                  insuranceRect: insuranceRect,
+                  bottomNavRect: bottomNavRect,
+                  onNext: () {
+                    if (_helpTourStep < 8) {
+                      setState(() {
+                        _helpTourStep++;
+                      });
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (_helpTourStep == 1) {
+                          _scrollToKey(_chipsKey);
+                        } else if (_helpTourStep == 2) {
+                          _scrollToKey(_mapCardKey);
+                        } else if (_helpTourStep == 3) {
+                          _scrollToKey(_survivalKitKey);
+                        } else if (_helpTourStep == 4) {
+                          _scrollToKey(_weatherKey);
+                        } else if (_helpTourStep == 5) {
+                          _scrollToKey(_earlyWarningKey);
+                        } else if (_helpTourStep == 6) {
+                          _scrollToKey(_newsKey);
+                        } else if (_helpTourStep == 7) {
+                          _scrollToKey(_insuranceKey);
+                        }
+                      });
+                    } else {
+                      setState(() {
+                        _showHelpTour = false;
+                      });
+                    }
+                  },
+                  onBack: () {
+                    if (_helpTourStep > 1) {
+                      setState(() {
+                        _helpTourStep--;
+                      });
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (_helpTourStep == 1) {
+                          _scrollToKey(_chipsKey);
+                        } else if (_helpTourStep == 2) {
+                          _scrollToKey(_mapCardKey);
+                        } else if (_helpTourStep == 3) {
+                          _scrollToKey(_survivalKitKey);
+                        } else if (_helpTourStep == 4) {
+                          _scrollToKey(_weatherKey);
+                        } else if (_helpTourStep == 5) {
+                          _scrollToKey(_earlyWarningKey);
+                        } else if (_helpTourStep == 6) {
+                          _scrollToKey(_newsKey);
+                        } else if (_helpTourStep == 7) {
+                          _scrollToKey(_insuranceKey);
+                        }
+                      });
+                    }
+                  },
+                  onSkip: () {
+                    setState(() {
+                      _showHelpTour = false;
+                    });
+                  },
+                );
+              },
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildMenuGrid() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        _buildMenuItem(
+          Icons.report_problem_outlined,
+          Localization.of(context).get('home_menu_report'),
+          const Color(0xFFFFEBEE),
+          const Color(0xFFEF5350),
+        ),
+        _buildMenuItem(
+          Icons.volunteer_activism_outlined,
+          Localization.of(context).get('home_menu_donate'),
+          const Color(0xFFE8F5E9),
+          const Color(0xFF66BB6A),
+        ),
+        _buildMenuItem(
+          Icons.check_circle_outline,
+          Localization.of(context).get('home_menu_safe'),
+          const Color(0xFFE3F2FD),
+          const Color(0xFF42A5F5),
+        ),
+        _buildMenuItem(
+          Icons.map_outlined,
+          Localization.of(context).get('home_menu_map'),
+          const Color(0xFFFFF3E0),
+          const Color(0xFFFFCA28),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMenuItem(
+    IconData icon,
+    String label,
+    Color bgColor,
+    Color iconColor,
+  ) {
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const FiturPage()),
+        );
+      },
+      borderRadius: BorderRadius.circular(20),
+      child: Column(
+        children: [
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: bgColor,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Icon(icon, color: iconColor, size: 28),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF424242),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFiturTambahanSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Fitur Lainnya',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1A1A1A),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const FiturPage()),
+                );
+              },
+              child: const Text(
+                'Lihat Semua',
+                style: TextStyle(
+                  color: Color(0xFF00BCD4),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const FiturPage()),
+            );
+          },
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 20,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE3F2FD),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.dashboard_customize_outlined,
+                    color: Color(0xFF2196F3),
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      Text(
+                        'Jelajahi Semua Fitur',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1A1A1A),
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'Lihat Peta Evakuasi, Panduan P3K, dan fitur darurat lainnya.',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF757575),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.arrow_forward_ios,
+                  size: 16,
+                  color: Color(0xFF9E9E9E),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Helper method for News Section (needed to be moved/created if not existing in view, but assuming it exists or needs replacement)
+  // Since the original view didn't show _buildNewsSection content in detail, I will target the known functions above first.
+  // Wait, I need to check if _buildNewsSection is available in the file.
+  Widget _buildHeader() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  Localization.of(context).get('home_header_title'),
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1A1A1A),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE0F7FA), // Light cyan
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.location_on,
+                        color: Color(0xFF00BCD4),
+                        size: 14,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        _currentCityName,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: Color(0xFF00BCD4),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                // Help Icon
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: InkWell(
+                    onTap: () {
+                      _startHelpTour();
+                    },
+                    borderRadius: BorderRadius.circular(12),
+                    child: const Center(
+                      child: Icon(
+                        Icons.help_outline_rounded,
+                        color: Color(0xFF1A1A1A),
+                        size: 24,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                // Notification Icon
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Stack(
+                    children: [
+                      const Center(
+                        child: Icon(
+                          Icons.notifications_outlined,
+                          color: Color(0xFF1A1A1A),
+                          size: 24,
+                        ),
+                      ),
+                      Positioned(
+                        top: 10,
+                        right: 10,
+                        child: Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFFF5252),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                // Profile Icon or Login Button
+                ValueListenableBuilder<bool>(
+                  valueListenable: isLoggedInNotifier,
+                  builder: (context, isLoggedIn, _) {
+                    return isLoggedIn
+                        ? Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.05),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: InkWell(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const AkunPage(),
+                                  ),
+                                );
+                              },
+                              borderRadius: BorderRadius.circular(12),
+                              child: const Center(
+                                child: Icon(
+                                  Icons.person_outline,
+                                  color: Color(0xFF1A1A1A),
+                                  size: 24,
+                                ),
+                              ),
+                            ),
+                          )
+                        : InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const LoginPage(),
+                                ),
+                              );
+                            },
+                            borderRadius: BorderRadius.circular(12),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF00BCD4),
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(
+                                      0xFF00BCD4,
+                                    ).withValues(alpha: 0.3),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: const Center(
+                                child: Text(
+                                  'Masuk',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEnvironmentStatusCard() {
+    return EnvironmentStatusCard(
+      isIndoor: _isIndoor,
+      environmentType: _environmentType,
+      nearbyMountainName: _nearbyMountainName,
+      onIndoorToggle: () {
+        setState(() {
+          _isIndoor = !_isIndoor;
+        });
+      },
+      chipsKey: _chipsKey,
+    );
+  }
+
+  void _startHelpTour() {
+    setState(() {
+      _showHelpTour = true;
+      _helpTourStep = 1;
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToKey(_chipsKey);
+    });
+  }
+
+  void _scrollToKey(GlobalKey key) {
+    final context = key.currentContext;
+    if (context != null) {
+      Scrollable.ensureVisible(
+        context,
+        duration: const Duration(milliseconds: 500),
+        alignment: 0.5,
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  Rect? _getWidgetRect(GlobalKey key) {
+    try {
+      final RenderBox? renderBox =
+          key.currentContext?.findRenderObject() as RenderBox?;
+      if (renderBox != null) {
+        final offset = renderBox.localToGlobal(Offset.zero);
+        return offset & renderBox.size;
+      }
+    } catch (e) {
+      debugPrint("Error getting widget rect: $e");
+    }
+    return null;
+  }
+  */
+
+  // --- COMPACT EARTHQUAKE WARNING BANNER ---
   Widget _buildEarthquakeWarningBanner() {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
@@ -1331,8 +2913,20 @@ class _BerandaPageState extends State<BerandaPage> {
         onTap: () {
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (context) =>
-                  EdukasiBahayaPage(cityName: _currentCityName),
+              builder: (context) {
+                String locCat = 'Dalam Ruangan';
+                if (_environmentType.contains('Pantai') || _environmentType.contains('Pesisir')) {
+                  locCat = 'Pesisir Pantai';
+                } else if (_environmentType.contains('Gunung') || _environmentType.contains('Pegunungan')) {
+                  locCat = 'Pegunungan';
+                } else {
+                  locCat = _isIndoor ? 'Dalam Ruangan' : 'Luar Ruangan';
+                }
+                return EdukasiBahayaPage(
+                  cityName: _currentCityName,
+                  locationCategory: locCat,
+                );
+              },
             ),
           );
         },
