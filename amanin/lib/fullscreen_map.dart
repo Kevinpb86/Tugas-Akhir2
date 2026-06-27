@@ -114,7 +114,7 @@ class _FullscreenMapPageState extends State<FullscreenMapPage> {
 
       // Get current position
       Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
+        desiredAccuracy: LocationAccuracy.low,
       );
 
       print(
