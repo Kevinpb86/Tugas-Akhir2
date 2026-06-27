@@ -14,7 +14,7 @@ class NNDService:
         self.fractal_dimension = fractal_dimension
         self.w = w
 
-    def compute(self, earthquake: Earthquake):
+    def compute(self, earthquake: Earthquake, mc: float):
         """
         Identify nearest neighbor of a given event.
 
@@ -41,9 +41,10 @@ class NNDService:
         neighbors = (
             self.db.query(Earthquake)
             .filter(
-                Earthquake.event_time < earthquake.event_time
+                Earthquake.id != earthquake.id,
+                Earthquake.time < earthquake.time,
+                Earthquake.magnitude >= mc,
             )
-            .order_by(Earthquake.event_time.asc())
             .all()
         )
 
@@ -61,10 +62,8 @@ class NNDService:
 
             # -- rescaled time
             t_plus = (
-                earthquake.event_time - parent.event_time
-            ).total_seconds() / 86400.0
-
-            t_plus = t_plus * np.power(
+                earthquake.time - parent.time
+            ) * np.power(
                 10,
                 -0.5 * self.w * parent.magnitude
             )
@@ -103,12 +102,12 @@ class NNDService:
                 best_r = r_plus
                 best_dm = dm_plus
 
-            if best_r == 0:
-                print(
-                    f"Zero distance detected: "
-                    f"child={earthquake.id}, "
-                    f"parent={best_parent.id}"
-                )
+        if best_r == 0:
+            print(
+                f"Zero distance detected: "
+                f"child={earthquake.id}, "
+                f"parent={best_parent.id}"
+            )
 
         EPS = 1e-12
 
