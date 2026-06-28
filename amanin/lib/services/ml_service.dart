@@ -56,7 +56,10 @@ class MlService {
 
   static Future<bool> checkHealth() async {
     try {
-      final response = await http.get(Uri.parse('$_baseUrl/health'));
+      final response = await http.get(
+        Uri.parse('$_baseUrl/health'),
+        headers: {'Bypass-Tunnel-Reminder': 'true'},
+      );
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         return data['status'] == 'ok' && data['model_loaded'] == true;
@@ -76,7 +79,10 @@ class MlService {
     try {
       final response = await http.post(
         Uri.parse('$_baseUrl/predict'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Bypass-Tunnel-Reminder': 'true',
+        },
         body: json.encode({
           'magnitude': magnitude,
           'depth': depth,
@@ -115,7 +121,10 @@ class MlService {
     try {
       final response = await http.post(
         Uri.parse('$_baseUrl/predict-anomali'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Bypass-Tunnel-Reminder': 'true',
+        },
         body: json.encode({
           'latitude': latitude,
           'longitude': longitude,

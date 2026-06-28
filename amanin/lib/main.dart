@@ -9,13 +9,17 @@ import 'utils/localization.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   if (kIsWeb) {
-    // Inisialisasi Facebook JS SDK khusus untuk Web
-    await FacebookAuth.i.webAndDesktopInitialize(
-      appId: "2085866942301238",
-      cookie: true,
-      xfbml: true,
-      version: "v18.0",
-    );
+    try {
+      // Inisialisasi Facebook JS SDK khusus untuk Web
+      await FacebookAuth.i.webAndDesktopInitialize(
+        appId: "2085866942301238",
+        cookie: true,
+        xfbml: true,
+        version: "v18.0",
+      );
+    } catch (e) {
+      print("Facebook SDK Init Error: $e");
+    }
   }
   runApp(const MyApp());
 }
