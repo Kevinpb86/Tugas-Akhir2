@@ -30,7 +30,8 @@ async def predict_risk(data: EarthquakeData):
             detail="Harus menyertakan koordinat (latitude & longitude) atau nama daerah (location_name)."
         )
         
-    validate_study_area(lat, lon, data.location_name)
+    # Bypassed so we can test real-time BMKG data anywhere:
+    # validate_study_area(lat, lon, data.location_name)
     
     try:
         features = np.array([[data.magnitude, data.depth, lat, lon]])
@@ -151,7 +152,6 @@ async def get_anomali_terkini():
     hasil_list = []
     for g in gempa_list:
         try:
-            # Ekstrak data dari format BMKG
             mag = float(g.get("Magnitude", "0"))
             
             # Kedalaman biasanya "10 km", ambil angkanya saja

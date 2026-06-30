@@ -18,6 +18,7 @@ import 'package:geocoding/geocoding.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:share_plus/share_plus.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class GempaPage extends StatefulWidget {
   const GempaPage({super.key});
@@ -29,8 +30,6 @@ class GempaPage extends StatefulWidget {
 class _GempaPageState extends State<GempaPage> {
   String _currentCityName = 'Memuat lokasi...';
   Position? _userPosition;
-  int _selectedFilterIndex =
-      0; // 0: Terkini, 1: M >= 5, 2: Jarak Jauh, 3: Jarak Dekat
   GempaModel? _latestQuake;
   List<GempaModel> _recentQuakes = [];
   bool _isLoadingQuake = true;
@@ -56,6 +55,9 @@ class _GempaPageState extends State<GempaPage> {
   }
 
   Future<void> _requestLocationPermission() async {
+    String cityName = 'Jakarta Pusat';
+    Position? position;
+
     try {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) return;
@@ -68,20 +70,25 @@ class _GempaPageState extends State<GempaPage> {
 
       if (permission == LocationPermission.deniedForever) return;
 
-      Position position = await Geolocator.getCurrentPosition(
+      // Try to get last known position first (instant, skipped on web)
+      if (!kIsWeb) {
+        position = await Geolocator.getLastKnownPosition();
+      }
+      
+      // If null, get current position with a timeout (e.g. 3 seconds)
+      position ??= await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.low,
-      );
+      ).timeout(const Duration(seconds: 3));
 
       print(
         "[Gempa] GPS coordinates: lat=${position.latitude}, lon=${position.longitude}, accuracy=${position.accuracy}m",
       );
 
-      String cityName = 'Jakarta Pusat';
       try {
         List<Placemark> placemarks = await placemarkFromCoordinates(
           position.latitude,
           position.longitude,
-        );
+        ).timeout(const Duration(seconds: 2));
         if (placemarks.isNotEmpty) {
           Placemark place = placemarks[0];
           print(
@@ -109,7 +116,7 @@ class _GempaPageState extends State<GempaPage> {
           final response = await http.get(
             url,
             headers: {'User-Agent': 'AmaninApp/1.0'},
-          );
+          ).timeout(const Duration(seconds: 3));
           if (response.statusCode == 200) {
             final data = json.decode(response.body);
             print("[Gempa] Nominatim full address: ${data['address']}");
@@ -138,15 +145,17 @@ class _GempaPageState extends State<GempaPage> {
           print("Nominatim fallback error: $fallbackError");
         }
       }
-
+    } catch (e) {
+      print("Location permission error: $e");
+    } finally {
       if (mounted) {
         setState(() {
           _currentCityName = cityName;
-          _userPosition = position;
+          if (position != null) {
+            _userPosition = position;
+          }
         });
       }
-    } catch (e) {
-      print("Location permission error: $e");
     }
   }
 
@@ -184,71 +193,14 @@ class _GempaPageState extends State<GempaPage> {
   Future<void> _fetchRecentEarthquakeData({bool isAuto = false}) async {
     if (!isAuto && mounted) setState(() => _isLoadingRecentQuakes = true);
     try {
-      List<GempaModel> quakes;
-      // 0: Terkini, 1: M >= 5, 2: Jarak Jauh, 3: Jarak Dekat, 4: Anomali
-      if (_selectedFilterIndex == 0) {
-        quakes = await UsgsService.fetchIndonesiaEarthquakes();
-      } else if (_selectedFilterIndex == 1) {
-        // BMKG fetchEarthquakeList returns M 5.0+
-        quakes = await BmkgService.fetchEarthquakeList();
-      } else if (_selectedFilterIndex == 4) {
-        final anomalies = await AnomaliService.fetchAnomaliTerkini();
-        quakes = anomalies.map((a) => GempaModel(
-          tanggal: a.tanggal,
-          jam: a.jam,
-          dateTime: a.dateTime,
-          coordinates: a.coordinates,
-          lintang: a.lintang,
-          bujur: a.bujur,
-          magnitude: a.magnitude,
-          kedalaman: a.kedalaman,
-          wilayah: a.wilayah,
-          potensi: a.potensi,
-          dirasakan: a.dirasakan,
-          shakemap: a.shakemap,
-          isAnomali: true,
-        )).toList();
-      } else {
-        // For Jarak Jauh and Jarak Dekat, fetch all available then sort
-        quakes = await UsgsService.fetchIndonesiaEarthquakes();
-        if (_userPosition != null) {
-          quakes.sort((a, b) {
-            double latA = double.tryParse(a.lintang) ?? 0;
-            double lonA = double.tryParse(a.bujur) ?? 0;
-            double latB = double.tryParse(b.lintang) ?? 0;
-            double lonB = double.tryParse(b.bujur) ?? 0;
-
-            double distA = Geolocator.distanceBetween(
-              _userPosition!.latitude,
-              _userPosition!.longitude,
-              latA,
-              lonA,
-            );
-            double distB = Geolocator.distanceBetween(
-              _userPosition!.latitude,
-              _userPosition!.longitude,
-              latB,
-              lonB,
-            );
-
-            if (_selectedFilterIndex == 2) {
-              // Jarak Jauh: Descending distance
-              return distB.compareTo(distA);
-            } else {
-              // Jarak Dekat: Ascending distance
-              return distA.compareTo(distB);
-            }
-          });
-        }
-      }
-
+      List<GempaModel> quakes = await UsgsService.fetchIndonesiaEarthquakes();
       if (mounted) {
         setState(() {
-          _recentQuakes = quakes; // Show all available instead of just 5
+          _recentQuakes = quakes;
           _isLoadingRecentQuakes = false;
         });
+        _checkAnomaliesForRecentQuakes();
       }
-      _checkAnomaliesForRecentQuakes();
     } catch (e) {
       if (mounted) {
         setState(() {
@@ -297,8 +249,6 @@ class _GempaPageState extends State<GempaPage> {
               children: [
                 _buildHeader(context),
                 const SizedBox(height: 24),
-                _buildFilterChips(),
-                const SizedBox(height: 24),
                 _buildMainEarthquakeCard(),
                 const SizedBox(height: 24),
                 _buildHistoryHeader(),
@@ -331,30 +281,44 @@ class _GempaPageState extends State<GempaPage> {
               ),
             ),
             const SizedBox(height: 4),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color(0xFFE0F7FA), // Light cyan
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.location_on,
-                    color: Color(0xFF00BCD4),
-                    size: 14,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    _currentCityName,
-                    style: const TextStyle(
-                      fontSize: 13,
+            GestureDetector(
+              onTap: () {
+                setState(() {
+                  _currentCityName = 'Memuat lokasi...';
+                });
+                _requestLocationPermission();
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE0F7FA), // Light cyan
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.location_on,
                       color: Color(0xFF00BCD4),
-                      fontWeight: FontWeight.w600,
+                      size: 14,
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 4),
+                    Text(
+                      _currentCityName,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFF00BCD4),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    const Icon(
+                      Icons.sync_rounded,
+                      color: Color(0xFF00BCD4),
+                      size: 14,
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -480,69 +444,7 @@ class _GempaPageState extends State<GempaPage> {
     );
   }
 
-  Widget _buildFilterChips() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          _buildChip(0, 'Terkini'),
-          _buildChip(1, 'M ≥ 5'),
-          _buildChip(2, 'Jarak Jauh'),
-          _buildChip(3, 'Jarak Dekat'),
-          _buildChip(4, 'Anomali'),
-        ],
-      ),
-    );
-  }
 
-  Widget _buildChip(int index, String label) {
-    final bool isActive = _selectedFilterIndex == index;
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: () {
-          if (_selectedFilterIndex != index) {
-            setState(() {
-              _selectedFilterIndex = index;
-            });
-            _fetchRecentEarthquakeData();
-          }
-        },
-        child: Container(
-          margin: const EdgeInsets.only(right: 12),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            color: isActive ? const Color(0xFFE3F2FD) : Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: isActive
-                  ? const Color(0xFF2196F3)
-                  : const Color(0xFFEEEEEE),
-            ),
-            boxShadow: isActive
-                ? [
-                    BoxShadow(
-                      color: const Color(0xFF2196F3).withOpacity(0.1),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ]
-                : null,
-          ),
-          child: Text(
-            label,
-            style: TextStyle(
-              color: isActive
-                  ? const Color(0xFF2196F3)
-                  : const Color(0xFF757575),
-              fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
-              fontSize: 13,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildMainEarthquakeCard() {
     return Container(
@@ -740,38 +642,62 @@ class _GempaPageState extends State<GempaPage> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildInfoBox(
-                        _isLoadingQuake
-                            ? '...'
-                            : (_latestQuake?.magnitude ?? '≈ 5.7'),
-                        'Magnitudo',
-                        const Color(0xFFF44336),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _buildInfoBox(
-                        _isLoadingQuake
-                            ? '...'
-                            : (_latestQuake?.kedalaman ?? '10 Km'),
-                        'Kedalaman',
-                        const Color(0xFF4CAF50),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _buildInfoBox(
-                        _isLoadingQuake
-                            ? '...'
-                            : (_latestQuake?.lintang ?? '1.54 LU'),
-                        'Lokasi',
-                        const Color(0xFF2196F3),
-                      ),
-                    ),
-                  ],
+                Builder(
+                  builder: (context) {
+                    final double magVal = double.tryParse(_latestQuake?.magnitude ?? '') ?? 0.0;
+                    Color magTextColor;
+                    if (magVal < 4.0) {
+                      magTextColor = const Color(0xFF2E7D32); // Green (Rendah)
+                    } else if (magVal <= 6.0) {
+                      magTextColor = const Color(0xFFF57F17); // Orange (Sedang)
+                    } else {
+                      magTextColor = const Color(0xFFD32F2F); // Red (Tinggi)
+                    }
+
+                    final double depthVal = double.tryParse(_latestQuake?.kedalaman.replaceAll(RegExp(r'[^0-9.]'), '') ?? '') ?? 0.0;
+                    Color depthTextColor;
+                    if (depthVal <= 60.0) {
+                      depthTextColor = const Color(0xFFD32F2F); // Red (Dangkal - Tinggi)
+                    } else if (depthVal <= 300.0) {
+                      depthTextColor = const Color(0xFFF57F17); // Orange (Menengah - Sedang)
+                    } else {
+                      depthTextColor = const Color(0xFF2E7D32); // Green (Dalam - Rendah)
+                    }
+
+                    return Row(
+                      children: [
+                        Expanded(
+                          child: _buildInfoBox(
+                            _isLoadingQuake
+                                ? '...'
+                                : (_latestQuake?.magnitude ?? '≈ 5.7'),
+                            'Magnitudo',
+                            magTextColor,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _buildInfoBox(
+                            _isLoadingQuake
+                                ? '...'
+                                : (_latestQuake?.kedalaman ?? '10 Km'),
+                            'Kedalaman',
+                            depthTextColor,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _buildInfoBox(
+                            _isLoadingQuake
+                                ? '...'
+                                : (_latestQuake?.lintang ?? '1.54 LU'),
+                            'Lokasi',
+                            const Color(0xFF1E293B),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
                 ),
                 const SizedBox(height: 20),
                 _buildDetailRow(
@@ -805,7 +731,7 @@ class _GempaPageState extends State<GempaPage> {
                   width: double.infinity,
                   height: 48,
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () => _showFeltReportBottomSheet(context),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFFF9800),
                       elevation: 0,
@@ -838,19 +764,234 @@ class _GempaPageState extends State<GempaPage> {
     );
   }
 
+  void _showFeltReportBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (BuildContext context) {
+        int selectedIntensity = 1; // Default to Sedang
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setModalState) {
+            return SafeArea(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    24,
+                    12,
+                    24,
+                    MediaQuery.of(context).viewInsets.bottom + 24,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE2E8F0),
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      const Text(
+                        'Laporkan Getaran Gempa',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1E293B),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'Kontribusi Anda sangat membantu kami memetakan tingkat keparahan dampak gempa bumi.',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF64748B),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      _buildIntensityOption(
+                        index: 0,
+                        title: 'Getaran Ringan',
+                        description: 'Getaran dirasakan beberapa orang di dalam rumah. Gelas/kaca berderik lembut.',
+                        icon: Icons.info_outline_rounded,
+                        color: const Color(0xFF4CAF50),
+                        selected: selectedIntensity == 0,
+                        onTap: () => setModalState(() => selectedIntensity = 0),
+                      ),
+                      const SizedBox(height: 12),
+                      _buildIntensityOption(
+                        index: 1,
+                        title: 'Getaran Sedang',
+                        description: 'Dirasakan hampir semua orang. Benda kecil bergoyang, pintu berderit.',
+                        icon: Icons.warning_amber_rounded,
+                        color: const Color(0xFFFF9800),
+                        selected: selectedIntensity == 1,
+                        onTap: () => setModalState(() => selectedIntensity = 1),
+                      ),
+                      const SizedBox(height: 12),
+                      _buildIntensityOption(
+                        index: 2,
+                        title: 'Getaran Kuat',
+                        description: 'Sulit berdiri tegap. Barang berat bergeser, potensi kerusakan kecil pada bangunan.',
+                        icon: Icons.flash_on_rounded,
+                        color: const Color(0xFFF44336),
+                        selected: selectedIntensity == 2,
+                        onTap: () => setModalState(() => selectedIntensity = 2),
+                      ),
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            if (_latestQuake != null) {
+                              setState(() {
+                                _latestQuake!.dirasakan = 'Dirasakan';
+                              });
+                            }
+                            _showSuccessSnackbar(context);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFFF9800),
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: const Text(
+                            'Kirim Laporan',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildIntensityOption({
+    required int index,
+    required String title,
+    required String description,
+    required IconData icon,
+    required Color color,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: selected ? color.withValues(alpha: 0.05) : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: selected ? color : const Color(0xFFE2E8F0),
+            width: selected ? 2.0 : 1.0,
+          ),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: selected ? color.withValues(alpha: 0.1) : const Color(0xFFF1F5F9),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: selected ? color : const Color(0xFF64748B), size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: selected ? color : const Color(0xFF1E293B),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    description,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: Color(0xFF64748B),
+                      height: 1.3,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showSuccessSnackbar(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: const [
+            Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+            SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Laporan Terkirim! Kontribusi Anda membantu pemetaan skala getaran gempa.',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: const Color(0xFF16A34A), // Green
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        margin: const EdgeInsets.all(20),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
   Widget _buildInfoBox(String value, String label, Color valueColor) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12),
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8F9FA),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: Column(
         children: [
           Text(
             value,
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: FontWeight.bold,
               color: valueColor,
             ),
@@ -858,7 +999,10 @@ class _GempaPageState extends State<GempaPage> {
           const SizedBox(height: 4),
           Text(
             label,
-            style: const TextStyle(fontSize: 10, color: Color(0xFF757575)),
+            style: const TextStyle(
+              fontSize: 12,
+              color: Color(0xFF64748B),
+            ),
           ),
         ],
       ),
@@ -927,7 +1071,10 @@ class _GempaPageState extends State<GempaPage> {
                   context,
                   MaterialPageRoute(
                     builder: (context) =>
-                        RiwayatGempaPage(quakes: _recentQuakes),
+                        RiwayatGempaPage(
+                          quakes: _recentQuakes,
+                          userPosition: _userPosition,
+                        ),
                   ),
                 );
               },
@@ -1005,6 +1152,17 @@ class _GempaPageState extends State<GempaPage> {
     final String date = quake.tanggal.split(' ').take(2).join(' ');
     final String time = quake.jam.replaceAll(' WIB', '');
 
+    // Determine color coding based on magnitude: low (green), medium (orange/yellow), high (red)
+    final double magVal = double.tryParse(quake.magnitude) ?? 0.0;
+    Color magLevelColor;
+    if (magVal < 4.0) {
+      magLevelColor = const Color(0xFF4CAF50); // Rendah (Green)
+    } else if (magVal < 6.0) {
+      magLevelColor = const Color(0xFFFF9800); // Sedang (Orange/Yellow)
+    } else {
+      magLevelColor = const Color(0xFFF44336); // Tinggi (Red)
+    }
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -1048,27 +1206,31 @@ class _GempaPageState extends State<GempaPage> {
                   width: 54,
                   height: 54,
                   decoration: BoxDecoration(
-                    color: magColor,
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: magLevelColor,
+                      width: 2.0,
+                    ),
                   ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
                         quake.magnitude,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: magLevelColor,
                           height: 1.1,
                         ),
                       ),
-                      const Text(
+                      Text(
                         'MAG',
                         style: TextStyle(
                           fontSize: 9,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: magLevelColor,
                         ),
                       ),
                     ],

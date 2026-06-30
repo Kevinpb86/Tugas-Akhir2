@@ -438,7 +438,7 @@ class _FullscreenMapPageState extends State<FullscreenMapPage> {
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton(
-                              onPressed: () {},
+                              onPressed: () => _showFeltReportBottomSheet(context),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(
                                   0xFFFF9800,
@@ -661,6 +661,218 @@ class _FullscreenMapPageState extends State<FullscreenMapPage> {
           ),
         ),
       ],
+    );
+  }
+
+  void _showFeltReportBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (BuildContext context) {
+        int selectedIntensity = 1; // Default to Sedang
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setModalState) {
+            return SafeArea(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    24,
+                    12,
+                    24,
+                    MediaQuery.of(context).viewInsets.bottom + 24,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE2E8F0),
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        'Laporkan Getaran Gempa',
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF1E293B),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Kontribusi Anda sangat membantu kami memetakan tingkat keparahan dampak gempa bumi.',
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          color: const Color(0xFF64748B),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      _buildIntensityOption(
+                        index: 0,
+                        title: 'Getaran Ringan',
+                        description: 'Getaran dirasakan beberapa orang di dalam rumah. Gelas/kaca berderik lembut.',
+                        icon: Icons.info_outline_rounded,
+                        color: const Color(0xFF4CAF50),
+                        selected: selectedIntensity == 0,
+                        onTap: () => setModalState(() => selectedIntensity = 0),
+                      ),
+                      const SizedBox(height: 12),
+                      _buildIntensityOption(
+                        index: 1,
+                        title: 'Getaran Sedang',
+                        description: 'Dirasakan hampir semua orang. Benda kecil bergoyang, pintu berderit.',
+                        icon: Icons.warning_amber_rounded,
+                        color: const Color(0xFFFF9800),
+                        selected: selectedIntensity == 1,
+                        onTap: () => setModalState(() => selectedIntensity = 1),
+                      ),
+                      const SizedBox(height: 12),
+                      _buildIntensityOption(
+                        index: 2,
+                        title: 'Getaran Kuat',
+                        description: 'Sulit berdiri tegap. Barang berat bergeser, potensi kerusakan kecil pada bangunan.',
+                        icon: Icons.flash_on_rounded,
+                        color: const Color(0xFFF44336),
+                        selected: selectedIntensity == 2,
+                        onTap: () => setModalState(() => selectedIntensity = 2),
+                      ),
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            setState(() {
+                              widget.gempa.dirasakan = 'Dirasakan';
+                            });
+                            _showSuccessSnackbar(context);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFFF9800),
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: Text(
+                            'Kirim Laporan',
+                            style: GoogleFonts.poppins(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildIntensityOption({
+    required int index,
+    required String title,
+    required String description,
+    required IconData icon,
+    required Color color,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: selected ? color.withValues(alpha: 0.05) : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: selected ? color : const Color(0xFFE2E8F0),
+            width: selected ? 2.0 : 1.0,
+          ),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: selected ? color.withValues(alpha: 0.1) : const Color(0xFFF1F5F9),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: selected ? color : const Color(0xFF64748B), size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: selected ? color : const Color(0xFF1E293B),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    description,
+                    style: GoogleFonts.poppins(
+                      fontSize: 11,
+                      color: const Color(0xFF64748B),
+                      height: 1.3,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showSuccessSnackbar(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Laporan Terkirim! Kontribusi Anda membantu pemetaan skala getaran gempa.',
+                style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: const Color(0xFF16A34A), // Green
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        margin: const EdgeInsets.all(20),
+        duration: const Duration(seconds: 3),
+      ),
     );
   }
 }

@@ -52,7 +52,7 @@ class MLPredictionModel {
 }
 
 class MlService {
-  static const String _baseUrl = ApiConfig.baseUrl;
+  static final String _baseUrl = ApiConfig.baseUrl;
 
   static Future<bool> checkHealth() async {
     try {
