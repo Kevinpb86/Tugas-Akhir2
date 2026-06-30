@@ -29,7 +29,7 @@ final ValueNotifier<bool> isLoggedInNotifier = ValueNotifier(false);
 final ValueNotifier<String> userNameNotifier = ValueNotifier('');
 final ValueNotifier<String> userEmailNotifier = ValueNotifier('');
 final ValueNotifier<String> userPhotoUrlNotifier = ValueNotifier('');
-final ValueNotifier<String> userCityNameNotifier = ValueNotifier('Bojongsoang');
+final ValueNotifier<String> userCityNameNotifier = ValueNotifier('Tambun Selatan');
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

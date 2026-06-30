@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class DailyForecast {
   final String dayName;
@@ -70,7 +71,7 @@ class GempaModel {
   final String kedalaman;
   final String wilayah;
   final String potensi;
-  final String dirasakan;
+  String dirasakan;
   final String shakemap;
   bool isAnomali;
 
@@ -111,10 +112,86 @@ class GempaModel {
 class BmkgService {
   static const String _baseUrl = 'https://data.bmkg.go.id/DataMKG/TEWS';
 
+  static String _getUrl(String url) {
+    if (kIsWeb) {
+      return 'https://corsproxy.io/?${Uri.encodeComponent(url)}';
+    }
+    return url;
+  }
+
+  static CuacaModel getMockWeather() {
+    List<DailyForecast> daily = [
+      DailyForecast(
+        dayName: 'Hari ini',
+        condition: 'Cerah',
+        imagePath: 'https://api-pub.bmkg.go.id/storage/images/icon/cuaca/cerah-am.png',
+        maxTemp: 21,
+        minTemp: 18,
+      ),
+      DailyForecast(
+        dayName: 'Besok (Rabu)',
+        condition: 'Cerah Berawan',
+        imagePath: 'https://api-pub.bmkg.go.id/storage/images/icon/cuaca/cerah-berawan-am.png',
+        maxTemp: 29,
+        minTemp: 15,
+      ),
+      DailyForecast(
+        dayName: 'Kamis',
+        condition: 'Berawan',
+        imagePath: 'https://api-pub.bmkg.go.id/storage/images/icon/cuaca/berawan-am.png',
+        maxTemp: 29,
+        minTemp: 17,
+      ),
+      DailyForecast(
+        dayName: 'Jumat',
+        condition: 'Hujan Ringan',
+        imagePath: 'https://api-pub.bmkg.go.id/storage/images/icon/cuaca/hujan-ringan-am.png',
+        maxTemp: 29,
+        minTemp: 17,
+        isEstimate: true,
+      ),
+      DailyForecast(
+        dayName: 'Sabtu',
+        condition: 'Hujan Sedang',
+        imagePath: 'https://api-pub.bmkg.go.id/storage/images/icon/cuaca/hujan-sedang-am.png',
+        maxTemp: 29,
+        minTemp: 17,
+        isEstimate: true,
+      ),
+      DailyForecast(
+        dayName: 'Minggu',
+        condition: 'Cerah',
+        imagePath: 'https://api-pub.bmkg.go.id/storage/images/icon/cuaca/cerah-am.png',
+        maxTemp: 29,
+        minTemp: 17,
+        isEstimate: true,
+      ),
+      DailyForecast(
+        dayName: 'Senin',
+        condition: 'Cerah Berawan',
+        imagePath: 'https://api-pub.bmkg.go.id/storage/images/icon/cuaca/cerah-berawan-am.png',
+        maxTemp: 28,
+        minTemp: 16,
+        isEstimate: true,
+      ),
+    ];
+
+    return CuacaModel(
+      suhu: 21,
+      cuaca: 'Cerah',
+      image: 'https://api-pub.bmkg.go.id/storage/images/icon/cuaca/cerah-am.png',
+      kelembapan: 77,
+      kecAngin: 6.5,
+      kota: 'Bojongsoang',
+      peringatanDini: 'Sedang tidak ada peringatan cuaca yang signifikan untuk saat ini.',
+      dailyForecasts: daily,
+    );
+  }
+
   // Mendapatkan gempabumi terbaru (autogempa)
   static Future<GempaModel> fetchLatestEarthquake() async {
     try {
-      final response = await http.get(Uri.parse('$_baseUrl/autogempa.json'));
+      final response = await http.get(Uri.parse(_getUrl('$_baseUrl/autogempa.json')));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         return GempaModel.fromJson(data['Infogempa']['gempa']);
@@ -129,7 +206,7 @@ class BmkgService {
   // Mendapatkan daftar 15 gempabumi M 5.0+ (gempaterkini)
   static Future<List<GempaModel>> fetchEarthquakeList() async {
     try {
-      final response = await http.get(Uri.parse('$_baseUrl/gempaterkini.json'));
+      final response = await http.get(Uri.parse(_getUrl('$_baseUrl/gempaterkini.json')));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final List<dynamic> gempaList = data['Infogempa']['gempa'];
@@ -148,7 +225,7 @@ class BmkgService {
   static Future<List<GempaModel>> fetchFeltEarthquakeList() async {
     try {
       final response = await http.get(
-        Uri.parse('$_baseUrl/gempadirasakan.json'),
+        Uri.parse(_getUrl('$_baseUrl/gempadirasakan.json')),
       );
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -173,7 +250,7 @@ class BmkgService {
     String adm4 = '32.04.08.2002',
   ]) async {
     try {
-      final response = await http.get(Uri.parse('$_cuacaUrl?adm4=$adm4'));
+      final response = await http.get(Uri.parse(_getUrl('$_cuacaUrl?adm4=$adm4')));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final namaKota =

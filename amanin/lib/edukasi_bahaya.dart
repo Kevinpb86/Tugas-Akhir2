@@ -19,16 +19,39 @@ class EdukasiBahayaPage extends StatefulWidget {
 class _EdukasiBahayaPageState extends State<EdukasiBahayaPage> {
   @override
   Widget build(BuildContext context) {
+    String siagaDesc = '';
+    String saatGempaDesc = '';
+    String pascaGempaDesc = '';
+
+    if (widget.locationCategory == 'Pegunungan') {
+      siagaDesc = 'Pahami area longsor kritis dan tebing rapuh. Tentukan titik kumpul yang jauh dari bukit curam.';
+      saatGempaDesc = 'Segera menjauh dari tebing dan lereng curam. Waspadai jatuhan batu besar dan longsor susulan.';
+      pascaGempaDesc = 'Tinggalkan area tebing secepatnya. Jangan pernah kembali ke lereng yang retak atau labil.';
+    } else if (widget.locationCategory == 'Pesisir Pantai') {
+      siagaDesc = 'Pastikan jalur evakuasi tsunami dan titik kumpul di area tinggi telah diketahui pasti.';
+      saatGempaDesc = 'LARI! Tinggalkan barang bawaan dan segera evakuasi ke tempat tinggi menjauhi garis pantai.';
+      pascaGempaDesc = 'Jangan turun ke pantai hingga ada pencabutan peringatan tsunami resmi dari BMKG.';
+    } else if (widget.locationCategory == 'Luar Ruangan') {
+      siagaDesc = 'Ketahui letak tanah lapang yang benar-benar terbuka tanpa gedung tinggi atau tiang listrik.';
+      saatGempaDesc = 'Jauhi struktur bangunan, jembatan, tiang listrik, dan pohon besar. Berlindung di tanah lapang.';
+      pascaGempaDesc = 'Waspadai gempa susulan. Jauhi area yang tampak retak, tiang miring, atau kabel terputus.';
+    } else {
+      // Dalam Ruangan
+      siagaDesc = 'Identifikasi tempat aman di rumah Anda dan pastikan rute evakuasi bersih dari hambatan.';
+      saatGempaDesc = 'DROP, COVER, HOLD ON! Lindungi kepala, berlindung di bawah meja kokoh, dan jauhi kaca.';
+      pascaGempaDesc = 'Setelah guncangan utama reda, segera tinggalkan gedung melalui tangga darurat dengan cepat.';
+    }
+
     return Scaffold(
-      backgroundColor: const Color(0xFFFAF9F6), // Warm off-white
+      backgroundColor: const Color(0xFFF8F9FA), // Modern subtle background
       appBar: AppBar(
         title: const Text(
           'Panduan Bahaya Tinggi',
           style: TextStyle(
             color: Colors.white,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w700,
             fontSize: 18,
-            letterSpacing: -0.3,
+            letterSpacing: -0.5,
           ),
         ),
         centerTitle: true,
@@ -45,16 +68,16 @@ class _EdukasiBahayaPageState extends State<EdukasiBahayaPage> {
             Container(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Color(0xFFD32F2F), Color(0xFFC2185B)],
+                  colors: [Color(0xFFEF4444), Color(0xFFB91C1C)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(28),
-                  bottomRight: Radius.circular(28),
+                  bottomLeft: Radius.circular(36),
+                  bottomRight: Radius.circular(36),
                 ),
               ),
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
               child: Column(
                 children: [
                   Container(
@@ -75,19 +98,20 @@ class _EdukasiBahayaPageState extends State<EdukasiBahayaPage> {
                     style: const TextStyle(
                       color: Colors.white70,
                       fontSize: 11,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w700,
                       letterSpacing: 1.5,
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 8),
                   Text(
-                    'Zona Risiko Gempa Bumi Tinggi\n(${widget.cityName})',
+                    'Zona Risiko Gempa Tinggi\n(${widget.cityName})',
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 18,
+                      fontSize: 20,
                       fontWeight: FontWeight.w800,
-                      height: 1.3,
+                      height: 1.2,
+                      letterSpacing: -0.5,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -118,25 +142,25 @@ class _EdukasiBahayaPageState extends State<EdukasiBahayaPage> {
                   const SizedBox(height: 10),
                   _buildEvacuationCard(
                     '1. SIAGA (Sebelum Gempa)',
-                    'Identifikasi tempat aman di rumah Anda (kolong meja kuat, pilar utama) dan tentukan jalur tercepat menuju ruang terbuka luas.',
+                    siagaDesc,
                     Icons.home_work_rounded,
-                    const Color(0xFF1976D2),
+                    const Color(0xFFD32F2F),
                     0,
                   ),
                   const SizedBox(height: 10),
                   _buildEvacuationCard(
-                    '2. SELAMATKAN DIRI (Saat Gempa)',
-                    'DROP, COVER, HOLD ON! Merunduklah, lindungi kepala dengan lengan/bantal, berlindung di bawah meja kokoh, dan jauhi jendela kaca.',
+                    '2. SAAT GEMPA (Guncangan)',
+                    saatGempaDesc,
                     Icons.security_rounded,
-                    const Color(0xFFF57C00),
+                    const Color(0xFFD32F2F),
                     1,
                   ),
                   const SizedBox(height: 10),
                   _buildEvacuationCard(
-                    '3. SEGERA EVAKUASI (Setelah Gempa)',
-                    'Keluar gedung dengan tertib lewat jalur evakuasi. Jangan gunakan lift. Menujulah ke titik kumpul terbuka di luar area bangunan.',
+                    '3. PASCA GEMPA (Setelah Gempa)',
+                    pascaGempaDesc,
                     Icons.directions_run_rounded,
-                    const Color(0xFF388E3C),
+                    const Color(0xFFD32F2F),
                     2,
                   ),
                   const SizedBox(height: 24),
@@ -169,48 +193,7 @@ class _EdukasiBahayaPageState extends State<EdukasiBahayaPage> {
                     ],
                   ),
 
-                  const SizedBox(height: 28),
 
-                  // Bottom Action: Lihat Panduan Lengkap
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFD32F2F),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        elevation: 2,
-                        shadowColor: const Color(
-                          0xFFD32F2F,
-                        ).withValues(alpha: 0.3),
-                      ),
-                      onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => const MitigasiGempaPage(),
-                          ),
-                        );
-                      },
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.menu_book_rounded, size: 18),
-                          SizedBox(width: 8),
-                          Text(
-                            'Pelajari Panduan Lengkap Mitigasi',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
                 ],
               ),
             ),
@@ -247,18 +230,17 @@ class _EdukasiBahayaPageState extends State<EdukasiBahayaPage> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withValues(alpha: 0.15), width: 1.2),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
+            color: color.withValues(alpha: 0.12),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         child: Material(
           color: Colors.transparent,
           child: InkWell(
@@ -294,9 +276,10 @@ class _EdukasiBahayaPageState extends State<EdukasiBahayaPage> {
                         Text(
                           title,
                           style: TextStyle(
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w800,
                             color: color,
+                            letterSpacing: -0.2,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -327,15 +310,15 @@ class _EdukasiBahayaPageState extends State<EdukasiBahayaPage> {
     Color color,
   ) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),

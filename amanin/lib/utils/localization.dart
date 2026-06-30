@@ -21,7 +21,7 @@ class Localization {
       'nav_weather': 'Cuaca',
       'nav_features': 'Fitur',
       'nav_quake': 'Gempa',
-      'nav_education': 'Edukasi',
+      'nav_education': 'Panduan',
 
       // Home Page
       'home_header_title': 'Amanin',
@@ -87,7 +87,7 @@ class Localization {
       'nav_weather': 'Weather',
       'nav_features': 'Features',
       'nav_quake': 'Quake',
-      'nav_education': 'Education',
+      'nav_education': 'Guides',
 
       // Home Page
       'home_header_title': 'Amanin',

@@ -133,7 +133,7 @@ class _MainScreenState extends State<MainScreen> {
                 3,
               ),
               _buildNavItem(
-                Icons.school_outlined,
+                Icons.menu_book_rounded,
                 Localization.of(context).get('nav_education'),
                 4,
               ),

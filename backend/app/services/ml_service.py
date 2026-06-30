@@ -15,6 +15,7 @@ MODEL_USGS_PATH = os.path.join(MODEL_DIR, "usgs_model.pkl")
 SCALER_USGS_PATH = os.path.join(MODEL_DIR, "scaler_usgs.pkl")
 MODEL_ANOMALI_PATH = os.path.join(MODEL_DIR, "model_anomali.pkl")
 SCALER_ANOMALI_PATH = os.path.join(MODEL_DIR, "scaler_anomali.pkl")
+REKOMENDASI_EDUKASI_PATH = os.path.join(MODEL_DIR, "rekomendasi_edukasi.pkl")
 
 ml_models = {
     "bmkg": None,
@@ -26,10 +27,11 @@ ml_scalers = {
 }
 anomali_model = None
 anomali_scaler = None
+rekomendasi_edukasi_model = None
 
 def load_ml_models():
     warnings.filterwarnings("ignore", category=InconsistentVersionWarning)
-    global anomali_model, anomali_scaler
+    global anomali_model, anomali_scaler, rekomendasi_edukasi_model
     try:
         if os.path.exists(MODEL_BMKG_PATH):
             ml_models["bmkg"] = joblib.load(MODEL_BMKG_PATH)
@@ -66,6 +68,12 @@ def load_ml_models():
             print("Scaler Anomali berhasil diload!")
         else:
             print(f"Warning: Scaler Anomali tidak ditemukan di {SCALER_ANOMALI_PATH}")
+
+        if os.path.exists(REKOMENDASI_EDUKASI_PATH):
+            rekomendasi_edukasi_model = joblib.load(REKOMENDASI_EDUKASI_PATH)
+            print("Model Rekomendasi Edukasi berhasil diload!")
+        else:
+            print(f"Warning: Model Rekomendasi Edukasi tidak ditemukan di {REKOMENDASI_EDUKASI_PATH}")
     except Exception as e:
         print(f"Error loading models: {e}")
 

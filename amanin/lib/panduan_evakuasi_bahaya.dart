@@ -731,12 +731,15 @@ class PanduanEvakuasiBahayaPage extends StatelessWidget {
           children: [
             // Watermark Icon raksasa di background (sangat transparan)
             Positioned(
-              right: -20,
-              bottom: -20,
-              child: Icon(
-                icon,
-                size: 130,
-                color: iconBgColor.withValues(alpha: 0.7),
+              right: -15,
+              bottom: -15,
+              child: Opacity(
+                opacity: 0.18,
+                child: Icon(
+                  icon,
+                  size: 100,
+                  color: primaryColor,
+                ),
               ),
             ),
             // Garis aksen vertikal di kiri

@@ -3,16 +3,17 @@ from app.config.database import SessionLocal
 from app.db_models.edukasi import ZonaGPS
 
 # Sesuaikan lokasi file CSV jika berbeda
-CSV_PATH = "data/Database_Zona_GPS_.csv"
+CSV_PATH = "data/Database_Zona_GPS_Amanin.csv"
 
 def run_seed():
     db = SessionLocal()
 
     try:
-        # Cek apakah data sudah pernah di-seed agar tidak duplikat
+        # Hapus data lama agar bisa di-seed dengan data terbaru
         if db.query(ZonaGPS).count() > 0:
-            print("Seed already executed. Skipping...")
-            return
+            print("Clearing old data from ZonaGPS...")
+            db.query(ZonaGPS).delete()
+            db.commit()
         
         print(f"Membaca data dari {CSV_PATH}...")
         df = pd.read_csv(CSV_PATH)

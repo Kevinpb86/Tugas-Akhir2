@@ -10,6 +10,9 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'edukasi_waspada.dart';
+import 'services/api_config.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class EdukasiPage extends StatefulWidget {
   const EdukasiPage({super.key});
@@ -29,6 +32,9 @@ class _EdukasiPageState extends State<EdukasiPage> {
   }
 
   Future<void> _requestLocationPermission() async {
+    String cityName = 'Jakarta Pusat';
+    Position? position;
+
     try {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) return;
@@ -41,20 +47,25 @@ class _EdukasiPageState extends State<EdukasiPage> {
 
       if (permission == LocationPermission.deniedForever) return;
 
-      Position position = await Geolocator.getCurrentPosition(
+      // Try to get last known position first (instant, skipped on web)
+      if (!kIsWeb) {
+        position = await Geolocator.getLastKnownPosition();
+      }
+      
+      // If null, get current position with a timeout (e.g. 3 seconds)
+      position ??= await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.low,
-      );
+      ).timeout(const Duration(seconds: 3));
 
       print(
         "[Edukasi] GPS coordinates: lat=${position.latitude}, lon=${position.longitude}, accuracy=${position.accuracy}m",
       );
 
-      String cityName = 'Jakarta Pusat';
       try {
         List<Placemark> placemarks = await placemarkFromCoordinates(
           position.latitude,
           position.longitude,
-        );
+        ).timeout(const Duration(seconds: 2));
         if (placemarks.isNotEmpty) {
           Placemark place = placemarks[0];
           print(
@@ -84,7 +95,7 @@ class _EdukasiPageState extends State<EdukasiPage> {
           final response = await http.get(
             url,
             headers: {'User-Agent': 'AmaninApp/1.0'},
-          );
+          ).timeout(const Duration(seconds: 3));
           if (response.statusCode == 200) {
             final data = json.decode(response.body);
             print("[Edukasi] Nominatim full address: ${data['address']}");
@@ -112,14 +123,14 @@ class _EdukasiPageState extends State<EdukasiPage> {
           print("Nominatim fallback error: $fallbackError");
         }
       }
-
+    } catch (e) {
+      print("Location permission error: $e");
+    } finally {
       if (mounted) {
         setState(() {
           _currentCityName = cityName;
         });
       }
-    } catch (e) {
-      print("Location permission error: $e");
     }
   }
 
@@ -158,8 +169,6 @@ class _EdukasiPageState extends State<EdukasiPage> {
               const SizedBox(height: 24),
               _buildSearchBar(),
               const SizedBox(height: 24),
-              _buildHeroBanner(),
-              const SizedBox(height: 24),
               const Text(
                 'Pertolongan Pertama Saat Bencana',
                 style: TextStyle(
@@ -192,6 +201,81 @@ class _EdukasiPageState extends State<EdukasiPage> {
           ),
         ),
       ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          // Test the Backend API
+          final url = Uri.parse('${ApiConfig.baseUrl}/api/edukasi/waspada');
+          
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => const Center(child: CircularProgressIndicator()),
+          );
+
+          try {
+            // Ambil kordinat user terbaru
+            Position position = await Geolocator.getCurrentPosition(
+              desiredAccuracy: LocationAccuracy.low,
+            );
+
+            final response = await http.post(
+              url,
+              headers: {'Content-Type': 'application/json'},
+              body: jsonEncode({
+                'latitude': position.latitude,
+                'longitude': position.longitude,
+              }),
+            );
+
+            Navigator.pop(context); // Tutup loading
+
+            if (response.statusCode == 200) {
+              final data = jsonDecode(response.body);
+              String status = data['status'];
+              String msg = data['message'];
+
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: Text('Status: $status'),
+                  content: Text(msg),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        if (status == "WASPADA (Kuning)") {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => EdukasiWaspadaPage(
+                                cityName: _currentCityName,
+                                locationCategory: "Dalam Ruangan",
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                      child: const Text('OK / Lihat Edukasi'),
+                    ),
+                  ],
+                ),
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Error: ${response.statusCode}')),
+              );
+            }
+          } catch (e) {
+            Navigator.pop(context);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Gagal konek API: $e')),
+            );
+          }
+        },
+        backgroundColor: const Color(0xFFFBC02D),
+        icon: const Icon(Icons.radar, color: Colors.white),
+        label: const Text('Cek Zona Waspada', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+      ),
     );
   }
 
@@ -211,30 +295,44 @@ class _EdukasiPageState extends State<EdukasiPage> {
               ),
             ),
             const SizedBox(height: 4),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color(0xFFE0F7FA), // Light cyan
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.location_on,
-                    color: Color(0xFF00BCD4),
-                    size: 14,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    _currentCityName,
-                    style: const TextStyle(
-                      fontSize: 13,
+            GestureDetector(
+              onTap: () {
+                setState(() {
+                  _currentCityName = 'Memuat lokasi...';
+                });
+                _requestLocationPermission();
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE0F7FA), // Light cyan
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.location_on,
                       color: Color(0xFF00BCD4),
-                      fontWeight: FontWeight.w600,
+                      size: 14,
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 4),
+                    Text(
+                      _currentCityName,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFF00BCD4),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    const Icon(
+                      Icons.sync_rounded,
+                      color: Color(0xFF00BCD4),
+                      size: 14,
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -378,102 +476,6 @@ class _EdukasiPageState extends State<EdukasiPage> {
           icon: Icon(Icons.search, color: Colors.grey[400]),
           border: InputBorder.none,
         ),
-      ),
-    );
-  }
-
-  Widget _buildHeroBanner() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF2196F3), Color(0xFF1E88E5)],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF2196F3).withValues(alpha: 0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const Text(
-              'Modul Utama',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'Mitigasi Gempa Bumi',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Pelajari langkah-langkah keselamatan sebelum, saat, dan sesudah terjadi gempa bumi untuk melindungi diri dan keluarga.',
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.9),
-              fontSize: 13,
-              height: 1.4,
-            ),
-          ),
-          const SizedBox(height: 20),
-          Builder(
-            builder: (context) => ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const MitigasiGempaPage(),
-                  ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: const Color(0xFF1E88E5),
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 10,
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: const [
-                  Text(
-                    'Mulai Belajar',
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(width: 4),
-                  Icon(Icons.arrow_forward, size: 14),
-                ],
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
