@@ -47,6 +47,9 @@ class _BerandaPageState extends State<BerandaPage> {
   GempaModel? _latestQuake;
   bool _isLoadingQuake = true;
   bool _isLatestQuakeAnomali = false;
+  bool _actualIsAnomali = false;
+  int _secretTapCount = 0;
+  bool _isDemoMode = false;
 
   CuacaModel? _latestCuaca;
   bool _isLoadingCuaca = true;
@@ -1106,7 +1109,8 @@ class _BerandaPageState extends State<BerandaPage> {
       if (mounted) {
         setState(() {
           _latestQuake = quake;
-          _isLatestQuakeAnomali = isAnomali;
+          _actualIsAnomali = isAnomali;
+          _isLatestQuakeAnomali = _isDemoMode ? true : _actualIsAnomali;
           if (lat != 0.0 && lon != 0.0) {
             _earthquakeLocation = LatLng(lat, lon);
           }
@@ -1507,12 +1511,31 @@ class _BerandaPageState extends State<BerandaPage> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  Localization.of(context).get('home_header_title'),
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1A1A1A),
+                GestureDetector(
+                  onTap: () {
+                    _secretTapCount++;
+                    if (_secretTapCount >= 5) {
+                      _secretTapCount = 0;
+                      setState(() {
+                        _isDemoMode = !_isDemoMode;
+                        _isLatestQuakeAnomali = _isDemoMode ? true : _actualIsAnomali;
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(_isDemoMode ? 'Mode Demo Anomali Aktif' : 'Mode Demo Anomali Nonaktif'),
+                          duration: const Duration(seconds: 2),
+                          backgroundColor: _isDemoMode ? Colors.red : Colors.green,
+                        ),
+                      );
+                    }
+                  },
+                  child: Text(
+                    Localization.of(context).get('home_header_title'),
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1A1A1A),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 4),
