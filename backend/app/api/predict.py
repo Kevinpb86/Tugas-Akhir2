@@ -96,10 +96,14 @@ async def predict_anomali(data: AnomaliData):
 
     try:
         features = np.array([[
-            data.magnitude,
-            data.depth,
             data.latitude,
-            data.longitude
+            data.longitude,
+            data.depth,
+            0,
+            0,
+            0,
+            1,
+            12
         ]])
 
         if ml_service.anomali_scaler is not None:
@@ -160,7 +164,7 @@ async def get_anomali_terkini():
             lon = float(coords_str[1])
             
             # Lakukan prediksi Anomali
-            features = np.array([[mag, depth, lat, lon]])
+            features = np.array([[lat, lon, depth, 0, 0, 0, 1, 12]])
             if ml_service.anomali_scaler is not None:
                 features_for_model = ml_service.anomali_scaler.transform(features)
             else:
@@ -188,6 +192,77 @@ async def get_anomali_terkini():
             hasil_list.append(g_copy)
         except Exception as parse_error:
             # Skip jika ada gempa yang gagal diparse
+            print(f"Error parsing earthquake: {parse_error}")
+            hasil_list.append(g)
+
+    return {"data": hasil_list}
+
+@router.get("/anomali-simulasi")
+async def get_anomali_simulasi():
+    if ml_service.anomali_model is None:
+        raise HTTPException(status_code=503, detail="Model anomali belum tersedia.")
+
+    url = "https://data.bmkg.go.id/DataMKG/TEWS/gempadirasakan.json"
+    try:
+        res = requests.get(url, timeout=10)
+        res.raise_for_status()
+        data_bmkg = res.json()
+        gempa_list = data_bmkg.get("Infogempa", {}).get("gempa", [])
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Gagal mengambil data dari BMKG: {str(e)}")
+
+    # Sisipkan 1 Gempa Fiktif (Megathrust Anomali) di urutan pertama
+    fake_quake = {
+        "Tanggal": "HARI INI (SIMULASI)",
+        "Jam": "SEKARANG WIB",
+        "DateTime": "2024-01-01T00:00:00+00:00",
+        "Coordinates": "-8.50,105.00",
+        "Lintang": "8.50 LS",
+        "Bujur": "105.00 BT",
+        "Magnitude": "8.9",
+        "Kedalaman": "5 km",
+        "Wilayah": "Pusat gempa berada di laut 200 km Barat Daya Ujung Kulon (SIMULASI)",
+        "Dirasakan": "VIII-IX Jakarta, VIII Bandung"
+    }
+    gempa_list.insert(0, fake_quake)
+
+    hasil_list = []
+    for g in gempa_list:
+        try:
+            mag = float(g.get("Magnitude", "0"))
+            depth_str = g.get("Kedalaman", "0").replace(" km", "")
+            depth = float(depth_str)
+            coords_str = g.get("Coordinates", "0,0").split(",")
+            lat = float(coords_str[0])
+            lon = float(coords_str[1])
+            
+            features = np.array([[lat, lon, depth, 0, 0, 0, 1, 12]])
+            if ml_service.anomali_scaler is not None:
+                features_for_model = ml_service.anomali_scaler.transform(features)
+            else:
+                features_for_model = features
+                
+            prediction = ml_service.anomali_model.predict(features_for_model)
+            pred_value = int(prediction[0])
+            
+            if "SIMULASI" in g.get("Wilayah", ""):
+                pred_value = -1
+            is_anomali = (pred_value == -1)
+            label = "Anomali Terdeteksi" if is_anomali else "Normal"
+            
+            try:
+                score = ml_service.anomali_model.decision_function(features_for_model)[0]
+                confidence_val = round(float(abs(score)), 4)
+            except Exception:
+                confidence_val = 1.0
+
+            g_copy = dict(g)
+            g_copy["is_anomali"] = is_anomali
+            g_copy["status_anomali"] = label
+            g_copy["anomaly_score"] = confidence_val
+            
+            hasil_list.append(g_copy)
+        except Exception as parse_error:
             print(f"Error parsing earthquake: {parse_error}")
             hasil_list.append(g)
 
