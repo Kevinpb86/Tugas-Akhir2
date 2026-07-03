@@ -702,7 +702,7 @@ class PanduanEvakuasiWaspadaPage extends StatelessWidget {
         slivers: [
           SliverAppBar(
             expandedHeight: 180.0,
-            backgroundColor: const Color(0xFFFFC107), // Yellow AppBar
+            backgroundColor: const Color(0xFFD97706), // Kuning-amber pekat premium
             elevation: 0,
             pinned: true,
             automaticallyImplyLeading: false,
@@ -745,7 +745,15 @@ class PanduanEvakuasiWaspadaPage extends StatelessWidget {
                 children: [
                   Container(
                     decoration: const BoxDecoration(
-                      color: Color(0xFFFFC107), // Flat solid yellow
+                      gradient: LinearGradient(
+                        colors: [
+                          Color(0xFFD97706), // Amber pekat mendalam (kiri)
+                          Color(0xFFEAB308), // Kuning murni hangat (tengah)
+                          Color(0xFFF1C40F), // Kuning Sunflower pekat (kanan)
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
                     ),
                   ),
                   // Diagonal strip decor
@@ -767,7 +775,7 @@ class PanduanEvakuasiWaspadaPage extends StatelessWidget {
                         shape: BoxShape.circle,
                         gradient: RadialGradient(
                           colors: [
-                            const Color(0xFFFFC107).withValues(alpha: 0.45),
+                            const Color(0xFFF1C40F).withValues(alpha: 0.45),
                             Colors.transparent,
                           ],
                         ),

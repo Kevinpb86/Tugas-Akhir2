@@ -47,6 +47,33 @@ class _CuacaPageState extends State<CuacaPage> {
     }
   }
 
+  IconData _getWeatherIcon(String condition, {bool checkNight = false}) {
+    final cond = condition.toLowerCase();
+    final int hour = DateTime.now().hour;
+    final bool isNight = checkNight && (hour >= 18 || hour < 6);
+
+    if (cond.contains('petir') || cond.contains('kilat') || cond.contains('badai')) {
+      return Icons.thunderstorm_rounded;
+    } else if (cond.contains('hujan')) {
+      return Icons.umbrella_rounded;
+    } else if (cond.contains('berawan') || cond.contains('mendung')) {
+      if (isNight) {
+        return Icons.nights_stay_rounded;
+      }
+      return Icons.cloud_rounded;
+    } else if (cond.contains('cerah')) {
+      if (isNight) {
+        return Icons.nightlight_round;
+      }
+      return Icons.wb_sunny_rounded;
+    }
+    
+    if (isNight) {
+      return Icons.nightlight_round;
+    }
+    return Icons.wb_sunny_rounded;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -316,29 +343,13 @@ class _CuacaPageState extends State<CuacaPage> {
                                     ),
                                   ),
                                 )
-                              : (_latestCuaca != null &&
-                                      _latestCuaca!.image.isNotEmpty
-                                  ? Center(
-                                      child: Image.network(
-                                        _latestCuaca!.image,
-                                        width: 24,
-                                        height: 24,
-                                        errorBuilder: (
-                                          context,
-                                          error,
-                                          stackTrace,
-                                        ) => const Icon(
-                                          Icons.cloud_outlined,
-                                          color: Colors.white,
-                                          size: 20,
-                                        ),
-                                      ),
-                                    )
-                                  : const Icon(
-                                      Icons.cloud_outlined,
-                                      color: Colors.white,
-                                      size: 20,
-                                    )),
+                              : Center(
+                                  child: Icon(
+                                    _getWeatherIcon(_latestCuaca?.cuaca ?? '', checkNight: true),
+                                    color: Colors.white,
+                                    size: 22,
+                                  ),
+                                ),
                         ),
                       ],
                     ),
@@ -547,8 +558,9 @@ class _CuacaPageState extends State<CuacaPage> {
   Widget _buildForecastItem(DailyForecast data, int minWeekly, int maxWeekly) {
     final isEst = data.isEstimate;
     
-    // Parse weather condition to determine premium color themes
     final condition = data.condition.toLowerCase();
+    final int hour = DateTime.now().hour;
+    final bool isNightToday = (data.dayName == 'Hari ini' || data.dayName == 'Saat ini') && (hour >= 18 || hour < 6);
     
     // Default colors (Cloudy / Partly Cloudy)
     Color themeColor = const Color(0xFF64748B);
@@ -557,11 +569,33 @@ class _CuacaPageState extends State<CuacaPage> {
     IconData fallbackIcon = Icons.cloud_outlined;
 
     if (condition.contains('cerah') && !condition.contains('berawan')) {
-      // Sunny / Clear
-      themeColor = const Color(0xFFF59E0B);
-      badgeBgColor = const Color(0xFFFEF3C7);
-      badgeTextColor = const Color(0xFFD97706);
-      fallbackIcon = Icons.wb_sunny_rounded;
+      if (isNightToday) {
+        // Clear Night
+        themeColor = const Color(0xFF818CF8); // Indigo
+        badgeBgColor = const Color(0xFFEEF2FF);
+        badgeTextColor = const Color(0xFF4F46E5);
+        fallbackIcon = Icons.nightlight_round;
+      } else {
+        // Sunny / Clear Day
+        themeColor = const Color(0xFFF59E0B);
+        badgeBgColor = const Color(0xFFFEF3C7);
+        badgeTextColor = const Color(0xFFD97706);
+        fallbackIcon = Icons.wb_sunny_rounded;
+      }
+    } else if (condition.contains('berawan') || condition.contains('mendung')) {
+      if (isNightToday) {
+        // Cloudy Night
+        themeColor = const Color(0xFF94A3B8); // Slate grey
+        badgeBgColor = const Color(0xFFF8FAFC);
+        badgeTextColor = const Color(0xFF475569);
+        fallbackIcon = Icons.nights_stay_rounded; // Moon with cloud
+      } else {
+        // Cloudy Day
+        themeColor = const Color(0xFF64748B);
+        badgeBgColor = const Color(0xFFE2E8F0);
+        badgeTextColor = const Color(0xFF334155);
+        fallbackIcon = Icons.cloud_rounded;
+      }
     } else if (condition.contains('hujan')) {
       // Rainy
       themeColor = const Color(0xFF3B82F6);
@@ -574,12 +608,6 @@ class _CuacaPageState extends State<CuacaPage> {
       badgeBgColor = const Color(0xFFEDE9FE);
       badgeTextColor = const Color(0xFF6D28D9);
       fallbackIcon = Icons.thunderstorm_rounded;
-    } else if (condition.contains('berawan') || condition.contains('mendung')) {
-      // Cloudy
-      themeColor = const Color(0xFF64748B);
-      badgeBgColor = const Color(0xFFE2E8F0);
-      badgeTextColor = const Color(0xFF334155);
-      fallbackIcon = Icons.cloud_rounded;
     }
 
     final Color dayColor = isEst ? const Color(0xFF94A3B8) : const Color(0xFF0F172A);
@@ -601,10 +629,6 @@ class _CuacaPageState extends State<CuacaPage> {
     final double startPct = (data.minTemp - minWeekly) / range;
     final double endPct = (data.maxTemp - minWeekly) / range;
     final double widthPct = (endPct - startPct).clamp(0.12, 1.0);
-    
-    const double trackWidth = 55.0;
-    final double leftPosition = (startPct * trackWidth).clamp(0.0, trackWidth - 8.0);
-    final double barWidth = (widthPct * trackWidth).clamp(8.0, trackWidth - leftPosition);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -632,7 +656,7 @@ class _CuacaPageState extends State<CuacaPage> {
               // Left Accent Line for visual indication
               Container(
                 width: 6,
-                color: isEst ? const Color(0xFFCBD5E1) : themeColor,
+                color: isEst ? const Color(0xFFCBD5E1) : const Color(0xFF2196F3),
               ),
               // Main content of the card
               Expanded(
@@ -692,7 +716,7 @@ class _CuacaPageState extends State<CuacaPage> {
 
                       // Center: Weather icon and condition badge
                       Expanded(
-                        flex: 4,
+                        flex: 3,
                         child: Opacity(
                           opacity: contentOpacity,
                           child: Column(
@@ -741,7 +765,7 @@ class _CuacaPageState extends State<CuacaPage> {
                             children: [
                               // Min Temp Text
                               SizedBox(
-                                width: 32,
+                                width: 24,
                                 child: Text(
                                   '${data.minTemp}°',
                                   textAlign: TextAlign.right,
@@ -752,41 +776,50 @@ class _CuacaPageState extends State<CuacaPage> {
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: 6),
                               // Range Bar
-                              Container(
-                                width: trackWidth,
-                                height: 5,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFF1F5F9),
-                                  borderRadius: BorderRadius.circular(2.5),
-                                ),
-                                child: Stack(
-                                  children: [
-                                    Positioned(
-                                      left: leftPosition,
-                                      width: barWidth,
-                                      top: 0,
-                                      bottom: 0,
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          gradient: LinearGradient(
-                                            colors: [
-                                              const Color(0xFF60A5FA), // Cool blue for min
-                                              isEst ? const Color(0xFF94A3B8) : themeColor, // Theme color for max
-                                            ],
+                              Expanded(
+                                child: Container(
+                                  height: 5,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF1F5F9),
+                                    borderRadius: BorderRadius.circular(2.5),
+                                  ),
+                                  child: Builder(
+                                    builder: (context) {
+                                      final int leftFlex = (startPct * 1000).round();
+                                      final int barFlex = (widthPct * 1000).round().clamp(1, 1000);
+                                      final int rightFlex = ((1.0 - startPct - widthPct) * 1000).round();
+                                      return Row(
+                                        children: [
+                                          if (leftFlex > 0)
+                                            Spacer(flex: leftFlex),
+                                          Expanded(
+                                            flex: barFlex,
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                gradient: LinearGradient(
+                                                  colors: [
+                                                    const Color(0xFF60A5FA), // Cool blue for min
+                                                    isEst ? const Color(0xFF94A3B8) : themeColor, // Theme color for max
+                                                  ],
+                                                ),
+                                                borderRadius: BorderRadius.circular(2.5),
+                                              ),
+                                            ),
                                           ),
-                                          borderRadius: BorderRadius.circular(2.5),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                                          if (rightFlex > 0)
+                                            Spacer(flex: rightFlex),
+                                        ],
+                                      );
+                                    }
+                                  ),
                                 ),
                               ),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: 6),
                               // Max Temp Text
                               SizedBox(
-                                width: 32,
+                                width: 28,
                                 child: Text(
                                   '${data.maxTemp}°',
                                   textAlign: TextAlign.left,

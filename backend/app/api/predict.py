@@ -267,3 +267,17 @@ async def get_anomali_simulasi():
             hasil_list.append(g)
 
     return {"data": hasil_list}
+
+@router.get("/reverse-geocode")
+async def reverse_geocode(lat: float, lon: float):
+    url = f"https://nominatim.openstreetmap.org/reverse?format=json&lat={lat}&lon={lon}&zoom=16&addressdetails=1"
+    headers = {"User-Agent": "AmaninApp/1.0"}
+    try:
+        res = requests.get(url, headers=headers, timeout=5)
+        if res.status_code == 200:
+            return res.json()
+        else:
+            raise HTTPException(status_code=res.status_code, detail="Gagal menghubungi server geocoding")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+

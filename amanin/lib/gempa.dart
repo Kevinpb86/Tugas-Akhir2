@@ -13,6 +13,7 @@ import 'asuransi.dart';
 import 'services/bmkg_service.dart';
 import 'services/usgs_service.dart';
 import 'services/anomali_service.dart';
+import 'services/api_config.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'dart:convert';
@@ -85,6 +86,9 @@ class _GempaPageState extends State<GempaPage> {
       );
 
       try {
+        if (kIsWeb) {
+          throw Exception("Geocoding package is not supported on web");
+        }
         List<Placemark> placemarks = await placemarkFromCoordinates(
           position.latitude,
           position.longitude,
@@ -111,11 +115,10 @@ class _GempaPageState extends State<GempaPage> {
         print("[Gempa] Geocoding package error: $e, falling back to Nominatim");
         try {
           final url = Uri.parse(
-            'https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.latitude}&lon=${position.longitude}&zoom=16&addressdetails=1',
+            '${ApiConfig.baseUrl}/reverse-geocode?lat=${position.latitude}&lon=${position.longitude}',
           );
           final response = await http.get(
             url,
-            headers: {'User-Agent': 'AmaninApp/1.0'},
           ).timeout(const Duration(seconds: 3));
           if (response.statusCode == 200) {
             final data = json.decode(response.body);
@@ -124,10 +127,11 @@ class _GempaPageState extends State<GempaPage> {
               final addr = data['address'];
               cityName =
                   addr['town'] ??
-                  addr['subdistrict'] ??
-                  addr['suburb'] ??
-                  addr['city_district'] ??
                   addr['city'] ??
+                  addr['city_district'] ??
+                  addr['subdistrict'] ??
+                  addr['village'] ??
+                  addr['suburb'] ??
                   addr['county'] ??
                   addr['state'] ??
                   'Jakarta Pusat';
