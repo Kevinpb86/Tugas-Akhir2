@@ -62,6 +62,9 @@ class _EdukasiPageState extends State<EdukasiPage> {
       );
 
       try {
+        if (kIsWeb) {
+          throw Exception("Geocoding package is not supported on web");
+        }
         List<Placemark> placemarks = await placemarkFromCoordinates(
           position.latitude,
           position.longitude,
@@ -90,11 +93,10 @@ class _EdukasiPageState extends State<EdukasiPage> {
         );
         try {
           final url = Uri.parse(
-            'https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.latitude}&lon=${position.longitude}&zoom=16&addressdetails=1',
+            '${ApiConfig.baseUrl}/reverse-geocode?lat=${position.latitude}&lon=${position.longitude}',
           );
           final response = await http.get(
             url,
-            headers: {'User-Agent': 'AmaninApp/1.0'},
           ).timeout(const Duration(seconds: 3));
           if (response.statusCode == 200) {
             final data = json.decode(response.body);
@@ -103,10 +105,11 @@ class _EdukasiPageState extends State<EdukasiPage> {
               final addr = data['address'];
               cityName =
                   addr['town'] ??
-                  addr['subdistrict'] ??
-                  addr['suburb'] ??
-                  addr['city_district'] ??
                   addr['city'] ??
+                  addr['city_district'] ??
+                  addr['subdistrict'] ??
+                  addr['village'] ??
+                  addr['suburb'] ??
                   addr['county'] ??
                   addr['state'] ??
                   'Jakarta Pusat';

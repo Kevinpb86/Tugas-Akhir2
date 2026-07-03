@@ -58,6 +58,7 @@ class _EdukasiWaspadaPageState extends State<EdukasiWaspadaPage> {
     };
 
     return Scaffold(
+      extendBodyBehindAppBar: true,
       backgroundColor: const Color(0xFFF8F9FA), // Consistent subtle background
       appBar: AppBar(
         title: const Text(
@@ -70,7 +71,7 @@ class _EdukasiWaspadaPageState extends State<EdukasiWaspadaPage> {
           ),
         ),
         centerTitle: true,
-        backgroundColor: const Color(0xFFFFC107), // Bright Yellow
+        backgroundColor: Colors.transparent, // Transparent AppBar
         iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
       ),
@@ -83,7 +84,11 @@ class _EdukasiWaspadaPageState extends State<EdukasiWaspadaPage> {
             Container(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Color(0xFFFFC107), Color(0xFFFFB300)], // Bright Yellow gradient
+                  colors: [
+                    Color(0xFFD97706), // Amber pekat mendalam (kiri)
+                    Color(0xFFEAB308), // Kuning murni hangat (tengah)
+                    Color(0xFFF1C40F), // Kuning Sunflower pekat (kanan)
+                  ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -92,7 +97,12 @@ class _EdukasiWaspadaPageState extends State<EdukasiWaspadaPage> {
                   bottomRight: Radius.circular(36),
                 ),
               ),
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+              padding: EdgeInsets.fromLTRB(
+                20,
+                MediaQuery.of(context).padding.top + kToolbarHeight + 12,
+                20,
+                32,
+              ),
               child: Column(
                 children: [
                   Container(
@@ -164,10 +174,10 @@ class _EdukasiWaspadaPageState extends State<EdukasiWaspadaPage> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFFC107).withValues(alpha: 0.15),
+                          color: const Color(0xFFD97706).withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: const Color(0xFFFFC107).withValues(alpha: 0.50),
+                            color: const Color(0xFFD97706).withValues(alpha: 0.50),
                             width: 1,
                           ),
                         ),
@@ -177,7 +187,7 @@ class _EdukasiWaspadaPageState extends State<EdukasiWaspadaPage> {
                             Icon(
                               categoryIcons[_currentCategory],
                               size: 14,
-                              color: const Color(0xFFFFC107),
+                              color: const Color(0xFFD97706),
                             ),
                             const SizedBox(width: 6),
                             Text(
@@ -185,7 +195,7 @@ class _EdukasiWaspadaPageState extends State<EdukasiWaspadaPage> {
                               style: const TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w900,
-                                color: Color(0xFFFFC107),
+                                color: Color(0xFFD97706),
                                 letterSpacing: 0.2,
                               ),
                             ),
@@ -200,7 +210,7 @@ class _EdukasiWaspadaPageState extends State<EdukasiWaspadaPage> {
                   _buildSectionTitle(
                     'Langkah Edukasi Mandiri',
                     Icons.menu_book_rounded,
-                    const Color(0xFFFFC107),
+                    const Color(0xFFD97706),
                   ),
                   const SizedBox(height: 10),
 
@@ -209,7 +219,7 @@ class _EdukasiWaspadaPageState extends State<EdukasiWaspadaPage> {
                     '1. PRABENCANA (SIAGA)',
                     siagaDesc,
                     Icons.home_work_rounded,
-                    const Color(0xFFFFCB47),
+                    const Color(0xFFD97706),
                     0,
                   ),
                   const SizedBox(height: 10),
@@ -217,7 +227,7 @@ class _EdukasiWaspadaPageState extends State<EdukasiWaspadaPage> {
                     '2. SAAT BENCANA (RESPONS)',
                     saatGempaDesc,
                     Icons.crisis_alert_rounded,
-                    const Color(0xFFFFD54F),
+                    const Color(0xFFD97706),
                     1,
                   ),
                   const SizedBox(height: 10),
@@ -225,7 +235,7 @@ class _EdukasiWaspadaPageState extends State<EdukasiWaspadaPage> {
                     '3. PASCABENCANA (PULIH)',
                     pascaGempaDesc,
                     Icons.check_circle_rounded,
-                    const Color(0xFF10B981),
+                    const Color(0xFFD97706),
                     2,
                   ),
                   const SizedBox(height: 24),
@@ -326,7 +336,7 @@ class _EdukasiWaspadaPageState extends State<EdukasiWaspadaPage> {
                 child: Icon(
                   icon,
                   size: 85,
-                  color: const Color(0xFFFFC107),
+                  color: accentColor,
                 ),
               ),
             ),
@@ -352,10 +362,10 @@ class _EdukasiWaspadaPageState extends State<EdukasiWaspadaPage> {
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFFC107).withValues(alpha: 0.20),
+                          color: accentColor.withValues(alpha: 0.20),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Icon(icon, color: const Color(0xFFFFC107), size: 22),
+                        child: Icon(icon, color: accentColor, size: 22),
                       ),
                       const SizedBox(width: 16),
                       Expanded(
@@ -367,17 +377,17 @@ class _EdukasiWaspadaPageState extends State<EdukasiWaspadaPage> {
                                 Expanded(
                                   child: Text(
                                     title,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 11.5,
                                       fontWeight: FontWeight.w900,
-                                      color: Color(0xFFFFC107), // Yellow heading
+                                      color: accentColor, // Dynamic accent heading
                                       letterSpacing: 0.5,
                                     ),
                                   ),
                                 ),
                                 Icon(
                                   Icons.arrow_forward_ios_rounded,
-                                  color: const Color(0xFFFFC107).withValues(alpha: 0.80),
+                                  color: accentColor.withValues(alpha: 0.80),
                                   size: 11,
                                 ),
                               ],
@@ -520,6 +530,32 @@ class _EdukasiWaspadaPageState extends State<EdukasiWaspadaPage> {
       ),
     );
   }
+}
+
+class _DiagonalStripePainter extends CustomPainter {
+  final Color color;
+  const _DiagonalStripePainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 1.2
+      ..style = PaintingStyle.stroke;
+    const spacing = 20.0;
+    for (double i = -size.height;
+        i < size.width + size.height;
+        i += spacing) {
+      canvas.drawLine(
+        Offset(i, 0),
+        Offset(i + size.height, size.height),
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_DiagonalStripePainter old) => old.color != color;
 }
 
 

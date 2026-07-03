@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'panduan_fitur.dart';
 import 'deteksi_lingkungan.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
 import 'package:latlong2/latlong.dart';
 import 'gempa_detail.dart';
 import 'utils/earthquake_map.dart';
@@ -78,6 +79,33 @@ class _BerandaPageState extends State<BerandaPage> {
   final GlobalKey _newsKey = GlobalKey();
   final GlobalKey _insuranceKey = GlobalKey();
   final ScrollController _scrollController = ScrollController();
+
+  IconData _getWeatherIcon(String condition, {bool checkNight = false}) {
+    final cond = condition.toLowerCase();
+    final int hour = DateTime.now().hour;
+    final bool isNight = checkNight && (hour >= 18 || hour < 6);
+
+    if (cond.contains('petir') || cond.contains('kilat') || cond.contains('badai')) {
+      return Icons.thunderstorm_rounded;
+    } else if (cond.contains('hujan')) {
+      return Icons.umbrella_rounded;
+    } else if (cond.contains('berawan') || cond.contains('mendung')) {
+      if (isNight) {
+        return Icons.nights_stay_rounded;
+      }
+      return Icons.cloud_rounded;
+    } else if (cond.contains('cerah')) {
+      if (isNight) {
+        return Icons.nightlight_round;
+      }
+      return Icons.wb_sunny_rounded;
+    }
+    
+    if (isNight) {
+      return Icons.nightlight_round;
+    }
+    return Icons.wb_sunny_rounded;
+  }
 
   @override
   void initState() {
@@ -525,71 +553,6 @@ class _BerandaPageState extends State<BerandaPage> {
                       ),
                       child: Column(
                         children: [
-                          // Lingkungan Row
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(color: const Color(0xFFE2E8F0)),
-                                ),
-                                child: Icon(
-                                  _isIndoor ? Icons.home_rounded : Icons.wb_sunny_rounded,
-                                  color: const Color(0xFF64748B),
-                                  size: 16,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Lingkungan',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color: Color(0xFF94A3B8),
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    _isIndoor ? 'Dalam Ruangan' : 'Luar Ruangan',
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w900,
-                                      color: Color(0xFF1E293B),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const Spacer(),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFF1F5F9),
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(color: const Color(0xFFE2E8F0)),
-                                ),
-                                child: Text(
-                                  _environmentType == 'Pegunungan'
-                                      ? (_nearbyMountainName.isNotEmpty ? 'Dekat $_nearbyMountainName' : 'Pegunungan')
-                                      : _environmentType == 'Pantai'
-                                      ? 'Pesisir Pantai'
-                                      : 'Perkotaan',
-                                  style: const TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w800,
-                                    color: Color(0xFF64748B),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          const Divider(height: 1, color: Color(0xFFE2E8F0)),
-                          const SizedBox(height: 10),
                           // Tingkat Bahaya Row
                           Row(
                             children: [
@@ -857,71 +820,6 @@ class _BerandaPageState extends State<BerandaPage> {
                       ),
                       child: Column(
                         children: [
-                          // Lingkungan Row
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(color: const Color(0xFFE2E8F0)),
-                                ),
-                                child: Icon(
-                                  _isIndoor ? Icons.home_rounded : Icons.wb_sunny_rounded,
-                                  color: const Color(0xFF64748B),
-                                  size: 16,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Lingkungan',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color: Color(0xFF94A3B8),
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    _isIndoor ? 'Dalam Ruangan' : 'Luar Ruangan',
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w900,
-                                      color: Color(0xFF1E293B),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const Spacer(),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFF1F5F9),
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(color: const Color(0xFFE2E8F0)),
-                                ),
-                                child: Text(
-                                  _environmentType == 'Pegunungan'
-                                      ? (_nearbyMountainName.isNotEmpty ? 'Dekat $_nearbyMountainName' : 'Pegunungan')
-                                      : _environmentType == 'Pantai'
-                                      ? 'Pesisir Pantai'
-                                      : 'Perkotaan',
-                                  style: const TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w800,
-                                    color: Color(0xFF64748B),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          const Divider(height: 1, color: Color(0xFFE2E8F0)),
-                          const SizedBox(height: 10),
                           // Tingkat Bahaya Row
                           Row(
                             children: [
@@ -1082,6 +980,9 @@ class _BerandaPageState extends State<BerandaPage> {
       );
 
       try {
+        if (kIsWeb) {
+          throw Exception("Geocoding package is not supported on web");
+        }
         List<Placemark> placemarks = await placemarkFromCoordinates(
           position.latitude,
           position.longitude,
@@ -1113,11 +1014,10 @@ class _BerandaPageState extends State<BerandaPage> {
         // Fallback for Web using OpenStreetMap Nominatim API
         try {
           final url = Uri.parse(
-            'https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.latitude}&lon=${position.longitude}&zoom=16&addressdetails=1',
+            '${ApiConfig.baseUrl}/reverse-geocode?lat=${position.latitude}&lon=${position.longitude}',
           );
           final response = await http.get(
             url,
-            headers: {'User-Agent': 'AmaninApp/1.0'},
           ).timeout(const Duration(seconds: 3));
           if (response.statusCode == 200) {
             final data = json.decode(response.body);
@@ -1127,10 +1027,11 @@ class _BerandaPageState extends State<BerandaPage> {
               final addr = data['address'];
               cityName =
                   addr['town'] ??
-                  addr['subdistrict'] ??
-                  addr['suburb'] ??
-                  addr['city_district'] ??
                   addr['city'] ??
+                  addr['city_district'] ??
+                  addr['subdistrict'] ??
+                  addr['village'] ??
+                  addr['suburb'] ??
                   addr['county'] ??
                   addr['state'] ??
                   'Jakarta Pusat';
@@ -1176,8 +1077,8 @@ class _BerandaPageState extends State<BerandaPage> {
 
     if (mounted) {
       setState(() {
-        _isIndoor = true; // FORCE INDOOR FOR TESTING
-        _environmentType = 'Perkotaan'; // FORCE PERKOTAAN FOR TESTING
+        _isIndoor = result.isIndoor;
+        _environmentType = result.environmentType;
         _nearbyMountainName = result.nearbyMountainName;
       });
     }
@@ -2067,71 +1968,6 @@ class _BerandaPageState extends State<BerandaPage> {
                       ),
                       child: Column(
                         children: [
-                          // Lingkungan Row
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(color: const Color(0xFFE2E8F0)),
-                                ),
-                                child: Icon(
-                                  _isIndoor ? Icons.home_rounded : Icons.wb_sunny_rounded,
-                                  color: const Color(0xFF64748B),
-                                  size: 16,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Lingkungan',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color: Color(0xFF94A3B8),
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    _isIndoor ? 'Dalam Ruangan' : 'Luar Ruangan',
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w900,
-                                      color: Color(0xFF1E293B),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const Spacer(),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFF1F5F9),
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(color: const Color(0xFFE2E8F0)),
-                                ),
-                                child: Text(
-                                  _environmentType == 'Pegunungan'
-                                      ? (_nearbyMountainName.isNotEmpty ? 'Dekat $_nearbyMountainName' : 'Pegunungan')
-                                      : _environmentType == 'Pantai'
-                                      ? 'Pesisir Pantai'
-                                      : 'Perkotaan',
-                                  style: const TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w800,
-                                    color: Color(0xFF64748B),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          const Divider(height: 1, color: Color(0xFFE2E8F0)),
-                          const SizedBox(height: 10),
                           // Tingkat Bahaya Row
                           Row(
                             children: [
@@ -3150,7 +2986,6 @@ class _BerandaPageState extends State<BerandaPage> {
     final Color alertColor = isSignificant
         ? const Color(0xFFD32F2F)
         : const Color(0xFF0088CC);
-    final String alertLabel = isSignificant ? 'MAJOR ALERT' : 'INFO GEMPA';
 
     return Row(
       children: [
@@ -3166,24 +3001,6 @@ class _BerandaPageState extends State<BerandaPage> {
             fontSize: 16,
             fontWeight: FontWeight.bold,
             color: Color(0xFF1E293B),
-          ),
-        ),
-        const Spacer(),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: alertColor.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: alertColor.withOpacity(0.2), width: 1),
-          ),
-          child: Text(
-            alertLabel,
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.bold,
-              color: alertColor,
-              letterSpacing: 0.5,
-            ),
           ),
         ),
       ],
@@ -3366,6 +3183,7 @@ class _BerandaPageState extends State<BerandaPage> {
                             'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                         subdomains: const ['a', 'b', 'c'],
                         userAgentPackageName: 'com.example.amanin',
+                        tileProvider: CancellableNetworkTileProvider(),
                       ),
                       MarkerLayer(
                         markers: [
@@ -4328,31 +4146,13 @@ class _BerandaPageState extends State<BerandaPage> {
                                             ),
                                           ),
                                         )
-                                      : (_latestQuake != null &&
-                                                _latestCuaca != null &&
-                                                _latestCuaca!.image.isNotEmpty
-                                            ? Center(
-                                                child: Image.network(
-                                                  _latestCuaca!.image,
-                                                  width: 24,
-                                                  height: 24,
-                                                  errorBuilder:
-                                                      (
-                                                        context,
-                                                        error,
-                                                        stackTrace,
-                                                      ) => const Icon(
-                                                        Icons.cloud_outlined,
-                                                        color: Colors.white,
-                                                        size: 20,
-                                                      ),
-                                                ),
-                                              )
-                                            : const Icon(
-                                                Icons.cloud_outlined,
-                                                color: Colors.white,
-                                                size: 20,
-                                              )),
+                                      : Center(
+                                          child: Icon(
+                                            _getWeatherIcon(_latestCuaca?.cuaca ?? '', checkNight: true),
+                                            color: Colors.white,
+                                            size: 22,
+                                          ),
+                                        ),
                                 ),
                               ],
                             ),
@@ -4912,12 +4712,12 @@ class _EarthquakeWarning3DBanner extends StatelessWidget {
       iconData = Icons.crisis_alert_rounded;
     } else if (bannerStatus == 'Bahaya Sedang') {
       gradientColors = const [
-        Color(0xFFFFC107), // Flat solid yellow
-        Color(0xFFFFC107),
-        Color(0xFFFFC107),
+        Color(0xFFD97706), // Amber pekat mendalam (kiri)
+        Color(0xFFEAB308), // Kuning murni hangat (tengah)
+        Color(0xFFF1C40F), // Kuning Sunflower pekat (kanan - tidak pudar ke putih)
       ];
-      shadowColor = const Color(0xFFFFC107);
-      accentLight = Colors.white; // White text and icon details on yellow background
+      shadowColor = const Color(0xFFD97706);
+      accentLight = Colors.white;
       badgeText = 'SEDANG';
       statusLabel = 'BAHAYA SEDANG';
       iconData = Icons.warning_amber_rounded;
