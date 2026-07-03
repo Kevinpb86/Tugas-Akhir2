@@ -322,7 +322,20 @@ class _BerandaPageState extends State<BerandaPage> {
     try {
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.low,
-      );
+      ).timeout(const Duration(seconds: 3), onTimeout: () {
+        return Position(
+          latitude: -6.2625, // default Tambun Selatan
+          longitude: 107.0539,
+          timestamp: DateTime.now(),
+          accuracy: 10000.0,
+          altitude: 0.0,
+          altitudeAccuracy: 0.0,
+          heading: 0.0,
+          headingAccuracy: 0.0,
+          speed: 0.0,
+          speedAccuracy: 0.0,
+        );
+      });
 
       final url = Uri.parse('${ApiConfig.baseUrl}/api/edukasi/waspada');
       final response = await http.post(

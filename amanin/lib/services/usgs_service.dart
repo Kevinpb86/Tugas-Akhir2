@@ -64,7 +64,11 @@ class UsgsService {
           '&limit=300'
           '&orderby=time';
 
-      final response = await http.get(Uri.parse(url));
+      final response = await http
+          .get(Uri.parse(url))
+          .timeout(const Duration(seconds: 10), onTimeout: () {
+        throw Exception('Koneksi ke server USGS timeout (lebih dari 10 detik).');
+      });
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);

@@ -11,8 +11,8 @@ class ApiConfig {
   // 3. Ganti _androidUrl di bawah dengan IP tersebut atau gunakan public tunnel (contoh: 'http://192.168.1.10:8000').
   
   static const String _webUrl = 'http://127.0.0.1:8000';
-  static const String _androidUrl = 'http://172.16.1.48:8000'; // Ganti dengan IP laptop Anda jika diperlukan
-  // static const String _androidUrl = 'https://llpx8v-ip-182-10-131-224.tunnelmole.net';
+  // static const String _androidUrl = 'http://172.16.1.48:8000'; // Ganti dengan IP laptop Anda jika diperlukan
+  static const String _androidUrl = 'https://wyyl7c-ip-182-10-131-224.tunnelmole.net';
 
   static String get baseUrl => kIsWeb ? _webUrl : _androidUrl;
 }
