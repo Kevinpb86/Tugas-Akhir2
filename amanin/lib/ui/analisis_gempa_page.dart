@@ -450,45 +450,64 @@ class _AnalisisGempaPageState extends State<AnalisisGempaPage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Amanin',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1A1A1A),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Amanin',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1A1A1A),
+                ),
               ),
-            ),
-            const SizedBox(height: 4),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color(0xFFE0F7FA), // Light cyan
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.location_on,
-                    color: Color(0xFF00BCD4),
-                    size: 14,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    _currentCityName,
-                    style: const TextStyle(
-                      fontSize: 13,
+              const SizedBox(height: 4),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE0F7FA),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.location_on,
                       color: Color(0xFF00BCD4),
-                      fontWeight: FontWeight.w600,
+                      size: 14,
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: ValueListenableBuilder<String>(
+                        valueListenable: userCityNameNotifier,
+                        builder: (context, cityName, _) {
+                          final displayCity =
+                              cityName.isNotEmpty ? cityName : _currentCityName;
+
+                          return Text(
+                            displayCity,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: Color(0xFF00BCD4),
+                              fontWeight: FontWeight.w600,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    const Icon(
+                      Icons.sync_rounded,
+                      color: Color(0xFF00BCD4),
+                      size: 14,
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         Row(
           children: [
@@ -517,12 +536,12 @@ class _AnalisisGempaPageState extends State<AnalisisGempaPage> {
                   ),
                   Positioned(
                     top: 10,
-                    right: 12,
+                    right: 10,
                     child: Container(
                       width: 8,
                       height: 8,
                       decoration: const BoxDecoration(
-                        color: Color(0xFFF44336),
+                        color: Color(0xFFFF5252),
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -534,17 +553,8 @@ class _AnalisisGempaPageState extends State<AnalisisGempaPage> {
             ValueListenableBuilder<bool>(
               valueListenable: isLoggedInNotifier,
               builder: (context, isLoggedIn, _) {
-                return isLoggedIn
-                    ? InkWell(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const AkunPage(),
-                      ),
-                    );
-                  },
-                  child: Container(
+                if (isLoggedIn) {
+                  return Container(
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
@@ -558,16 +568,28 @@ class _AnalisisGempaPageState extends State<AnalisisGempaPage> {
                         ),
                       ],
                     ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.person_outline,
-                        color: Color(0xFF1A1A1A),
-                        size: 24,
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const AkunPage(),
+                          ),
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      child: const Center(
+                        child: Icon(
+                          Icons.person_outline,
+                          color: Color(0xFF1A1A1A),
+                          size: 24,
+                        ),
                       ),
                     ),
-                  ),
-                )
-                    : InkWell(
+                  );
+                }
+
+                return InkWell(
                   onTap: () {
                     Navigator.push(
                       context,

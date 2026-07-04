@@ -4,8 +4,6 @@ import 'login.dart';
 import 'main.dart';
 import 'asuransi.dart';
 import 'semua_video.dart';
-import 'video_edukasi.dart';
-import 'mitigasi_gempa.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'dart:convert';
