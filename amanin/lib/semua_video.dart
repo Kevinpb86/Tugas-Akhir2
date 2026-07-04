@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'services/edukasi_service.dart';
 
@@ -123,10 +124,14 @@ class _SemuaVideoPageState extends State<SemuaVideoPage> {
         onTap: () {
           if (!isPlaying) _playVideo(_featuredVideo!['id']);
         },
-        child: Container(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Container(
           margin: const EdgeInsets.only(bottom: 24),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Colors.white.withValues(alpha: 0.85),
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
@@ -136,7 +141,7 @@ class _SemuaVideoPageState extends State<SemuaVideoPage> {
                 offset: const Offset(0, 5),
               ),
             ],
-            border: Border.all(color: Colors.amber.shade300, width: 2),
+            border: Border.all(color: Colors.amber.shade300.withValues(alpha: 0.5), width: 1.5),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -230,6 +235,8 @@ class _SemuaVideoPageState extends State<SemuaVideoPage> {
             ],
           ),
         ),
+          ),
+        ),
       ),
     );
   }
@@ -244,16 +251,21 @@ class _SemuaVideoPageState extends State<SemuaVideoPage> {
         onTap: () {
           if (!isPlaying) _playVideo(video['id']);
         },
-        child: Container(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Container(
           margin: const EdgeInsets.only(bottom: 14),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Colors.white.withValues(alpha: 0.85),
             borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.04),
-                blurRadius: 12,
-                offset: const Offset(0, 3),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
@@ -360,6 +372,8 @@ class _SemuaVideoPageState extends State<SemuaVideoPage> {
                 ),
               ),
             ],
+          ),
+        ),
           ),
         ),
       ),

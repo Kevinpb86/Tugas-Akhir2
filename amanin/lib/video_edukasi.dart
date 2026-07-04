@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 
 class VideoEdukasiPage extends StatelessWidget {
   const VideoEdukasiPage({super.key});
@@ -479,12 +480,16 @@ class VideoEdukasiPage extends StatelessWidget {
   }
 
   Widget _buildNextVideoCard() {
-    return Container(
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.white.withValues(alpha: 0.85),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -571,6 +576,8 @@ class VideoEdukasiPage extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    ),
       ),
     );
   }

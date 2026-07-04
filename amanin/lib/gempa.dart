@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'dart:async';
 import 'riwayat_gempa.dart';
 import 'utils/earthquake_map.dart';
@@ -448,15 +449,20 @@ class _GempaPageState extends State<GempaPage> {
 
 
   Widget _buildMainEarthquakeCard() {
-    return Container(
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(24),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.white.withValues(alpha: 0.85),
         borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 24,
-            offset: const Offset(0, 8),
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 30,
+            offset: const Offset(0, 10),
           ),
         ],
       ),
@@ -762,6 +768,8 @@ class _GempaPageState extends State<GempaPage> {
           ),
         ],
       ),
+    ),
+      ),
     );
   }
 
@@ -980,12 +988,16 @@ class _GempaPageState extends State<GempaPage> {
   }
 
   Widget _buildInfoBox(String value, String label, Color valueColor) {
-    return Container(
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+        child: Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.white.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.4)),
       ),
       child: Column(
         children: [
@@ -1006,6 +1018,8 @@ class _GempaPageState extends State<GempaPage> {
             ),
           ),
         ],
+      ),
+    ),
       ),
     );
   }
@@ -1164,19 +1178,23 @@ class _GempaPageState extends State<GempaPage> {
       magLevelColor = const Color(0xFFF44336); // Tinggi (Red)
     }
 
-    return Container(
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+        child: Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.white.withValues(alpha: 0.85),
         borderRadius: BorderRadius.circular(20),
         border: quake.isAnomali
             ? Border.all(color: Colors.red.shade300, width: 1.5)
-            : null,
+            : Border.all(color: Colors.white.withValues(alpha: 0.3)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 20,
+            offset: const Offset(0, 6),
           ),
           if (quake.isAnomali)
             BoxShadow(
@@ -1350,20 +1368,27 @@ class _GempaPageState extends State<GempaPage> {
           ),
         ),
       ),
+    ),
+      ),
     );
   }
 
   Widget _buildInsuranceSection(BuildContext context) {
-    return Container(
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(24),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.white.withValues(alpha: 0.85),
         borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 24,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -1474,6 +1499,8 @@ class _GempaPageState extends State<GempaPage> {
             style: TextStyle(fontSize: 10, color: Color(0xFF9E9E9E)),
           ),
         ],
+      ),
+    ),
       ),
     );
   }
