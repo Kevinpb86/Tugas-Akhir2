@@ -1,9 +1,11 @@
+from pathlib import Path
+
 import pandas as pd
 from app.config.database import SessionLocal
 from app.db_models.edukasi import ZonaGPS
 
-# Sesuaikan lokasi file CSV jika berbeda
-CSV_PATH = "data/Database_Zona_GPS_Amanin.csv"
+BACKEND_DIR = Path(__file__).resolve().parents[2]
+CSV_PATH = BACKEND_DIR / "data" / "Database_Zona_GPS.csv"
 
 def run_seed():
     db = SessionLocal()

@@ -39,6 +39,8 @@ class _GempaPageState extends State<GempaPage> {
   @override
   void initState() {
     super.initState();
+    _currentCityName = userCityNameNotifier.value;
+    userCityNameNotifier.addListener(_syncCityNameFromNotifier);
     _requestLocationPermission();
     _refreshData();
     // Set up auto-refresh timer every 60 seconds
@@ -49,12 +51,22 @@ class _GempaPageState extends State<GempaPage> {
 
   @override
   void dispose() {
+    userCityNameNotifier.removeListener(_syncCityNameFromNotifier);
     _refreshTimer?.cancel();
     super.dispose();
   }
 
+  void _syncCityNameFromNotifier() {
+    final cityName = userCityNameNotifier.value;
+    if (!mounted || cityName.isEmpty || cityName == _currentCityName) return;
+
+    setState(() {
+      _currentCityName = cityName;
+    });
+  }
+
   Future<void> _requestLocationPermission() async {
-    String cityName = 'Jakarta Pusat';
+    String cityName = userCityNameNotifier.value;
     Position? position;
 
     try {
@@ -117,7 +129,7 @@ class _GempaPageState extends State<GempaPage> {
           );
           final response = await http.get(
             url,
-          ).timeout(const Duration(seconds: 3));
+          ).timeout(const Duration(seconds: 8));
           if (response.statusCode == 200) {
             final data = json.decode(response.body);
             print("[Gempa] Nominatim full address: ${data['address']}");
@@ -157,6 +169,9 @@ class _GempaPageState extends State<GempaPage> {
             _userPosition = position;
           }
         });
+        if (cityName.isNotEmpty && cityName != 'Memuat lokasi...') {
+          userCityNameNotifier.value = cityName;
+        }
       }
     }
   }
@@ -271,59 +286,67 @@ class _GempaPageState extends State<GempaPage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Amanin',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1A1A1A),
-              ),
-            ),
-            const SizedBox(height: 4),
-            GestureDetector(
-              onTap: () {
-                setState(() {
-                  _currentCityName = 'Memuat lokasi...';
-                });
-                _requestLocationPermission();
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE0F7FA), // Light cyan
-                  borderRadius: BorderRadius.circular(12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Amanin',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1A1A1A),
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.location_on,
-                      color: Color(0xFF00BCD4),
-                      size: 14,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      _currentCityName,
-                      style: const TextStyle(
-                        fontSize: 13,
+              ),
+              const SizedBox(height: 4),
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _currentCityName = 'Memuat lokasi...';
+                  });
+                  _requestLocationPermission();
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE0F7FA),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.location_on,
                         color: Color(0xFF00BCD4),
-                        fontWeight: FontWeight.w600,
+                        size: 14,
                       ),
-                    ),
-                    const SizedBox(width: 6),
-                    const Icon(
-                      Icons.sync_rounded,
-                      color: Color(0xFF00BCD4),
-                      size: 14,
-                    ),
-                  ],
+                      const SizedBox(width: 4),
+                      Flexible(
+                        child: Text(
+                          _currentCityName,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Color(0xFF00BCD4),
+                            fontWeight: FontWeight.w600,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      const Icon(
+                        Icons.sync_rounded,
+                        color: Color(0xFF00BCD4),
+                        size: 14,
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         Row(
           children: [
@@ -352,12 +375,12 @@ class _GempaPageState extends State<GempaPage> {
                   ),
                   Positioned(
                     top: 10,
-                    right: 12,
+                    right: 10,
                     child: Container(
                       width: 8,
                       height: 8,
                       decoration: const BoxDecoration(
-                        color: Color(0xFFF44336),
+                        color: Color(0xFFFF5252),
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -369,75 +392,79 @@ class _GempaPageState extends State<GempaPage> {
             ValueListenableBuilder<bool>(
               valueListenable: isLoggedInNotifier,
               builder: (context, isLoggedIn, _) {
-                return isLoggedIn
-                    ? InkWell(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const AkunPage(),
-                            ),
-                          );
-                        },
-                        child: Container(
-                          width: 44,
-                          height: 44,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: const Color(0xFFEEEEEE),
-                              width: 1,
-                            ),
-                          ),
-                          child: const Center(
-                            child: Icon(
-                              Icons.person_outline,
-                              color: Color(0xFF1A1A1A),
-                              size: 24,
-                            ),
-                          ),
+                if (isLoggedIn) {
+                  return Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
                         ),
-                      )
-                    : InkWell(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const LoginPage(),
-                            ),
-                          );
-                        },
-                        borderRadius: BorderRadius.circular(12),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
+                      ],
+                    ),
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const AkunPage(),
                           ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF00BCD4),
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(
-                                  0xFF00BCD4,
-                                ).withValues(alpha: 0.3),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: const Center(
-                            child: Text(
-                              'Masuk',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      child: const Center(
+                        child: Icon(
+                          Icons.person_outline,
+                          color: Color(0xFF1A1A1A),
+                          size: 24,
                         ),
-                      );
+                      ),
+                    ),
+                  );
+                }
+
+                return InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const LoginPage(),
+                      ),
+                    );
+                  },
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF00BCD4),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF00BCD4).withValues(alpha: 0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Center(
+                      child: Text(
+                        'Masuk',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
               },
             ),
           ],

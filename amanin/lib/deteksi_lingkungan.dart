@@ -348,7 +348,7 @@ class EnvironmentStatusCard extends StatelessWidget {
                             const SizedBox(height: 2),
                             Text(
                               environmentType == 'Pegunungan'
-                                  ? 'Dekat ${nearbyMountainName}'
+                                  ? 'Dekat $nearbyMountainName'
                                   : environmentType == 'Pantai'
                                   ? 'Pesisir Pantai'
                                   : 'Perkotaan',

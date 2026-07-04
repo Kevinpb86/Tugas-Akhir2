@@ -11,7 +11,6 @@ import 'package:http/http.dart' as http;
 import 'services/bmkg_service.dart';
 import 'services/api_config.dart';
 import 'utils/earthquake_map.dart';
-import 'gempa_detail.dart';
 
 class FullscreenMapPage extends StatefulWidget {
   final GempaModel gempa;
@@ -67,8 +66,8 @@ class _FullscreenMapPageState extends State<FullscreenMapPage> with SingleTicker
 
   void _startNotificationTimers() {
     _progressValue = 1.0;
-    const duration = const Duration(seconds: 2);
-    const tick = const Duration(milliseconds: 16);
+    const duration = Duration(seconds: 2);
+    const tick = Duration(milliseconds: 16);
     final int totalTicks = duration.inMilliseconds ~/ tick.inMilliseconds;
     int currentTick = 0;
 

@@ -1018,7 +1018,7 @@ class _BerandaPageState extends State<BerandaPage> {
           );
           final response = await http.get(
             url,
-          ).timeout(const Duration(seconds: 3));
+          ).timeout(const Duration(seconds: 8));
           if (response.statusCode == 200) {
             final data = json.decode(response.body);
             print("[Beranda] Nominatim full address: ${data['address']}");
