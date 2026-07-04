@@ -3,10 +3,10 @@ from app.services.ml_service import ml_models, ml_scalers
 from app.services.fetch_bmkg_service import BMKGService
 from app.services.cron_job_bmkg import run_job
 from app.config.logging import logger
+from app.services.rf_service import MLService
 
 router = APIRouter()
 service_bmkg = BMKGService()
-
 @router.get("/health")
 async def health_check():
     return {

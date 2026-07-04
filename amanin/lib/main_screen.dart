@@ -5,6 +5,7 @@ import 'gempa.dart';
 import 'edukasi.dart';
 import 'utils/localization.dart';
 import 'fitur.dart';
+import 'ui/analisis_gempa_page.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -40,7 +41,7 @@ class _MainScreenState extends State<MainScreen> {
       const Scaffold(
         body: Center(child: Text('Map Placeholder')),
       ), // Index 2 is the floating map button
-      const GempaPage(),
+      const AnalisisGempaPage(),
       const EdukasiPage(),
     ];
   }

@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'riwayat_gempa.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
-import 'utils/map_utils.dart';
 import 'utils/earthquake_map.dart';
 import 'fullscreen_map.dart';
 import 'akun.dart';

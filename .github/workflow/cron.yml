@@ -1,0 +1,17 @@
+name: BMKG Cron Job
+
+on:
+  schedule:
+    # setiap 5 menit
+    - cron: "*/5 * * * *"
+
+  workflow_dispatch:
+
+jobs:
+  trigger-cron:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Call FastAPI Cron Endpoint
+        run: |
+          curl -X GET "${{ secrets.CRON_URL }}"
