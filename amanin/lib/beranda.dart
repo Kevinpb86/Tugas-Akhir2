@@ -3106,14 +3106,12 @@ class _BerandaPageState extends State<BerandaPage> {
         borderRadius: BorderRadius.circular(24),
         border: _isLatestQuakeAnomali
             ? Border.all(color: Colors.red.shade400, width: 2)
-            : null,
+            : Border.all(color: Colors.black.withValues(alpha: 0.05), width: 1),
         boxShadow: [
           BoxShadow(
-            color: const Color(
-              0xFF092C4C,
-            ).withValues(alpha: 0.06), // Subtle BMKG blue shadow
-            blurRadius: 24,
-            offset: const Offset(0, 8),
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 30,
+            offset: const Offset(0, 10),
           ),
           if (_isLatestQuakeAnomali)
             BoxShadow(

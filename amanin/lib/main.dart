@@ -48,7 +48,7 @@ class MyApp extends StatelessWidget {
               seedColor: const Color(0xFF00BCD4),
             ),
             useMaterial3: true,
-            textTheme: GoogleFonts.poppinsTextTheme(Theme.of(context).textTheme)
+            textTheme: GoogleFonts.interTextTheme(Theme.of(context).textTheme)
                 .apply(
                   bodyColor: const Color(0xFF1A1A1A),
                   displayColor: const Color(0xFF1A1A1A),
