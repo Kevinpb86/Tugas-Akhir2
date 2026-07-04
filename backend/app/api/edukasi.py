@@ -1,7 +1,11 @@
 import os
 import requests
 from datetime import datetime
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Depends
+from sqlalchemy.orm import Session
+from app.config.database import get_db
+from app.api_schemas.edukasi_schema import EdukasiRequest, EdukasiResponse
+from app.services.edukasi_service import EdukasiService
 
 router = APIRouter()
 
@@ -65,3 +69,17 @@ def get_edukasi_videos(page_token: str = Query(None, alias="pageToken")):
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/waspada", response_model=EdukasiResponse)
+def check_waspada(req: EdukasiRequest, db: Session = Depends(get_db)):
+    try:
+        service = EdukasiService(db)
+        result = service.get_edukasi_status(req.latitude, req.longitude)
+        
+        return EdukasiResponse(
+            status=result["status"],
+            message=result["message"],
+            data=result["data"]
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Terjadi kesalahan saat memproses data: {str(e)}")

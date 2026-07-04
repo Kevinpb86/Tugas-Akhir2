@@ -13,8 +13,9 @@ MODEL_BMKG_PATH = os.path.join(MODEL_DIR, "bmkg_model.pkl")
 SCALER_BMKG_PATH = os.path.join(MODEL_DIR, "scaler_bmkg.pkl")
 MODEL_USGS_PATH = os.path.join(MODEL_DIR, "usgs_model.pkl")
 SCALER_USGS_PATH = os.path.join(MODEL_DIR, "scaler_usgs.pkl")
-MODEL_ANOMALI_PATH = os.path.join(MODEL_DIR, "isolation_forest_bmkg.pkl")
+MODEL_ANOMALI_PATH = os.path.join(MODEL_DIR, "model_anomali.pkl")
 SCALER_ANOMALI_PATH = os.path.join(MODEL_DIR, "scaler_anomali.pkl")
+REKOMENDASI_EDUKASI_PATH = os.path.join(MODEL_DIR, "rekomendasi_edukasi.pkl")
 
 ml_models = {
     "bmkg": None,
@@ -26,10 +27,11 @@ ml_scalers = {
 }
 anomali_model = None
 anomali_scaler = None
+rekomendasi_edukasi_model = None
 
 def load_ml_models():
     warnings.filterwarnings("ignore", category=InconsistentVersionWarning)
-    global anomali_model, anomali_scaler
+    global anomali_model, anomali_scaler, rekomendasi_edukasi_model
     try:
         if os.path.exists(MODEL_BMKG_PATH):
             ml_models["bmkg"] = joblib.load(MODEL_BMKG_PATH)
@@ -66,6 +68,12 @@ def load_ml_models():
             print("Scaler Anomali berhasil diload!")
         else:
             print(f"Warning: Scaler Anomali tidak ditemukan di {SCALER_ANOMALI_PATH}")
+
+        if os.path.exists(REKOMENDASI_EDUKASI_PATH):
+            rekomendasi_edukasi_model = joblib.load(REKOMENDASI_EDUKASI_PATH)
+            print("Model Rekomendasi Edukasi berhasil diload!")
+        else:
+            print(f"Warning: Model Rekomendasi Edukasi tidak ditemukan di {REKOMENDASI_EDUKASI_PATH}")
     except Exception as e:
         print(f"Error loading models: {e}")
 
@@ -124,6 +132,24 @@ def geocode_online(query: str) -> Optional[tuple[float, float]]:
         print(f"Error geocoding online: {e}")
     return None
 
+def extract_city_from_description(name: str) -> str:
+    name_lower = name.lower()
+    if "gempa" in name_lower or "km" in name_lower:
+        directions = ["barat daya", "barat laut", "timur laut", "tenggara", "selatan", "utara", "timur", "barat", "laut"]
+        for d in directions:
+            if d in name_lower:
+                parts = name_lower.split(d)
+                if len(parts) > 1:
+                    candidate = parts[-1].strip()
+                    for prefix in ["kab.", "kabupaten", "kota", "kecamatan", "desa"]:
+                        if candidate.startswith(prefix):
+                            candidate = candidate[len(prefix):].strip()
+                    if candidate:
+                        # Clean any non-alphanumeric chars at the end
+                        candidate = ''.join(c for c in candidate if c.isalnum() or c.isspace()).strip()
+                        return candidate
+    return name
+
 def resolve_coordinates(location_name: str) -> tuple[float, float]:
     clean_name = location_name.strip().lower()
     if clean_name in LOCAL_COORDINATES:
@@ -132,11 +158,23 @@ def resolve_coordinates(location_name: str) -> tuple[float, float]:
     coords = geocode_online(location_name)
     if coords:
         return coords
+
+    # Jika gagal, coba ekstrak nama wilayah/kota utama dari kalimat deskripsi BMKG
+    extracted_name = extract_city_from_description(location_name)
+    if extracted_name != location_name:
+        print(f"Extracted city name for geocoding: '{extracted_name}' from '{location_name}'")
+        extracted_clean = extracted_name.lower()
+        if extracted_clean in LOCAL_COORDINATES:
+            return LOCAL_COORDINATES[extracted_clean]
+        coords = geocode_online(extracted_name)
+        if coords:
+            return coords
         
     raise HTTPException(
         status_code=400, 
         detail=f"Lokasi '{location_name}' tidak dapat ditemukan atau tidak dikenali."
     )
+
 
 def validate_study_area(lat: float, lon: float, location_name: str = None):
     if not (LAT_MIN <= lat <= LAT_MAX) or not (LON_MIN <= lon <= LON_MAX):

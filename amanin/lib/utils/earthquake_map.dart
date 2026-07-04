@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
 import 'package:latlong2/latlong.dart';
 import 'map_utils.dart';
 
@@ -9,6 +10,7 @@ class EarthquakeMap extends StatelessWidget {
   final double initialZoom;
   final bool interactive;
   final LatLng? userLocation; // titik biru lokasi pengguna
+  final double offsetLatitude;
 
   const EarthquakeMap({
     super.key,
@@ -16,6 +18,7 @@ class EarthquakeMap extends StatelessWidget {
     this.initialZoom = 7.0,
     this.interactive = true,
     this.userLocation,
+    this.offsetLatitude = 0.0,
   });
 
   /// Hitung jarak dalam km menggunakan Haversine formula
@@ -127,9 +130,11 @@ class EarthquakeMap extends StatelessWidget {
         ),
     ];
 
+    final centerLatLng = LatLng(latLng.latitude - offsetLatitude, latLng.longitude);
+
     return FlutterMap(
       options: MapOptions(
-        initialCenter: latLng,
+        initialCenter: centerLatLng,
         initialZoom: initialZoom,
         interactionOptions: InteractionOptions(
           flags: interactive ? InteractiveFlag.all : InteractiveFlag.none,
@@ -138,9 +143,11 @@ class EarthquakeMap extends StatelessWidget {
       children: [
         TileLayer(
           urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+          subdomains: const ['a', 'b', 'c'],
           userAgentPackageName: 'com.example.amanin',
           maxZoom: 19,
           maxNativeZoom: 19,
+          tileProvider: CancellableNetworkTileProvider(),
         ),
         // Garis putus-putus dari lokasi pengguna ke pusat gempa
         if (userLocation != null)

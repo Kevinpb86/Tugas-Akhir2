@@ -45,6 +45,7 @@ class _GempaDetailPageState extends State<GempaDetailPage> {
                     coordinates: gempa!.coordinates,
                     initialZoom: 7.0,
                     interactive: false,
+                    offsetLatitude: 0.5,
                   )
                 : Container(color: const Color(0xFFE2E8F0)),
           ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
@@ -8,6 +9,7 @@ import 'dart:convert';
 import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'services/bmkg_service.dart';
+import 'services/api_config.dart';
 import 'utils/earthquake_map.dart';
 import 'gempa_detail.dart';
 
@@ -25,17 +27,29 @@ class FullscreenMapPage extends StatefulWidget {
   State<FullscreenMapPage> createState() => _FullscreenMapPageState();
 }
 
-class _FullscreenMapPageState extends State<FullscreenMapPage> {
+class _FullscreenMapPageState extends State<FullscreenMapPage> with SingleTickerProviderStateMixin {
   String _distanceText = 'Menghitung jarak...';
   LatLng? _userLatLng;
 
   bool _showNotification = false;
   double _progressValue = 1.0;
   Timer? _progressTimer;
+  bool _isDetailExpanded = true;
+  late AnimationController _expandController;
+  late Animation<double> _expandAnimation;
 
   @override
   void initState() {
     super.initState();
+    _expandController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 350),
+      value: 1.0,
+    );
+    _expandAnimation = CurvedAnimation(
+      parent: _expandController,
+      curve: Curves.fastOutSlowIn,
+    );
     _calculateDistance();
 
     if (widget.isAnomali) {
@@ -77,6 +91,7 @@ class _FullscreenMapPageState extends State<FullscreenMapPage> {
   @override
   void dispose() {
     _progressTimer?.cancel();
+    _expandController.dispose();
     super.dispose();
   }
 
@@ -114,7 +129,7 @@ class _FullscreenMapPageState extends State<FullscreenMapPage> {
 
       // Get current position
       Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
+        desiredAccuracy: LocationAccuracy.low,
       );
 
       print(
@@ -146,7 +161,10 @@ class _FullscreenMapPageState extends State<FullscreenMapPage> {
 
       // Reverse geocoding for city name
       String cityName = 'lokasi Anda';
-      try {
+       try {
+        if (kIsWeb) {
+          throw Exception("Geocoding package is not supported on web");
+        }
         List<Placemark> placemarks = await placemarkFromCoordinates(
           position.latitude,
           position.longitude,
@@ -177,11 +195,10 @@ class _FullscreenMapPageState extends State<FullscreenMapPage> {
         // Fallback for Web using OpenStreetMap Nominatim API
         try {
           final url = Uri.parse(
-            'https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.latitude}&lon=${position.longitude}&zoom=16&addressdetails=1',
+            '${ApiConfig.baseUrl}/reverse-geocode?lat=${position.latitude}&lon=${position.longitude}',
           );
           final response = await http.get(
             url,
-            headers: {'User-Agent': 'AmaninApp/1.0'},
           );
           if (response.statusCode == 200) {
             final data = json.decode(response.body);
@@ -190,10 +207,11 @@ class _FullscreenMapPageState extends State<FullscreenMapPage> {
               final addr = data['address'];
               cityName =
                   addr['town'] ??
-                  addr['subdistrict'] ??
-                  addr['suburb'] ??
-                  addr['city_district'] ??
                   addr['city'] ??
+                  addr['city_district'] ??
+                  addr['subdistrict'] ??
+                  addr['village'] ??
+                  addr['suburb'] ??
                   addr['county'] ??
                   addr['state'] ??
                   'lokasi Anda';
@@ -242,6 +260,7 @@ class _FullscreenMapPageState extends State<FullscreenMapPage> {
               coordinates: widget.gempa.coordinates,
               initialZoom: 7.0,
               userLocation: _userLatLng,
+              offsetLatitude: 1.8,
             ),
           ),
 
@@ -259,37 +278,25 @@ class _FullscreenMapPageState extends State<FullscreenMapPage> {
                   Share.share(shareText);
                 },
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
+                  width: 40,
+                  height: 40,
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
+                    shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withOpacity(0.15),
                         blurRadius: 10,
+                        offset: const Offset(0, 4),
                       ),
                     ],
                   ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.ios_share,
-                        size: 16,
-                        color: Color(0xFF1A1A1A),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Bagikan',
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF1A1A1A),
-                        ),
-                      ),
-                    ],
+                  child: const Center(
+                    child: Icon(
+                      Icons.share_rounded,
+                      size: 18,
+                      color: Color(0xFF1A1A1A),
+                    ),
                   ),
                 ),
               ),
@@ -352,12 +359,34 @@ class _FullscreenMapPageState extends State<FullscreenMapPage> {
                       child: Column(
                         children: [
                           // Handle line
-                          Container(
-                            width: 40,
-                            height: 4,
-                            decoration: BoxDecoration(
-                              color: Colors.grey[300],
-                              borderRadius: BorderRadius.circular(2),
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _isDetailExpanded = !_isDetailExpanded;
+                                if (_isDetailExpanded) {
+                                  _expandController.forward();
+                                } else {
+                                  _expandController.reverse();
+                                }
+                              });
+                            },
+                            child: MouseRegion(
+                              cursor: SystemMouseCursors.click,
+                              child: Container(
+                                width: double.infinity,
+                                color: Colors.transparent,
+                                padding: const EdgeInsets.symmetric(vertical: 8),
+                                child: Center(
+                                  child: Container(
+                                    width: 40,
+                                    height: 4,
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey[300],
+                                      borderRadius: BorderRadius.circular(2),
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -398,70 +427,80 @@ class _FullscreenMapPageState extends State<FullscreenMapPage> {
                       ),
                     ),
 
-                    const SizedBox(height: 12),
-
-                    // Sheet 2: Details & Button
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.08),
-                            blurRadius: 20,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildDetailRow(
-                            Icons.access_time,
-                            'Waktu :',
-                            '${widget.gempa.tanggal}, ${widget.gempa.jam} WIB',
-                          ),
-                          const SizedBox(height: 16),
-                          _buildDetailRow(
-                            Icons.my_location,
-                            'Lokasi Gempa',
-                            widget.gempa.wilayah,
-                          ),
-                          const SizedBox(height: 16),
-                          _buildDetailRow(Icons.route, 'Jarak', _distanceText),
-
-                          const SizedBox(height: 24),
-
-                          // Orange Button
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: () {},
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(
-                                  0xFFFF9800,
-                                ), // Orange
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(24),
-                                ),
-                                elevation: 0,
+                    SizeTransition(
+                      sizeFactor: _expandAnimation,
+                      axisAlignment: -1.0,
+                      child: FadeTransition(
+                        opacity: _expandAnimation,
+                        child: Column(
+                          children: [
+                            const SizedBox(height: 12),
+                            // Sheet 2: Details & Button
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(24),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.08),
+                                    blurRadius: 20,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
                               ),
-                              child: Text(
-                                'Saya juga merasakannya',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildDetailRow(
+                                    Icons.access_time,
+                                    'Waktu :',
+                                    '${widget.gempa.tanggal}, ${widget.gempa.jam} WIB',
+                                  ),
+                                  const SizedBox(height: 16),
+                                  _buildDetailRow(
+                                    Icons.my_location,
+                                    'Lokasi Gempa',
+                                    widget.gempa.wilayah,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  _buildDetailRow(Icons.route, 'Jarak', _distanceText),
+
+                                  const SizedBox(height: 24),
+
+                                  // Orange Button
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: ElevatedButton(
+                                      onPressed: () => _showFeltReportBottomSheet(context),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: const Color(
+                                          0xFFFF9800,
+                                        ), // Orange
+                                        foregroundColor: Colors.white,
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 16,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(24),
+                                        ),
+                                        elevation: 0,
+                                      ),
+                                      child: Text(
+                                        'Saya juga merasakannya',
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ],
@@ -661,6 +700,218 @@ class _FullscreenMapPageState extends State<FullscreenMapPage> {
           ),
         ),
       ],
+    );
+  }
+
+  void _showFeltReportBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (BuildContext context) {
+        int selectedIntensity = 1; // Default to Sedang
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setModalState) {
+            return SafeArea(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    24,
+                    12,
+                    24,
+                    MediaQuery.of(context).viewInsets.bottom + 24,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE2E8F0),
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        'Laporkan Getaran Gempa',
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF1E293B),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Kontribusi Anda sangat membantu kami memetakan tingkat keparahan dampak gempa bumi.',
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          color: const Color(0xFF64748B),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      _buildIntensityOption(
+                        index: 0,
+                        title: 'Getaran Ringan',
+                        description: 'Getaran dirasakan beberapa orang di dalam rumah. Gelas/kaca berderik lembut.',
+                        icon: Icons.info_outline_rounded,
+                        color: const Color(0xFF4CAF50),
+                        selected: selectedIntensity == 0,
+                        onTap: () => setModalState(() => selectedIntensity = 0),
+                      ),
+                      const SizedBox(height: 12),
+                      _buildIntensityOption(
+                        index: 1,
+                        title: 'Getaran Sedang',
+                        description: 'Dirasakan hampir semua orang. Benda kecil bergoyang, pintu berderit.',
+                        icon: Icons.warning_amber_rounded,
+                        color: const Color(0xFFFF9800),
+                        selected: selectedIntensity == 1,
+                        onTap: () => setModalState(() => selectedIntensity = 1),
+                      ),
+                      const SizedBox(height: 12),
+                      _buildIntensityOption(
+                        index: 2,
+                        title: 'Getaran Kuat',
+                        description: 'Sulit berdiri tegap. Barang berat bergeser, potensi kerusakan kecil pada bangunan.',
+                        icon: Icons.flash_on_rounded,
+                        color: const Color(0xFFF44336),
+                        selected: selectedIntensity == 2,
+                        onTap: () => setModalState(() => selectedIntensity = 2),
+                      ),
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            setState(() {
+                              widget.gempa.dirasakan = 'Dirasakan';
+                            });
+                            _showSuccessSnackbar(context);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFFF9800),
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: Text(
+                            'Kirim Laporan',
+                            style: GoogleFonts.poppins(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildIntensityOption({
+    required int index,
+    required String title,
+    required String description,
+    required IconData icon,
+    required Color color,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: selected ? color.withValues(alpha: 0.05) : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: selected ? color : const Color(0xFFE2E8F0),
+            width: selected ? 2.0 : 1.0,
+          ),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: selected ? color.withValues(alpha: 0.1) : const Color(0xFFF1F5F9),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: selected ? color : const Color(0xFF64748B), size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: selected ? color : const Color(0xFF1E293B),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    description,
+                    style: GoogleFonts.poppins(
+                      fontSize: 11,
+                      color: const Color(0xFF64748B),
+                      height: 1.3,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showSuccessSnackbar(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Laporan Terkirim! Kontribusi Anda membantu pemetaan skala getaran gempa.',
+                style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: const Color(0xFF16A34A), // Green
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        margin: const EdgeInsets.all(20),
+        duration: const Duration(seconds: 3),
+      ),
     );
   }
 }

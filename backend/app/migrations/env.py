@@ -10,6 +10,7 @@ from app.config.config import settings
 from app.db_models.earthquake import Earthquake
 from app.db_models.seismic_analysis import SeismicAnalysis
 from app.db_models.user import User
+from app.db_models.edukasi import ZonaGPS
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
