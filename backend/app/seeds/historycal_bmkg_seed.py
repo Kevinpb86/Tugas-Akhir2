@@ -87,14 +87,10 @@ def run_seed():
 
                 db.add(analysis)
 
-                if earthquake.magnitude < MC:
-                    earthquake.status = "below_mc"
-
-                elif nnd_result is not None:
-                    earthquake.status = "processed"
-
-                else:
-                    earthquake.status = "processed"
+            if earthquake.magnitude < MC:
+                earthquake.status = "below_mc"
+            else:
+                earthquake.status = "processed"
 
             processed += 1
 

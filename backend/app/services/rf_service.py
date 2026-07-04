@@ -1,15 +1,20 @@
 import joblib
 import pandas as pd
 from app.config.logging import logger
+from pathlib import Path
 
+BASE_DIR = Path(__file__).resolve().parents[2]
+MODEL_PATH = BASE_DIR / "model" / "random_forest_model.pkl"
 
 class MLService:
 
-    def __init__(
-        self,
-        model_path: str = "model/random_forest_model.pkl",
-    ):
-        self.model = joblib.load(model_path)
+    def __init__(self):
+        if not MODEL_PATH.exists():
+            raise FileNotFoundError(
+                f"Model tidak ditemukan: {MODEL_PATH}"
+            )
+
+        self.model = joblib.load(MODEL_PATH)
 
     def predict(
         self,

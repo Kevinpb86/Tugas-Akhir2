@@ -7,7 +7,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 
 from app.config.database import get_db
-from app.auth.security import pwd_context
+from app.auth.security import hash_password, verify_password
 from app.api_schemas.auth import UserRegister, UserLogin, GoogleAuthRequest, FacebookAuthRequest, ForgotPasswordRequest
 from app.config.config import SENDER_EMAIL, APP_PASSWORD
 from app.db_models.user import User
@@ -24,8 +24,12 @@ async def register(user: UserRegister, db: Session = Depends(get_db)):
         
     if db_user:
         raise HTTPException(status_code=400, detail="Email sudah terdaftar!")
-    
-    hashed_password = pwd_context.hash(user.password)
+
+    try:
+        hashed_password = hash_password(user.password)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
     try:
         new_user = User(
             full_name=user.full_name,
@@ -51,7 +55,12 @@ async def login(user: UserLogin, db: Session = Depends(get_db)):
     if not db_user:
         raise HTTPException(status_code=401, detail="Email atau password salah!")
     
-    if not pwd_context.verify(user.password, db_user.password):
+    try:
+        is_password_valid = verify_password(user.password, db_user.password)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    if not is_password_valid:
         raise HTTPException(status_code=401, detail="Email atau password salah!")
     
     return {
@@ -82,7 +91,7 @@ async def auth_google(req: GoogleAuthRequest, db: Session = Depends(get_db)):
             }
         else:
             random_password = secrets.token_urlsafe(16)
-            hashed_password = pwd_context.hash(random_password)
+            hashed_password = hash_password(random_password)
             
             try:
                 new_user = User(
@@ -140,7 +149,7 @@ async def auth_facebook(req: FacebookAuthRequest, db: Session = Depends(get_db))
             }
         else:
             random_password = secrets.token_urlsafe(16)
-            hashed_password = pwd_context.hash(random_password)
+            hashed_password = hash_password(random_password)
             
             try:
                 new_user = User(
