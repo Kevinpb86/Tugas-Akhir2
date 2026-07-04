@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'services/ml_service.dart';
 
 class KlasifikasiSeismikPage extends StatefulWidget {
@@ -92,7 +93,7 @@ class _KlasifikasiSeismikPageState extends State<KlasifikasiSeismikPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
         title: const Text('Klasifikasi Kerentanan Seismik'),
         backgroundColor: Colors.white,
@@ -111,12 +112,16 @@ class _KlasifikasiSeismikPageState extends State<KlasifikasiSeismikPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Container(
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE3F2FD),
+                  color: const Color(0xFFE3F2FD).withValues(alpha: 0.85),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFF90CAF9)),
+                  border: Border.all(color: const Color(0xFF90CAF9).withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   children: [
@@ -153,12 +158,19 @@ class _KlasifikasiSeismikPageState extends State<KlasifikasiSeismikPage> {
                   ],
                 ),
               ),
+                ),
+              ),
               const SizedBox(height: 24),
-              Container(
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Colors.white.withValues(alpha: 0.85),
                   borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.05),
@@ -182,7 +194,7 @@ class _KlasifikasiSeismikPageState extends State<KlasifikasiSeismikPage> {
                       ),
                       const SizedBox(height: 16),
                       DropdownButtonFormField<String>(
-                        value: _selectedSource,
+                        initialValue: _selectedSource,
                         isExpanded: true,
                         decoration: InputDecoration(
                           labelText: 'Sumber Data Model',
@@ -322,14 +334,20 @@ class _KlasifikasiSeismikPageState extends State<KlasifikasiSeismikPage> {
                   ),
                 ),
               ),
+                ),
+              ),
               if (_hasilKlasifikasi != null) ...[
                 const SizedBox(height: 24),
-                Container(
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     color: _warnaKlasifikasi.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: _warnaKlasifikasi, width: 2),
+                    border: Border.all(color: _warnaKlasifikasi.withValues(alpha: 0.5), width: 1.5),
                   ),
                   child: Column(
                     children: [
@@ -377,6 +395,8 @@ class _KlasifikasiSeismikPageState extends State<KlasifikasiSeismikPage> {
                         ),
                       ),
                     ],
+                  ),
+                ),
                   ),
                 ),
               ],

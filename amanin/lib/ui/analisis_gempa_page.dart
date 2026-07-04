@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -176,15 +177,21 @@ class _AnalisisGempaPageState extends State<AnalisisGempaPage> {
 
   // Widget
   Widget _buildLegend() {
-    return Container(
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+        child: Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.white.withValues(alpha: 0.75),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.4)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black26,
-            blurRadius: 8,
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -192,19 +199,20 @@ class _AnalisisGempaPageState extends State<AnalisisGempaPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-
           const Text(
-            "Legenda",
+            'Legenda',
             style: TextStyle(
               fontWeight: FontWeight.bold,
+              fontSize: 13,
+              color: Color(0xFF1A1A1A),
             ),
           ),
-
           const SizedBox(height: 8),
-
-          _legendItem(Colors.orange, "Mainshock / Event"),
-          _legendItem(Colors.red, "Aftershock"),
+          _legendItem(const Color(0xFFFF9800), 'Mainshock / Event'),
+          _legendItem(const Color(0xFFF44336), 'Aftershock'),
         ],
+      ),
+    ),
       ),
     );
   }
@@ -253,15 +261,20 @@ class _AnalisisGempaPageState extends State<AnalisisGempaPage> {
 
     final isAftershock = node.prediction == "Aftershock";
 
-    return Container(
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(24),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        child: Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.white.withValues(alpha: 0.88),
         borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.4)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.15),
-            blurRadius: 20,
-            offset: const Offset(0, -4),
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 24,
+            offset: const Offset(0, -6),
           ),
         ],
       ),
@@ -376,6 +389,8 @@ class _AnalisisGempaPageState extends State<AnalisisGempaPage> {
             ),
           ),
         ],
+      ),
+    ),
       ),
     );
   }
@@ -603,8 +618,25 @@ class _AnalisisGempaPageState extends State<AnalisisGempaPage> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+      return Scaffold(
+        backgroundColor: const Color(0xFFF8F9FA),
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CircularProgressIndicator(color: Color(0xFF00BCD4)),
+              const SizedBox(height: 16),
+              Text(
+                'Memuat data analisis...',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: const Color(0xFF64748B),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
       );
     }
 

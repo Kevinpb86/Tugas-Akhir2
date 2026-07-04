@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'services/news_service.dart';
 import 'package:intl/intl.dart';
+import 'package:share_plus/share_plus.dart';
 
 class IsiBeritaPage extends StatelessWidget {
   final NewsModel news;
@@ -48,7 +49,9 @@ class IsiBeritaPage extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.share_outlined, color: Color(0xFF1E293B)),
             onPressed: () {
-              // Share action placeholder
+              final String shareText =
+                  '${news.title}\n\nBaca selengkapnya di: ${news.link}\n\nBagikan melalui aplikasi AMANIN.';
+              Share.share(shareText);
             },
           ),
         ],

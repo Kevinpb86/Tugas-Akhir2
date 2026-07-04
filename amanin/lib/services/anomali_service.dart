@@ -65,7 +65,7 @@ class AnomaliService {
     try {
       final response = await http.get(
         Uri.parse('${ApiConfig.baseUrl}/anomali-terkini'),
-      );
+      ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -99,7 +99,7 @@ class AnomaliService {
           'latitude': lintang,
           'longitude': bujur,
         }),
-      );
+      ).timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);

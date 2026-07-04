@@ -1,17 +1,15 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/analisis_gempa_model.dart';
+import 'api_config.dart';
 
 class NetworkService {
-  static const String baseUrl =
-      "https://amanin.fastapicloud.dev"; // Android Emulator
-
   static Future<EarthquakeNetwork> fetchNetwork() async {
     final response = await http.get(
       Uri.parse(
-        "$baseUrl/earthquakes/network?days=8",
+        "${ApiConfig.baseUrl}/earthquakes/network?days=8",
       ),
-    );
+    ).timeout(const Duration(seconds: 10));
 
     if (response.statusCode != 200) {
       throw Exception("Failed to load network");
