@@ -119,6 +119,11 @@ class BmkgService {
     return url;
   }
 
+  static const Map<String, String> _headers = {
+    'User-Agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36',
+    'Accept': 'application/json, text/plain, */*',
+  };
+
   static CuacaModel getMockWeather() {
     List<DailyForecast> daily = [
       DailyForecast(
@@ -191,7 +196,10 @@ class BmkgService {
   // Mendapatkan gempabumi terbaru (autogempa)
   static Future<GempaModel> fetchLatestEarthquake() async {
     try {
-      final response = await http.get(Uri.parse(_getUrl('$_baseUrl/autogempa.json')));
+      final response = await http.get(
+        Uri.parse(_getUrl('$_baseUrl/autogempa.json')),
+        headers: _headers,
+      ).timeout(const Duration(seconds: 10));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         return GempaModel.fromJson(data['Infogempa']['gempa']);
@@ -206,7 +214,10 @@ class BmkgService {
   // Mendapatkan daftar 15 gempabumi M 5.0+ (gempaterkini)
   static Future<List<GempaModel>> fetchEarthquakeList() async {
     try {
-      final response = await http.get(Uri.parse(_getUrl('$_baseUrl/gempaterkini.json')));
+      final response = await http.get(
+        Uri.parse(_getUrl('$_baseUrl/gempaterkini.json')),
+        headers: _headers,
+      ).timeout(const Duration(seconds: 10));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final List<dynamic> gempaList = data['Infogempa']['gempa'];
@@ -226,7 +237,8 @@ class BmkgService {
     try {
       final response = await http.get(
         Uri.parse(_getUrl('$_baseUrl/gempadirasakan.json')),
-      );
+        headers: _headers,
+      ).timeout(const Duration(seconds: 10));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final List<dynamic> gempaList = data['Infogempa']['gempa'];
@@ -250,7 +262,10 @@ class BmkgService {
     String adm4 = '32.04.08.2002',
   ]) async {
     try {
-      final response = await http.get(Uri.parse(_getUrl('$_cuacaUrl?adm4=$adm4')));
+      final response = await http.get(
+        Uri.parse(_getUrl('$_cuacaUrl?adm4=$adm4')),
+        headers: _headers,
+      ).timeout(const Duration(seconds: 10));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final namaKota =

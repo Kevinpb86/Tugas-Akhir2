@@ -787,9 +787,9 @@ class _CuacaPageState extends State<CuacaPage> {
                                   ),
                                   child: Builder(
                                     builder: (context) {
-                                      final int leftFlex = (startPct * 1000).round();
+                                      final int leftFlex = (startPct * 1000).round().clamp(0, 1000);
                                       final int barFlex = (widthPct * 1000).round().clamp(1, 1000);
-                                      final int rightFlex = ((1.0 - startPct - widthPct) * 1000).round();
+                                      final int rightFlex = ((1.0 - startPct - widthPct) * 1000).round().clamp(0, 1000);
                                       return Row(
                                         children: [
                                           if (leftFlex > 0)
