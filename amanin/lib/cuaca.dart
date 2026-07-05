@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-// Import for navigation consistency if needed
+import 'dart:ui';
 import 'asuransi.dart';
 import 'main.dart'; // For userCityNameNotifier
 
 import 'services/bmkg_service.dart';
+import 'package:share_plus/share_plus.dart';
 
 class CuacaPage extends StatefulWidget {
   final VoidCallback? onBack;
@@ -97,18 +98,21 @@ class _CuacaPageState extends State<CuacaPage> {
                   color: Color(0xFF2196F3),
                 ),
                 const SizedBox(width: 4),
-                ValueListenableBuilder<String>(
-                  valueListenable: userCityNameNotifier,
-                  builder: (context, cityName, _) {
-                    return Text(
-                      cityName,
-                      style: const TextStyle(
-                        color: Color(0xFF2196F3),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    );
-                  },
+                Flexible(
+                  child: ValueListenableBuilder<String>(
+                    valueListenable: userCityNameNotifier,
+                    builder: (context, cityName, _) {
+                      return Text(
+                        cityName,
+                        style: const TextStyle(
+                          color: Color(0xFF2196F3),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      );
+                    },
+                  ),
                 ),
               ],
             ),
@@ -130,7 +134,13 @@ class _CuacaPageState extends State<CuacaPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.share_outlined, color: Color(0xFF1A1A1A)),
-            onPressed: () {},
+            onPressed: () {
+              if (_latestCuaca != null) {
+                final String shareText =
+                    'Cuaca saat ini di ${_latestCuaca!.kota}: ${_latestCuaca!.cuaca} dengan suhu ${_latestCuaca!.suhu}\u00B0C. ::AMANIN\nInformasi selengkapnya lihat di\nhttps://amanin.app/';
+                Share.share(shareText);
+              }
+            },
           ),
         ],
       ),
@@ -146,31 +156,7 @@ class _CuacaPageState extends State<CuacaPage> {
               // Early Warning Card
               _buildEarlyWarningCard(),
               const SizedBox(height: 24),
-              // Weekly Forecast Header
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    '7 Hari Kedepan',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1A1A1A),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () {},
-                    child: const Text(
-                      'Lihat Radar',
-                      style: TextStyle(
-                        color: Color(0xFF2196F3),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
+
               // Weekly Forecast List
               _buildWeeklyForecast(),
               const SizedBox(height: 24),
@@ -546,10 +532,56 @@ class _CuacaPageState extends State<CuacaPage> {
       if (f.maxTemp > maxWeekly) maxWeekly = f.maxTemp;
     }
 
-    return Column(
-      children: _latestCuaca!.dailyForecasts
-          .map((f) => _buildForecastItem(f, minWeekly, maxWeekly))
-          .toList(),
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFFF1F5F9).withValues(alpha: 0.7),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.5),
+          width: 1,
+        ),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: const [
+                    Icon(Icons.calendar_month, color: Color(0xFF64748B), size: 16),
+                    SizedBox(width: 6),
+                    Text(
+                      'PRAKIRAAN 7 HARI',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF64748B),
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                ..._latestCuaca!.dailyForecasts.asMap().entries.map((entry) {
+                  int idx = entry.key;
+                  var f = entry.value;
+                  return Column(
+                    children: [
+                      _buildForecastItem(f, minWeekly, maxWeekly),
+                      if (idx < _latestCuaca!.dailyForecasts.length - 1)
+                        const Divider(height: 16, color: Colors.black12, thickness: 0.5),
+                    ],
+                  );
+                }),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -560,67 +592,41 @@ class _CuacaPageState extends State<CuacaPage> {
     final int hour = DateTime.now().hour;
     final bool isNightToday = (data.dayName == 'Hari ini' || data.dayName == 'Saat ini') && (hour >= 18 || hour < 6);
     
-    // Default colors (Cloudy / Partly Cloudy)
     Color themeColor = const Color(0xFF64748B);
-    Color badgeBgColor = const Color(0xFFF1F5F9);
-    Color badgeTextColor = const Color(0xFF475569);
     IconData fallbackIcon = Icons.cloud_outlined;
 
     if (condition.contains('cerah') && !condition.contains('berawan')) {
       if (isNightToday) {
-        // Clear Night
-        themeColor = const Color(0xFF818CF8); // Indigo
-        badgeBgColor = const Color(0xFFEEF2FF);
-        badgeTextColor = const Color(0xFF4F46E5);
+        themeColor = const Color(0xFF818CF8);
         fallbackIcon = Icons.nightlight_round;
       } else {
-        // Sunny / Clear Day
         themeColor = const Color(0xFFF59E0B);
-        badgeBgColor = const Color(0xFFFEF3C7);
-        badgeTextColor = const Color(0xFFD97706);
         fallbackIcon = Icons.wb_sunny_rounded;
       }
     } else if (condition.contains('berawan') || condition.contains('mendung')) {
       if (isNightToday) {
-        // Cloudy Night
-        themeColor = const Color(0xFF94A3B8); // Slate grey
-        badgeBgColor = const Color(0xFFF8FAFC);
-        badgeTextColor = const Color(0xFF475569);
-        fallbackIcon = Icons.nights_stay_rounded; // Moon with cloud
+        themeColor = const Color(0xFF94A3B8);
+        fallbackIcon = Icons.nights_stay_rounded;
       } else {
-        // Cloudy Day
         themeColor = const Color(0xFF64748B);
-        badgeBgColor = const Color(0xFFE2E8F0);
-        badgeTextColor = const Color(0xFF334155);
         fallbackIcon = Icons.cloud_rounded;
       }
     } else if (condition.contains('hujan')) {
-      // Rainy
       themeColor = const Color(0xFF3B82F6);
-      badgeBgColor = const Color(0xFFDBEAFE);
-      badgeTextColor = const Color(0xFF1D4ED8);
       fallbackIcon = Icons.umbrella_rounded;
     } else if (condition.contains('petir') || condition.contains('kilat')) {
-      // Thunderstorm
       themeColor = const Color(0xFF8B5CF6);
-      badgeBgColor = const Color(0xFFEDE9FE);
-      badgeTextColor = const Color(0xFF6D28D9);
       fallbackIcon = Icons.thunderstorm_rounded;
     }
 
     final Color dayColor = isEst ? const Color(0xFF94A3B8) : const Color(0xFF0F172A);
-    final Color subColor = isEst ? const Color(0xFFCBD5E1) : const Color(0xFF64748B);
     final double contentOpacity = isEst ? 0.6 : 1.0;
 
     String mainText = data.dayName;
-    String? subText;
-    
     if (data.dayName.startsWith("Besok ")) {
       mainText = "Besok";
-      subText = data.dayName.substring(6); // e.g. "(Rabu)"
     }
 
-    // iOS Weather Style Temperature Range Bar Math
     double range = (maxWeekly - minWeekly).toDouble();
     if (range <= 0) range = 1.0;
     
@@ -628,217 +634,105 @@ class _CuacaPageState extends State<CuacaPage> {
     final double endPct = (data.maxTemp - minWeekly) / range;
     final double widthPct = (endPct - startPct).clamp(0.12, 1.0);
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: const Color(0xFFF1F5F9),
-          width: 1.2,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Left Accent Line for visual indication
-              Container(
-                width: 6,
-                color: isEst ? const Color(0xFFCBD5E1) : const Color(0xFF2196F3),
+    return Opacity(
+      opacity: contentOpacity,
+      child: Row(
+        children: [
+          // Left: Day name
+          SizedBox(
+            width: 70,
+            child: Text(
+              mainText,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: dayColor,
               ),
-              // Main content of the card
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                  child: Row(
-                    children: [
-                      // Left: Day name and details
-                      Expanded(
-                        flex: 4,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              mainText,
-                              style: TextStyle(
-                                fontSize: 17,
-                                fontWeight: FontWeight.bold,
-                                color: dayColor,
-                                letterSpacing: -0.3,
-                              ),
-                            ),
-                            if (subText != null) ...[
-                              const SizedBox(height: 2),
-                              Text(
-                                subText,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                  color: subColor,
-                                ),
-                              ),
-                            ],
-                            if (isEst) ...[
-                              const SizedBox(height: 5),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFF1F5F9),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: const Text(
-                                  'ESTIMASI',
-                                  style: TextStyle(
-                                    fontSize: 8,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF64748B),
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
+            ),
+          ),
+          
+          // Center: Weather icon
+          SizedBox(
+            width: 32,
+            child: Icon(
+              fallbackIcon,
+              color: isEst ? const Color(0xFF94A3B8) : themeColor,
+              size: 24,
+            ),
+          ),
+          
+          const SizedBox(width: 8),
 
-                      // Center: Weather icon and condition badge
-                      Expanded(
-                        flex: 3,
-                        child: Opacity(
-                          opacity: contentOpacity,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: isEst ? const Color(0xFFF8FAFC) : themeColor.withOpacity(0.06),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Image.network(
-                                  data.imagePath,
-                                  width: 36,
-                                  height: 36,
-                                  errorBuilder: (context, error, stackTrace) => Icon(
-                                    fallbackIcon,
-                                    color: isEst ? const Color(0xFF94A3B8) : themeColor,
-                                    size: 32,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                data.condition,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: isEst ? const Color(0xFF94A3B8) : themeColor,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                      // Right: Temperatures & iOS-style Range Bar
-                      Expanded(
-                        flex: 5,
-                        child: Opacity(
-                          opacity: contentOpacity,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              // Min Temp Text
-                              SizedBox(
-                                width: 24,
-                                child: Text(
-                                  '${data.minTemp}°',
-                                  textAlign: TextAlign.right,
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w600,
-                                    color: isEst ? const Color(0xFFCBD5E1) : const Color(0xFF94A3B8),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              // Range Bar
-                              Expanded(
-                                child: Container(
-                                  height: 5,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFF1F5F9),
-                                    borderRadius: BorderRadius.circular(2.5),
-                                  ),
-                                  child: Builder(
-                                    builder: (context) {
-                                      final int leftFlex = (startPct * 1000).round();
-                                      final int barFlex = (widthPct * 1000).round().clamp(1, 1000);
-                                      final int rightFlex = ((1.0 - startPct - widthPct) * 1000).round();
-                                      return Row(
-                                        children: [
-                                          if (leftFlex > 0)
-                                            Spacer(flex: leftFlex),
-                                          Expanded(
-                                            flex: barFlex,
-                                            child: Container(
-                                              decoration: BoxDecoration(
-                                                gradient: LinearGradient(
-                                                  colors: [
-                                                    const Color(0xFF60A5FA), // Cool blue for min
-                                                    isEst ? const Color(0xFF94A3B8) : themeColor, // Theme color for max
-                                                  ],
-                                                ),
-                                                borderRadius: BorderRadius.circular(2.5),
-                                              ),
-                                            ),
-                                          ),
-                                          if (rightFlex > 0)
-                                            Spacer(flex: rightFlex),
-                                        ],
-                                      );
-                                    }
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              // Max Temp Text
-                              SizedBox(
-                                width: 28,
-                                child: Text(
-                                  '${data.maxTemp}°',
-                                  textAlign: TextAlign.left,
-                                  style: TextStyle(
-                                    fontSize: 17,
-                                    fontWeight: FontWeight.bold,
-                                    color: isEst ? const Color(0xFF94A3B8) : const Color(0xFF0F172A),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
+          // Right: Temperatures & Range Bar
+          Expanded(
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 28,
+                  child: Text(
+                    '${data.minTemp}°',
+                    textAlign: TextAlign.right,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      color: isEst ? const Color(0xFFCBD5E1) : const Color(0xFF64748B),
+                    ),
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Container(
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.black12,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                    child: Builder(
+                      builder: (context) {
+                        final int leftFlex = (startPct * 1000).round().clamp(0, 1000);
+                        final int barFlex = (widthPct * 1000).round().clamp(1, 1000);
+                        final int rightFlex = ((1.0 - startPct - widthPct) * 1000).round().clamp(0, 1000);
+                        return Row(
+                          children: [
+                            if (leftFlex > 0) Spacer(flex: leftFlex),
+                            Expanded(
+                              flex: barFlex,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      const Color(0xFF60A5FA),
+                                      isEst ? const Color(0xFF94A3B8) : themeColor,
+                                    ],
+                                  ),
+                                  borderRadius: BorderRadius.circular(2),
+                                ),
+                              ),
+                            ),
+                            if (rightFlex > 0) Spacer(flex: rightFlex),
+                          ],
+                        );
+                      }
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                SizedBox(
+                  width: 28,
+                  child: Text(
+                    '${data.maxTemp}°',
+                    textAlign: TextAlign.left,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: isEst ? const Color(0xFF94A3B8) : const Color(0xFF0F172A),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -176,15 +177,21 @@ class _AnalisisGempaPageState extends State<AnalisisGempaPage> {
 
   // Widget
   Widget _buildLegend() {
-    return Container(
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+        child: Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.white.withValues(alpha: 0.75),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.4)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black26,
-            blurRadius: 8,
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -192,19 +199,20 @@ class _AnalisisGempaPageState extends State<AnalisisGempaPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-
           const Text(
-            "Legenda",
+            'Legenda',
             style: TextStyle(
               fontWeight: FontWeight.bold,
+              fontSize: 13,
+              color: Color(0xFF1A1A1A),
             ),
           ),
-
           const SizedBox(height: 8),
-
-          _legendItem(Colors.orange, "Mainshock / Event"),
-          _legendItem(Colors.red, "Aftershock"),
+          _legendItem(const Color(0xFFFF9800), 'Mainshock / Event'),
+          _legendItem(const Color(0xFFF44336), 'Aftershock'),
         ],
+      ),
+    ),
       ),
     );
   }
@@ -253,15 +261,20 @@ class _AnalisisGempaPageState extends State<AnalisisGempaPage> {
 
     final isAftershock = node.prediction == "Aftershock";
 
-    return Container(
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(24),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        child: Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.white.withValues(alpha: 0.88),
         borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.4)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.15),
-            blurRadius: 20,
-            offset: const Offset(0, -4),
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 24,
+            offset: const Offset(0, -6),
           ),
         ],
       ),
@@ -377,6 +390,8 @@ class _AnalisisGempaPageState extends State<AnalisisGempaPage> {
           ),
         ],
       ),
+    ),
+      ),
     );
   }
 
@@ -435,45 +450,64 @@ class _AnalisisGempaPageState extends State<AnalisisGempaPage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Amanin',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1A1A1A),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Amanin',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1A1A1A),
+                ),
               ),
-            ),
-            const SizedBox(height: 4),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color(0xFFE0F7FA), // Light cyan
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.location_on,
-                    color: Color(0xFF00BCD4),
-                    size: 14,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    _currentCityName,
-                    style: const TextStyle(
-                      fontSize: 13,
+              const SizedBox(height: 4),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE0F7FA),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.location_on,
                       color: Color(0xFF00BCD4),
-                      fontWeight: FontWeight.w600,
+                      size: 14,
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: ValueListenableBuilder<String>(
+                        valueListenable: userCityNameNotifier,
+                        builder: (context, cityName, _) {
+                          final displayCity =
+                              cityName.isNotEmpty ? cityName : _currentCityName;
+
+                          return Text(
+                            displayCity,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: Color(0xFF00BCD4),
+                              fontWeight: FontWeight.w600,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    const Icon(
+                      Icons.sync_rounded,
+                      color: Color(0xFF00BCD4),
+                      size: 14,
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         Row(
           children: [
@@ -502,12 +536,12 @@ class _AnalisisGempaPageState extends State<AnalisisGempaPage> {
                   ),
                   Positioned(
                     top: 10,
-                    right: 12,
+                    right: 10,
                     child: Container(
                       width: 8,
                       height: 8,
                       decoration: const BoxDecoration(
-                        color: Color(0xFFF44336),
+                        color: Color(0xFFFF5252),
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -519,17 +553,8 @@ class _AnalisisGempaPageState extends State<AnalisisGempaPage> {
             ValueListenableBuilder<bool>(
               valueListenable: isLoggedInNotifier,
               builder: (context, isLoggedIn, _) {
-                return isLoggedIn
-                    ? InkWell(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const AkunPage(),
-                      ),
-                    );
-                  },
-                  child: Container(
+                if (isLoggedIn) {
+                  return Container(
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
@@ -543,16 +568,28 @@ class _AnalisisGempaPageState extends State<AnalisisGempaPage> {
                         ),
                       ],
                     ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.person_outline,
-                        color: Color(0xFF1A1A1A),
-                        size: 24,
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const AkunPage(),
+                          ),
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      child: const Center(
+                        child: Icon(
+                          Icons.person_outline,
+                          color: Color(0xFF1A1A1A),
+                          size: 24,
+                        ),
                       ),
                     ),
-                  ),
-                )
-                    : InkWell(
+                  );
+                }
+
+                return InkWell(
                   onTap: () {
                     Navigator.push(
                       context,
@@ -603,8 +640,25 @@ class _AnalisisGempaPageState extends State<AnalisisGempaPage> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+      return Scaffold(
+        backgroundColor: const Color(0xFFF8F9FA),
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CircularProgressIndicator(color: Color(0xFF00BCD4)),
+              const SizedBox(height: 16),
+              Text(
+                'Memuat data analisis...',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: const Color(0xFF64748B),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
       );
     }
 

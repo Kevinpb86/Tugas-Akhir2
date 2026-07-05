@@ -7,14 +7,16 @@ from app.config.database import get_db
 from app.api_schemas.edukasi_schema import EdukasiRequest, EdukasiResponse
 from app.services.edukasi_service import EdukasiService
 
-router = APIRouter()
+from dotenv import load_dotenv
 
-YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
+router = APIRouter()
 
 @router.get("/videos")
 def get_edukasi_videos(page_token: str = Query(None, alias="pageToken")):
+    load_dotenv()
+    YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
     if not YOUTUBE_API_KEY:
-        raise HTTPException(status_code=500, detail="YOUTUBE_API_KEY is not configured.")
+        raise HTTPException(status_code=500, detail="YOUTUBE_API_KEY is not configured in .env.")
 
     # Search for mitigation videos on youtube
     url = "https://www.googleapis.com/youtube/v3/search"

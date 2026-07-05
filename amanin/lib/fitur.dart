@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'klasifikasi_seismik.dart';
 
 class FiturPage extends StatelessWidget {
@@ -7,7 +8,7 @@ class FiturPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
         title: const Text(
           'Fitur Aplikasi',
@@ -61,10 +62,15 @@ class FiturPage extends StatelessWidget {
     required Color color,
     VoidCallback? onTap,
   }) {
-    return Container(
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.white.withValues(alpha: 0.85),
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -130,6 +136,8 @@ class FiturPage extends StatelessWidget {
               ],
             ),
           ),
+        ),
+      ),
         ),
       ),
     );
