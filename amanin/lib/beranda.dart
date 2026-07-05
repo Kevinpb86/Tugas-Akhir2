@@ -22,6 +22,7 @@ import 'services/anomali_service.dart';
 import 'services/news_service.dart';
 import 'services/api_config.dart';
 import 'isi_berita.dart';
+import 'semua_berita.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'dart:convert';
@@ -3544,10 +3545,10 @@ class _BerandaPageState extends State<BerandaPage> {
           children: [
             Row(
               children: const [
-                Icon(Icons.shopping_bag, color: Color(0xFF0088CC), size: 24),
+                Icon(Icons.shield_rounded, color: Color(0xFFED1C24), size: 24),
                 SizedBox(width: 8),
                 Text(
-                  'Perlengkapan Siaga',
+                  'Layanan Proteksi Bencana',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -3557,11 +3558,11 @@ class _BerandaPageState extends State<BerandaPage> {
               ],
             ),
             const Text(
-              'Diskon Spesial',
+              'Prudential Partner',
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF00BCD4),
+                color: Color(0xFFED1C24),
               ),
             ),
           ],
@@ -3574,7 +3575,7 @@ class _BerandaPageState extends State<BerandaPage> {
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
+                color: Colors.black.withOpacity(0.06),
                 blurRadius: 20,
                 offset: const Offset(0, 4),
               ),
@@ -3587,59 +3588,28 @@ class _BerandaPageState extends State<BerandaPage> {
             child: Row(
               children: [
                 _buildSurvivalItemCard(
-                  title: 'Tas Siaga 72 Jam',
-                  desc:
-                      'Paket survival kit lengkap untuk 3 hari darurat. Tas anti-air & senter',
-                  oldPrice: 'Rp 650.000',
-                  newPrice: 'Rp 455.000',
-                  discount: '30%',
-                  icon: Icons.backpack,
+                  title: 'PRUActive Family',
+                  desc: 'Proteksi diri dan tunjangan kecelakaan pasca gempa bumi.',
+                  tag: 'Terpopuler',
+                  icon: Icons.family_restroom_rounded,
+                  iconColor: const Color(0xFFED1C24),
+                  bgColor: const Color(0xFFFFF3F3),
+                ),
+                _buildSurvivalItemCard(
+                  title: 'PRUMapan Aset',
+                  desc: 'Jaminan ganti rugi kerusakan rumah dan aset dari bencana.',
+                  tag: 'Proteksi Aset',
+                  icon: Icons.home_work_rounded,
                   iconColor: const Color(0xFF4CAF50),
                   bgColor: const Color(0xFFE8F5E9),
                 ),
                 _buildSurvivalItemCard(
-                  title: 'Radio Engkol Surya',
-                  desc:
-                      'Radio dengan baterai cadangan, senter, dan pemutar engkol daya.',
-                  oldPrice: 'Rp 300.000',
-                  newPrice: 'Rp 210.000',
-                  discount: '30%',
-                  icon: Icons.radio,
-                  iconColor: const Color(0xFF26A69A),
-                  bgColor: const Color(0xFFE0F2F1),
-                ),
-                _buildSurvivalItemCard(
-                  title: 'Kotak P3K Lengkap',
-                  desc:
-                      'Alat medis standar untuk luka ringan dan perban pendarahan.',
-                  oldPrice: 'Rp 150.000',
-                  newPrice: 'Rp 127.500',
-                  discount: '15%',
-                  icon: Icons.medical_services,
-                  iconColor: const Color(0xFFEF5350),
-                  bgColor: const Color(0xFFFFEAEA),
-                ),
-                _buildSurvivalItemCard(
-                  title: 'Power Station Mini',
-                  desc:
-                      'Baterai portabel 20000mAh tahan lama untuk charge HP berulang.',
-                  oldPrice: '',
-                  newPrice: 'Rp 550.000',
-                  discount: '',
-                  icon: Icons.battery_charging_full,
-                  iconColor: const Color(0xFF42A5F5),
+                  title: 'PRUSolusi Sehat',
+                  desc: 'Cover rawat inap & ICU darurat akibat cedera gempa bumi.',
+                  tag: 'Medis Instan',
+                  icon: Icons.medical_services_rounded,
+                  iconColor: const Color(0xFF2196F3),
                   bgColor: const Color(0xFFE3F2FD),
-                ),
-                _buildSurvivalItemCard(
-                  title: 'Senter LED Darurat',
-                  desc:
-                      'Senter terang dengan fitur SOS dan daya tahan baterai super.',
-                  oldPrice: 'Rp 120.000',
-                  newPrice: 'Rp 85.000',
-                  discount: '29%',
-                  icon: Icons.flashlight_on,
-                  iconColor: const Color(0xFFFFB300),
-                  bgColor: const Color(0xFFFFF8E1),
                 ),
               ],
             ),
@@ -3652,9 +3622,7 @@ class _BerandaPageState extends State<BerandaPage> {
   Widget _buildSurvivalItemCard({
     required String title,
     required String desc,
-    required String oldPrice,
-    required String newPrice,
-    required String discount,
+    required String tag,
     required IconData icon,
     required Color iconColor,
     required Color bgColor,
@@ -3666,66 +3634,55 @@ class _BerandaPageState extends State<BerandaPage> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(color: Colors.grey.shade100, width: 1),
       ),
       child: Row(
         children: [
-          Stack(
-            children: [
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  color: bgColor,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(icon, color: iconColor, size: 40),
-              ),
-              if (discount.isNotEmpty)
-                Positioned(
-                  top: 8,
-                  left: 8,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFF5252),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      discount,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-            ],
+          Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              color: bgColor,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Icon(icon, color: iconColor, size: 36),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1A1A1A),
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1A1A1A),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: iconColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        tag,
+                        style: TextStyle(
+                          color: iconColor,
+                          fontSize: 8,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -3739,56 +3696,36 @@ class _BerandaPageState extends State<BerandaPage> {
                 ),
                 const SizedBox(height: 8),
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (oldPrice.isNotEmpty)
-                          Text(
-                            oldPrice,
-                            style: const TextStyle(
-                              fontSize: 11,
-                              color: Color(0xFF9E9E9E),
-                              decoration: TextDecoration.lineThrough,
+                    SizedBox(
+                      height: 30,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const TokoAmaninPage(),
                             ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: iconColor,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
                           ),
-                        Text(
-                          newPrice,
-                          style: const TextStyle(
-                            fontSize: 14,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: const Text(
+                          'Cek Info',
+                          style: TextStyle(
+                            fontSize: 11,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFFFF5252),
-                            height: 1.1,
                           ),
-                        ),
-                      ],
-                    ),
-                    const Spacer(),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const TokoAmaninPage(),
-                          ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF00BCD4),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: const Text(
-                        'Beli',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
@@ -4360,7 +4297,12 @@ class _BerandaPageState extends State<BerandaPage> {
             ),
             TextButton(
               onPressed: () {
-                // Navigate to all news
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const SemuaBeritaPage(),
+                  ),
+                );
               },
               style: TextButton.styleFrom(
                 padding: EdgeInsets.zero,
