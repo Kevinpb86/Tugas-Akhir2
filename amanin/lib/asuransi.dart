@@ -158,7 +158,6 @@ class AsuransiWebPage extends StatelessWidget {
         // Float Card Konten Informasi Asuransi
         Container(
           margin: const EdgeInsets.only(top: 170, left: 20, right: 20),
-          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.9),
             borderRadius: BorderRadius.circular(24),
@@ -175,46 +174,49 @@ class AsuransiWebPage extends StatelessWidget {
             borderRadius: BorderRadius.circular(24),
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFED1C24).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Text(
-                      'ASURANSI MIKRO SYARIAH',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFFED1C24),
-                        letterSpacing: 0.5,
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFED1C24).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Text(
+                        'ASURANSI MIKRO SYARIAH',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFFED1C24),
+                          letterSpacing: 0.5,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Proteksi Mikro Syariah PRUAman',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1A1A1A),
-                      letterSpacing: -0.5,
-                      height: 1.2,
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Proteksi Mikro Syariah PRUAman',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1A1A1A),
+                        letterSpacing: -0.5,
+                        height: 1.2,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Memberikan perlindungan jiwa bagi masyarakat Indonesia dengan kontribusi premi yang sangat terjangkau guna menghadapi risiko kecelakaan dan bencana alam.',
-                    style: TextStyle(
-                      fontSize: 12.5,
-                      color: Color(0xFF757575),
-                      height: 1.45,
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Memberikan perlindungan jiwa bagi masyarakat Indonesia dengan kontribusi premi yang sangat terjangkau guna menghadapi risiko kecelakaan dan bencana alam.',
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        color: Color(0xFF757575),
+                        height: 1.45,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

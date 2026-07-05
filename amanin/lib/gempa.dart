@@ -1406,128 +1406,128 @@ class _GempaPageState extends State<GempaPage> {
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.85),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 24,
-            offset: const Offset(0, 6),
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.85),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: Colors.white.withOpacity(0.3)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 24,
+                offset: const Offset(0, 6),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: const BoxDecoration(
-              color: Color(0xFFE3F2FD),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.security,
-              color: Color(0xFF2196F3),
-              size: 32,
-            ),
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'Asuransi Pro-Siaga',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF1A1A1A),
-            ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Perlindungan aset dan kesehatan keluarga dari dampak bencana alam.',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 13,
-              color: Color(0xFF757575),
-              height: 1.4,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF8F9FA),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              children: [
-                Row(
-                  children: const [
-                    Icon(
-                      Icons.check_circle,
-                      color: Color(0xFF4CAF50),
-                      size: 16,
-                    ),
-                    SizedBox(width: 8),
-                    Text(
-                      'Klaim cepat 24 jam',
-                      style: TextStyle(fontSize: 12, color: Color(0xFF424242)),
-                    ),
-                  ],
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFFFF3F3),
+                  shape: BoxShape.circle,
                 ),
-                const SizedBox(height: 8),
-                Row(
-                  children: const [
-                    Icon(
-                      Icons.check_circle,
-                      color: Color(0xFF4CAF50),
-                      size: 16,
-                    ),
-                    SizedBox(width: 8),
-                    Text(
-                      'Cover gempa & banjir',
-                      style: TextStyle(fontSize: 12, color: Color(0xFF424242)),
-                    ),
-                  ],
+                child: const Icon(
+                  Icons.security_rounded,
+                  color: Color(0xFFED1C24),
+                  size: 32,
                 ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-          SizedBox(
-            width: double.infinity,
-            height: 48,
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const AsuransiWebPage(),
-                  ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF03A9F4),
-                foregroundColor: Colors.white,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Asuransi Pro-Siaga',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1A1A1A),
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Perlindungan aset dan kesehatan keluarga dari dampak bencana alam.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFF757575),
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF9FAFB),
                   borderRadius: BorderRadius.circular(12),
                 ),
+                child: Column(
+                  children: [
+                    Row(
+                      children: const [
+                        Icon(
+                          Icons.check_circle_rounded,
+                          color: Color(0xFF4CAF50),
+                          size: 16,
+                        ),
+                        SizedBox(width: 8),
+                        Text(
+                          'Klaim cepat 24 jam',
+                          style: TextStyle(fontSize: 12, color: Color(0xFF424242)),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: const [
+                        Icon(
+                          Icons.check_circle_rounded,
+                          color: Color(0xFF4CAF50),
+                          size: 16,
+                        ),
+                        SizedBox(width: 8),
+                        Text(
+                          'Cover gempa & banjir',
+                          style: TextStyle(fontSize: 12, color: Color(0xFF424242)),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-              child: const Text(
-                'Cek Asuransi Sekarang',
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AsuransiWebPage(),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFED1C24),
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Cek Asuransi Sekarang',
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                  ),
+                ),
               ),
-            ),
+              const SizedBox(height: 12),
+              const Text(
+                'Disponsori oleh Prudential | S&K berlaku',
+                style: TextStyle(fontSize: 10, color: Color(0xFF9E9E9E)),
+              ),
+            ],
           ),
-          const SizedBox(height: 12),
-          const Text(
-            'Disponsori • S&K berlaku',
-            style: TextStyle(fontSize: 10, color: Color(0xFF9E9E9E)),
-          ),
-        ],
-      ),
-    ),
+        ),
       ),
     );
   }
