@@ -85,8 +85,9 @@ class _SemuaVideoPageState extends State<SemuaVideoPage> {
 
   Future<void> _loadMoreVideos() async {
     // Jangan load jika sedang loading, atau tidak ada token halaman selanjutnya
-    if (_isLoadingMore || _nextPageToken == null || _nextPageToken!.isEmpty)
+    if (_isLoadingMore || _nextPageToken == null || _nextPageToken!.isEmpty) {
       return;
+    }
 
     setState(() {
       _isLoadingMore = true;

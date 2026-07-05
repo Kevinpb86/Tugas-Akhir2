@@ -456,8 +456,9 @@ class _LoginPageState extends State<LoginPage> {
                       body: jsonEncode({'email': resetEmailController.text}),
                     )
                     .then((response) {
-                      if (mounted)
+                      if (mounted) {
                         Navigator.pop(scaffoldContext); // close loading
+                      }
 
                       if (response.statusCode == 200) {
                         final data = jsonDecode(response.body);
@@ -466,8 +467,7 @@ class _LoginPageState extends State<LoginPage> {
                             SnackBar(
                               content: Text(
                                 data['message'] ??
-                                    'Link reset kata sandi telah dikirim ke ' +
-                                        resetEmailController.text,
+                                    'Link reset kata sandi telah dikirim ke ${resetEmailController.text}',
                               ),
                             ),
                           );
@@ -487,8 +487,9 @@ class _LoginPageState extends State<LoginPage> {
                       }
                     })
                     .catchError((error) {
-                      if (mounted)
+                      if (mounted) {
                         Navigator.pop(scaffoldContext); // close loading
+                      }
                       if (mounted) {
                         ScaffoldMessenger.of(scaffoldContext).showSnackBar(
                           const SnackBar(
