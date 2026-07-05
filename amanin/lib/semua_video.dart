@@ -26,6 +26,16 @@ class _SemuaVideoPageState extends State<SemuaVideoPage> {
   String? _playingVideoId;
   YoutubePlayerController? _youtubeController;
 
+  String _decodeHtml(String text) {
+    return text
+        .replaceAll('&amp;', '&')
+        .replaceAll('&lt;', '<')
+        .replaceAll('&gt;', '>')
+        .replaceAll('&quot;', '"')
+        .replaceAll('&#39;', "'")
+        .replaceAll('&apos;', "'");
+  }
+
   @override
   void initState() {
     super.initState();
@@ -210,7 +220,7 @@ class _SemuaVideoPageState extends State<SemuaVideoPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      _featuredVideo!['title'] ?? 'Tanpa Judul',
+                      _decodeHtml(_featuredVideo!['title'] ?? 'Tanpa Judul'),
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -221,7 +231,7 @@ class _SemuaVideoPageState extends State<SemuaVideoPage> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      _featuredVideo!['description'] ?? 'Tidak ada deskripsi',
+                      _decodeHtml(_featuredVideo!['description'] ?? 'Tidak ada deskripsi'),
                       style: TextStyle(
                         fontSize: 13,
                         color: Colors.grey[700],
@@ -337,7 +347,7 @@ class _SemuaVideoPageState extends State<SemuaVideoPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      video['title'] ?? 'Tanpa Judul',
+                      _decodeHtml(video['title'] ?? 'Tanpa Judul'),
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,

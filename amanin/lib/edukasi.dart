@@ -4,6 +4,8 @@ import 'login.dart';
 import 'main.dart';
 import 'asuransi.dart';
 import 'semua_video.dart';
+import 'video_edukasi.dart';
+import 'daftar_perlengkapan.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'dart:convert';
@@ -11,6 +13,7 @@ import 'package:http/http.dart' as http;
 import 'edukasi_waspada.dart';
 import 'services/api_config.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:url_launcher/url_launcher.dart';
 
 class EdukasiPage extends StatefulWidget {
   const EdukasiPage({super.key});
@@ -749,9 +752,16 @@ class _EdukasiPageState extends State<EdukasiPage> {
 
   Widget _buildVideoCard(BuildContext context) {
     return MouseRegion(
-      cursor: SystemMouseCursors.basic,
+      cursor: SystemMouseCursors.click,
       child: GestureDetector(
-        onTap: null, // Disabled click
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const VideoEdukasiPage(),
+            ),
+          );
+        },
         child: Container(
           decoration: BoxDecoration(
             color: Colors.white,
@@ -959,7 +969,14 @@ class _EdukasiPageState extends State<EdukasiPage> {
             width: double.infinity,
             height: 44,
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const DaftarPerlengkapanPage(),
+                  ),
+                );
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
                 foregroundColor: const Color(0xFF1A1A1A),

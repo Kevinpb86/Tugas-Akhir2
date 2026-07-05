@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
+import 'package:url_launcher/url_launcher.dart';
 
 class VideoEdukasiPage extends StatelessWidget {
   const VideoEdukasiPage({super.key});
@@ -308,7 +309,12 @@ class VideoEdukasiPage extends StatelessWidget {
                     width: double.infinity,
                     height: 48,
                     child: ElevatedButton.icon(
-                      onPressed: () {},
+                      onPressed: () async {
+                        final url = Uri.parse('https://www.youtube.com/results?search_query=simulasi+evakuasi+gempa+bumi+mitigasi');
+                        if (await canLaunchUrl(url)) {
+                          await launchUrl(url, mode: LaunchMode.externalApplication);
+                        }
+                      },
                       icon: const Icon(Icons.open_in_new),
                       label: const Text(
                         'Buka di YouTube',
@@ -480,7 +486,14 @@ class VideoEdukasiPage extends StatelessWidget {
   }
 
   Widget _buildNextVideoCard() {
-    return ClipRRect(
+    return GestureDetector(
+      onTap: () async {
+        final url = Uri.parse('https://www.youtube.com/results?search_query=tas+siaga+bencana+keluarga');
+        if (await canLaunchUrl(url)) {
+          await launchUrl(url, mode: LaunchMode.externalApplication);
+        }
+      },
+      child: ClipRRect(
       borderRadius: BorderRadius.circular(16),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
@@ -579,6 +592,7 @@ class VideoEdukasiPage extends StatelessWidget {
       ),
     ),
       ),
+    ),
     );
   }
 }
