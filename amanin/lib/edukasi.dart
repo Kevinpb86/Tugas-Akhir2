@@ -26,6 +26,13 @@ class _EdukasiPageState extends State<EdukasiPage> {
   String _currentCityName = 'Memuat lokasi...';
   bool _showSemuaVideo = false;
 
+  final Map<String, bool> _tsbCheckedState = {
+    'Dokumen Penting (Fotokopi)': true,
+    'Makanan Tahan Lama & Air': true,
+    'Kotak P3K & Obat Pribadi': false,
+    'Senter & Baterai Cadangan': false,
+  };
+
   @override
   void initState() {
     super.initState();
@@ -957,13 +964,13 @@ class _EdukasiPageState extends State<EdukasiPage> {
             ],
           ),
           const SizedBox(height: 20),
-          _buildChecklistItem('Dokumen Penting (Fotokopi)', true),
+          _buildChecklistItem('Dokumen Penting (Fotokopi)'),
           const SizedBox(height: 12),
-          _buildChecklistItem('Makanan Tahan Lama & Air', true),
+          _buildChecklistItem('Makanan Tahan Lama & Air'),
           const SizedBox(height: 12),
-          _buildChecklistItem('Kotak P3K & Obat Pribadi', false),
+          _buildChecklistItem('Kotak P3K & Obat Pribadi'),
           const SizedBox(height: 12),
-          _buildChecklistItem('Senter & Baterai Cadangan', false),
+          _buildChecklistItem('Senter & Baterai Cadangan'),
           const SizedBox(height: 20),
           SizedBox(
             width: double.infinity,
@@ -996,24 +1003,39 @@ class _EdukasiPageState extends State<EdukasiPage> {
     );
   }
 
-  Widget _buildChecklistItem(String text, bool isChecked) {
-    return Row(
-      children: [
-        Icon(
-          isChecked ? Icons.check_circle_outline : Icons.radio_button_unchecked,
-          color: isChecked ? const Color(0xFF4CAF50) : const Color(0xFFE0E0E0),
-          size: 20,
+  Widget _buildChecklistItem(String text) {
+    final bool isChecked = _tsbCheckedState[text] ?? false;
+    return InkWell(
+      onTap: () {
+        setState(() {
+          _tsbCheckedState[text] = !isChecked;
+        });
+      },
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+        child: Row(
+          children: [
+            Icon(
+              isChecked ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
+              color: isChecked ? const Color(0xFF4CAF50) : const Color(0xFFB0BEC5),
+              size: 22,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                text,
+                style: TextStyle(
+                  fontSize: 12.5,
+                  color: isChecked ? Colors.grey[400] : const Color(0xFF424242),
+                  fontWeight: FontWeight.w500,
+                  decoration: isChecked ? TextDecoration.lineThrough : null,
+                ),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(width: 12),
-        Text(
-          text,
-          style: const TextStyle(
-            fontSize: 12,
-            color: Color(0xFF424242),
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
+      ),
     );
   }
 
