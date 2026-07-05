@@ -90,27 +90,27 @@ class AsuransiWebPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
                       _buildFeatureCard(
-                        icon: Icons.flash_on_rounded,
+                        icon: Icons.volunteer_activism_rounded,
                         iconColor: const Color(0xFFFF9800),
                         bgColor: const Color(0xFFFFF3E0),
-                        title: 'Klaim Super Cepat 24 Jam',
-                        desc: 'Verifikasi instan secara online dan pencairan dana langsung ke rekening Anda dalam waktu 1x24 jam pascalaporan.',
+                        title: 'Santunan Hingga Rp 20 Juta',
+                        desc: 'Santunan tunai sebesar Rp 20.000.000 jika terjadi risiko meninggal dunia akibat kecelakaan atau bencana alam, dan Rp 10.000.000 untuk sebab lainnya.',
                       ),
                       const SizedBox(height: 12),
                       _buildFeatureCard(
-                        icon: Icons.domain_rounded,
+                        icon: Icons.verified_rounded,
                         iconColor: const Color(0xFFED1C24),
                         bgColor: const Color(0xFFFFF3F3),
-                        title: 'Cover Bencana Komprehensif',
-                        desc: 'Menjamin penuh kerugian aset bangunan, kendaraan, hingga biaya darurat medis akibat gempa bumi, tsunami, dan banjir bandang.',
+                        title: 'Masa Proteksi Aktif 1 Tahun',
+                        desc: 'Perlindungan penuh selama 12 bulan sejak polis aktif tanpa masa tunggu, memberikan jaminan santunan instan bagi ahli waris.',
                       ),
                       const SizedBox(height: 12),
                       _buildFeatureCard(
                         icon: Icons.savings_rounded,
                         iconColor: const Color(0xFF4CAF50),
                         bgColor: const Color(0xFFE8F5E9),
-                        title: 'Premi Ringan & Fleksibel',
-                        desc: 'Perlindungan maksimal dengan kontribusi premi harian yang sangat terjangkau, disesuaikan dengan kebutuhan proteksi keluarga Anda.',
+                        title: 'Kontribusi Sangat Ringan',
+                        desc: 'Kontribusi premi mikro yang sangat hemat dan bersahabat, tanpa perlu pemeriksaan medis, dan pendaftaran disetujui instan.',
                       ),
                       const SizedBox(height: 28),
                       _buildTrustSection(),
@@ -185,7 +185,7 @@ class AsuransiWebPage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Text(
-                      'ASURANSI GEMPA BUMI',
+                      'ASURANSI MIKRO SYARIAH',
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
@@ -196,7 +196,7 @@ class AsuransiWebPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   const Text(
-                    'Proteksi Masa Depan Keluarga Anda',
+                    'Proteksi Mikro Syariah PRUAman',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -207,7 +207,7 @@ class AsuransiWebPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    'Bencana datang tanpa mengetuk pintu. Berikan perlindungan terbaik bagi rumah tinggal dan aset berharga keluarga Anda dari gempa bumi.',
+                    'Memberikan perlindungan jiwa bagi masyarakat Indonesia dengan kontribusi premi yang sangat terjangkau guna menghadapi risiko kecelakaan dan bencana alam.',
                     style: TextStyle(
                       fontSize: 12.5,
                       color: Color(0xFF757575),
@@ -457,7 +457,7 @@ class AsuransiWebPage extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Mulai kontribusi dari',
+                          'Kontribusi premi mulai dari',
                           style: TextStyle(fontSize: 11, color: Color(0xFF757575)),
                         ),
                         Row(
@@ -465,7 +465,7 @@ class AsuransiWebPage extends StatelessWidget {
                           textBaseline: TextBaseline.alphabetic,
                           children: const [
                             Text(
-                              'Rp 25.000',
+                              'Rp 10.000',
                               style: TextStyle(
                                 fontSize: 22,
                                 fontWeight: FontWeight.bold,
