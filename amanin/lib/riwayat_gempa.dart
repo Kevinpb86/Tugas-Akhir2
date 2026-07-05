@@ -3,7 +3,6 @@ import 'services/bmkg_service.dart';
 import 'services/usgs_service.dart';
 import 'services/anomali_service.dart';
 import 'package:geolocator/geolocator.dart';
-import 'gempa_detail.dart';
 import 'fullscreen_map.dart';
 
 class RiwayatGempaPage extends StatefulWidget {

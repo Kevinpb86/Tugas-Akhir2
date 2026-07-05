@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'beranda.dart';
-import 'edukasi.dart'; // Import for navigation consistency if needed
-import 'gempa.dart';
+// Import for navigation consistency if needed
 import 'asuransi.dart';
 import 'main.dart'; // For userCityNameNotifier
 

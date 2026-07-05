@@ -21,7 +21,7 @@ class _AnalisisGempaPageState extends State<AnalisisGempaPage> {
   bool isLoading = true;
   EarthquakeNode? selectedNode;
 
-  String _currentCityName = 'Memuat lokasi...';
+  final String _currentCityName = 'Memuat lokasi...';
 
   // Helper Function untuk node lookup
   EarthquakeNode? findNode(int id) {

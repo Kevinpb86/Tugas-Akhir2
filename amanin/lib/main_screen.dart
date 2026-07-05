@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'beranda.dart';
 import 'cuaca.dart';
-import 'gempa.dart';
 import 'edukasi.dart';
 import 'utils/localization.dart';
 import 'fitur.dart';

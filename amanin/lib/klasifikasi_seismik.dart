@@ -182,7 +182,7 @@ class _KlasifikasiSeismikPageState extends State<KlasifikasiSeismikPage> {
                       ),
                       const SizedBox(height: 16),
                       DropdownButtonFormField<String>(
-                        value: _selectedSource,
+                        initialValue: _selectedSource,
                         isExpanded: true,
                         decoration: InputDecoration(
                           labelText: 'Sumber Data Model',

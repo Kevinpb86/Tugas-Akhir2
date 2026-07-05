@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'mitigasi_gempa.dart';
 import 'panduan_evakuasi_bahaya.dart';
 
 class EdukasiBahayaPage extends StatefulWidget {
