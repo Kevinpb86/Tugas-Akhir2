@@ -3736,6 +3736,7 @@ class _BerandaPageState extends State<BerandaPage> {
           ),
         ],
       ),
+    );
   }
 
   Widget _buildInsuranceSection() {

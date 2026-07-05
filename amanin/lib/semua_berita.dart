@@ -146,12 +146,12 @@ class _SemuaBeritaPageState extends State<SemuaBeritaPage> {
                             )
                           : SliverList(
                               delegate: SliverChildBuilderDelegate(
-                                (context, index) {
-                                  final news = _newsList[index];
-                                  return _buildNewsItemCard(news);
-                                },
-                                itemCount: _newsList.length,
-                              ),
+                                  (context, index) {
+                                    final news = _newsList[index];
+                                    return _buildNewsItemCard(news);
+                                  },
+                                  childCount: _newsList.length,
+                                ),
                             ),
                 ),
               ],
@@ -274,7 +274,7 @@ class _SemuaBeritaPageState extends State<SemuaBeritaPage> {
                         child: news.photoUrl.isNotEmpty
                             ? Image.network(
                                 news.photoUrl,
-                                fit: Image.cover,
+                                fit: BoxFit.cover,
                                 errorBuilder: (context, error, stackTrace) {
                                   return const Center(
                                     child: Icon(Icons.broken_image_outlined,
