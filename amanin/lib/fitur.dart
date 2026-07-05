@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'klasifikasi_seismik.dart';
+import 'deteksi_anomali.dart';
+import 'ui/analisis_gempa_page.dart';
 
 class FiturPage extends StatelessWidget {
   const FiturPage({super.key});
@@ -44,10 +46,36 @@ class FiturPage extends StatelessWidget {
           const SizedBox(height: 16),
           _buildFeatureCard(
             context,
-            icon: Icons.info_outline,
-            title: 'Fitur 4',
-            description: 'Deskripsi untuk Fitur 4.',
-            color: const Color(0xFFFFA726),
+            icon: Icons.warning_amber_rounded,
+            title: 'Deteksi Anomali Seismisitas',
+            description:
+                'Mendeteksi pola guncangan tidak wajar (anomali) secara real-time dengan model Isolation Forest.',
+            color: const Color(0xFFFF9800),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const DeteksiAnomaliPage(),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 16),
+          _buildFeatureCard(
+            context,
+            icon: Icons.hub_outlined,
+            title: 'Klasifikasi Main/Aftershock',
+            description:
+                'Analisis spasial-temporal hubungan gempa utama dan gempa susulan menggunakan model Random Forest.',
+            color: const Color(0xFF4CAF50),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AnalisisGempaPage(),
+                ),
+              );
+            },
           ),
         ],
       ),
