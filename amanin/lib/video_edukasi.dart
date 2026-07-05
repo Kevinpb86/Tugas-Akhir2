@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
+import 'package:url_launcher/url_launcher.dart';
 
 class VideoEdukasiPage extends StatelessWidget {
   const VideoEdukasiPage({super.key});
@@ -61,100 +62,108 @@ class VideoEdukasiPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Video Player Placeholder
-            Container(
-              width: double.infinity,
-              height: 220,
-              decoration: const BoxDecoration(
-                color: Colors.black,
-                image: DecorationImage(
-                  image: NetworkImage(
-                    'https://images.unsplash.com/photo-1544717305-2782549b5136?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
-                  ),
-                  fit: BoxFit.cover,
-                  colorFilter: ColorFilter.mode(
-                    Colors.black45,
-                    BlendMode.darken,
+            GestureDetector(
+              onTap: () async {
+                final url = Uri.parse('https://www.youtube.com/results?search_query=simulasi+evakuasi+gempa+bumi+mitigasi');
+                if (await canLaunchUrl(url)) {
+                  await launchUrl(url, mode: LaunchMode.externalApplication);
+                }
+              },
+              child: Container(
+                width: double.infinity,
+                height: 220,
+                decoration: const BoxDecoration(
+                  color: Colors.black,
+                  image: DecorationImage(
+                    image: NetworkImage(
+                      'https://images.unsplash.com/photo-1544717305-2782549b5136?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
+                    ),
+                    fit: BoxFit.cover,
+                    colorFilter: ColorFilter.mode(
+                      Colors.black45,
+                      BlendMode.darken,
+                    ),
                   ),
                 ),
-              ),
-              child: Stack(
-                children: [
-                  Center(
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF2196F3),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.play_arrow,
-                        color: Colors.white,
-                        size: 32,
+                child: Stack(
+                  children: [
+                    Center(
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF2196F3),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.play_arrow,
+                          color: Colors.white,
+                          size: 32,
+                        ),
                       ),
                     ),
-                  ),
-                  Positioned(
-                    bottom: 12,
-                    left: 12,
-                    right: 12,
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.red,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: const Text(
-                            'LIVE',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
+                    Positioned(
+                      bottom: 12,
+                      left: 12,
+                      right: 12,
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: const Text(
+                              'LIVE',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        const Text(
-                          '04:35 / 12:00',
-                          style: TextStyle(color: Colors.white, fontSize: 12),
-                        ),
-                        const Spacer(),
-                        const Icon(
-                          Icons.fullscreen,
-                          color: Colors.white,
-                          size: 20,
-                        ),
-                      ],
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 12,
-                    left: 0,
-                    right: 0,
-                    child: Padding(
-                      padding: const EdgeInsets.only(
-                        bottom: 24,
-                        left: 12,
-                        right: 32,
+                          const SizedBox(width: 8),
+                          const Text(
+                            '04:35 / 12:00',
+                            style: TextStyle(color: Colors.white, fontSize: 12),
+                          ),
+                          const Spacer(),
+                          const Icon(
+                            Icons.fullscreen,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ],
                       ),
-                      child: Container(
-                        height: 2,
-                        width: double.infinity,
-                        color: Colors.white.withValues(alpha: 0.3),
-                        alignment: Alignment.centerLeft,
+                    ),
+                    Positioned(
+                      bottom: 12,
+                      left: 0,
+                      right: 0,
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                          bottom: 24,
+                          left: 12,
+                          right: 32,
+                        ),
                         child: Container(
                           height: 2,
-                          width: 100, // Progress
-                          color: const Color(0xFF2196F3),
+                          width: double.infinity,
+                          color: Colors.white.withValues(alpha: 0.3),
+                          alignment: Alignment.centerLeft,
+                          child: Container(
+                            height: 2,
+                            width: 100, // Progress
+                            color: const Color(0xFF2196F3),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
 
@@ -308,7 +317,12 @@ class VideoEdukasiPage extends StatelessWidget {
                     width: double.infinity,
                     height: 48,
                     child: ElevatedButton.icon(
-                      onPressed: () {},
+                      onPressed: () async {
+                        final url = Uri.parse('https://www.youtube.com/results?search_query=simulasi+evakuasi+gempa+bumi+mitigasi');
+                        if (await canLaunchUrl(url)) {
+                          await launchUrl(url, mode: LaunchMode.externalApplication);
+                        }
+                      },
                       icon: const Icon(Icons.open_in_new),
                       label: const Text(
                         'Buka di YouTube',
@@ -480,7 +494,14 @@ class VideoEdukasiPage extends StatelessWidget {
   }
 
   Widget _buildNextVideoCard() {
-    return ClipRRect(
+    return GestureDetector(
+      onTap: () async {
+        final url = Uri.parse('https://www.youtube.com/results?search_query=tas+siaga+bencana+keluarga');
+        if (await canLaunchUrl(url)) {
+          await launchUrl(url, mode: LaunchMode.externalApplication);
+        }
+      },
+      child: ClipRRect(
       borderRadius: BorderRadius.circular(16),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
@@ -579,6 +600,7 @@ class VideoEdukasiPage extends StatelessWidget {
       ),
     ),
       ),
+    ),
     );
   }
 }
