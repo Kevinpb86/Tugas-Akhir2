@@ -30,9 +30,6 @@ class _FullscreenMapPageState extends State<FullscreenMapPage> with SingleTicker
   String _distanceText = 'Menghitung jarak...';
   LatLng? _userLatLng;
 
-  bool _showNotification = false;
-  double _progressValue = 1.0;
-  Timer? _progressTimer;
   bool _isDetailExpanded = true;
   late AnimationController _expandController;
   late Animation<double> _expandAnimation;
@@ -50,46 +47,11 @@ class _FullscreenMapPageState extends State<FullscreenMapPage> with SingleTicker
       curve: Curves.fastOutSlowIn,
     );
     _calculateDistance();
-
-    if (widget.isAnomali) {
-      // Tunggu sebentar sebelum memunculkan notifikasi agar transisi smooth
-      Future.delayed(const Duration(milliseconds: 300), () {
-        if (mounted) {
-          setState(() {
-            _showNotification = true;
-          });
-          _startNotificationTimers();
-        }
-      });
-    }
   }
 
-  void _startNotificationTimers() {
-    _progressValue = 1.0;
-    const duration = Duration(seconds: 2);
-    const tick = Duration(milliseconds: 16);
-    final int totalTicks = duration.inMilliseconds ~/ tick.inMilliseconds;
-    int currentTick = 0;
-
-    _progressTimer = Timer.periodic(tick, (timer) {
-      if (mounted) {
-        setState(() {
-          currentTick++;
-          _progressValue = 1.0 - (currentTick / totalTicks);
-          if (currentTick >= totalTicks) {
-            _showNotification = false;
-            timer.cancel();
-          }
-        });
-      } else {
-        timer.cancel();
-      }
-    });
-  }
 
   @override
   void dispose() {
-    _progressTimer?.cancel();
     _expandController.dispose();
     super.dispose();
   }
@@ -508,109 +470,7 @@ class _FullscreenMapPageState extends State<FullscreenMapPage> with SingleTicker
             ),
           ),
 
-          // 5. In-App Popup Notification (Top)
-          AnimatedPositioned(
-            duration: const Duration(milliseconds: 400),
-            curve: Curves.easeOutCubic,
-            top: _showNotification
-                ? MediaQuery.of(context).padding.top + 16
-                : -150,
-            left: 20,
-            right: 20,
-            child: MouseRegion(
-              cursor: SystemMouseCursors.click,
-              child: GestureDetector(
-                onVerticalDragUpdate: (details) {
-                  if (details.primaryDelta! < -5) {
-                    // Swipe up detected
-                    setState(() {
-                      _showNotification = false;
-                    });
-                    _progressTimer?.cancel();
-                  }
-                },
-                child: Material(
-                  color: Colors.transparent,
-                  child: Container(
-                    clipBehavior: Clip.hardEdge,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.red.withOpacity(0.15),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 14,
-                          ),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: Colors.red.shade50,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Icon(
-                                  Icons.warning_amber_rounded,
-                                  color: Colors.red.shade600,
-                                  size: 24,
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Status Waspada',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 14,
-                                        color: Colors.red.shade700,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      'Pola kekuatan dan kedalaman gempa ini tidak biasa',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 12,
-                                        color: const Color(0xFF424242),
-                                        height: 1.3,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        // Progress Bar Timer
-                        LinearProgressIndicator(
-                          value: _progressValue,
-                          backgroundColor: Colors.transparent,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            Colors.red.shade400,
-                          ),
-                          minHeight: 3,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
+
         ],
       ),
     );

@@ -46,3 +46,6 @@ app.*.map.json
 
 # Claude Code
 CLAUDE.md
+
+# Konfigurasi Lokal (Ignored)
+lib/services/api_config_local.dart

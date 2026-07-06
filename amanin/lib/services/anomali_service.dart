@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
 import 'api_config.dart';
 
 class AnomaliGempaModel {
@@ -60,6 +61,14 @@ class AnomaliGempaModel {
   }
 }
 
+class DemoState {
+  // Global value notifier to track the selected demo earthquake
+  static final ValueNotifier<AnomaliGempaModel?> selectedDemoGempa = ValueNotifier(null);
+  
+  // Cache untuk riwayat anomali agar tidak loading berulang kali
+  static List<AnomaliGempaModel>? cachedAnomaliHistory;
+}
+
 class AnomaliService {
   static Future<List<AnomaliGempaModel>> fetchAnomaliTerkini() async {
     try {
@@ -76,6 +85,30 @@ class AnomaliService {
       } else {
         throw Exception(
           'Gagal memuat data anomali gempa terkini: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      throw Exception('Terjadi kesalahan saat menghubungi backend: $e');
+    }
+  }
+
+  static Future<List<AnomaliGempaModel>> fetchAnomaliHistory({
+    int limit = 5,
+  }) async {
+    try {
+      final response = await http.get(
+        Uri.parse('${ApiConfig.baseUrl}/anomali-history?limit=$limit'),
+      ).timeout(const Duration(seconds: 15));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final List<dynamic> gempaList = data['data'];
+        return gempaList
+            .map((json) => AnomaliGempaModel.fromJson(json))
+            .toList();
+      } else {
+        throw Exception(
+          'Gagal memuat riwayat gempa anomali: ${response.statusCode}',
         );
       }
     } catch (e) {
