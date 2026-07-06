@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'panduan_evakuasi_bahaya.dart';
 
 class EdukasiBahayaPage extends StatefulWidget {
@@ -16,21 +17,29 @@ class EdukasiBahayaPage extends StatefulWidget {
 }
 
 class _EdukasiBahayaPageState extends State<EdukasiBahayaPage> {
+  late String _currentCategory;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentCategory = widget.locationCategory;
+  }
+
   @override
   Widget build(BuildContext context) {
     String siagaDesc = '';
     String saatGempaDesc = '';
     String pascaGempaDesc = '';
 
-    if (widget.locationCategory == 'Pegunungan') {
+    if (_currentCategory == 'Pegunungan') {
       siagaDesc = 'Pahami area longsor kritis dan tebing rapuh. Tentukan titik kumpul yang jauh dari bukit curam.';
       saatGempaDesc = 'Segera menjauh dari tebing dan lereng curam. Waspadai jatuhan batu besar dan longsor susulan.';
       pascaGempaDesc = 'Tinggalkan area tebing secepatnya. Jangan pernah kembali ke lereng yang retak atau labil.';
-    } else if (widget.locationCategory == 'Pesisir Pantai') {
+    } else if (_currentCategory == 'Pesisir Pantai') {
       siagaDesc = 'Pastikan jalur evakuasi tsunami dan titik kumpul di area tinggi telah diketahui pasti.';
       saatGempaDesc = 'LARI! Tinggalkan barang bawaan dan segera evakuasi ke tempat tinggi menjauhi garis pantai.';
       pascaGempaDesc = 'Jangan turun ke pantai hingga ada pencabutan peringatan tsunami resmi dari BMKG.';
-    } else if (widget.locationCategory == 'Luar Ruangan') {
+    } else if (_currentCategory == 'Luar Ruangan') {
       siagaDesc = 'Ketahui letak tanah lapang yang benar-benar terbuka tanpa gedung tinggi atau tiang listrik.';
       saatGempaDesc = 'Jauhi struktur bangunan, jembatan, tiang listrik, dan pohon besar. Berlindung di tanah lapang.';
       pascaGempaDesc = 'Waspadai gempa susulan. Jauhi area yang tampak retak, tiang miring, atau kabel terputus.';
@@ -41,8 +50,16 @@ class _EdukasiBahayaPageState extends State<EdukasiBahayaPage> {
       pascaGempaDesc = 'Setelah guncangan utama reda, segera tinggalkan gedung melalui tangga darurat dengan cepat.';
     }
 
+    final categoryIcons = {
+      'Dalam Ruangan': Icons.home_rounded,
+      'Luar Ruangan': Icons.landscape_rounded,
+      'Pesisir Pantai': Icons.beach_access_rounded,
+      'Pegunungan': Icons.terrain_rounded,
+    };
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA), // Modern subtle background
+      extendBodyBehindAppBar: true,
+      backgroundColor: const Color(0xFFF8F9FA), // Consistent subtle background
       appBar: AppBar(
         title: const Text(
           'Panduan Bahaya Tinggi',
@@ -54,7 +71,7 @@ class _EdukasiBahayaPageState extends State<EdukasiBahayaPage> {
           ),
         ),
         centerTitle: true,
-        backgroundColor: const Color(0xFFD32F2F), // Warning Red
+        backgroundColor: Colors.transparent, // Transparent AppBar
         iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
       ),
@@ -67,7 +84,11 @@ class _EdukasiBahayaPageState extends State<EdukasiBahayaPage> {
             Container(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Color(0xFFEF4444), Color(0xFFB91C1C)],
+                  colors: [
+                    Color(0xFFEF4444), // Vivid Red
+                    Color(0xFFDC2626), // Medium Red
+                    Color(0xFF991B1B), // Dark Red
+                  ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -76,13 +97,18 @@ class _EdukasiBahayaPageState extends State<EdukasiBahayaPage> {
                   bottomRight: Radius.circular(36),
                 ),
               ),
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+              padding: EdgeInsets.fromLTRB(
+                20,
+                MediaQuery.of(context).padding.top + kToolbarHeight + 12,
+                20,
+                32,
+              ),
               child: Column(
                 children: [
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
+                      color: Colors.white.withValues(alpha: 0.25),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
@@ -92,10 +118,10 @@ class _EdukasiBahayaPageState extends State<EdukasiBahayaPage> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  Text(
-                    'Peringatan Kategori Tinggi'.toUpperCase(),
-                    style: const TextStyle(
-                      color: Colors.white70,
+                  const Text(
+                    'PERINGATAN KATEGORI TINGGI',
+                    style: TextStyle(
+                      color: Colors.white,
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 1.5,
@@ -103,7 +129,7 @@ class _EdukasiBahayaPageState extends State<EdukasiBahayaPage> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Zona Risiko Gempa Tinggi\n(${widget.cityName})',
+                    'Zona Risiko Gempa Bumi Tinggi\n(${widget.cityName})',
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: Colors.white,
@@ -118,7 +144,7 @@ class _EdukasiBahayaPageState extends State<EdukasiBahayaPage> {
                     'Wilayah Anda teridentifikasi memiliki tingkat kerawanan gempa bumi yang tinggi. Harap pelajari instruksi keselamatan di bawah ini dan siapkan rencana evakuasi mandiri.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.9),
+                      color: Colors.white.withValues(alpha: 0.90),
                       fontSize: 12,
                       height: 1.5,
                     ),
@@ -132,67 +158,128 @@ class _EdukasiBahayaPageState extends State<EdukasiBahayaPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Section 1: Protokol Evakuasi Cepat
+                  // Lokasi Terdeteksi Badge
+                  Row(
+                    children: [
+                      const Text(
+                        'Lokasi Terdeteksi:',
+                        style: TextStyle(
+                          color: Color(0xFF374151),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.2,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      InkWell(
+                        onTap: () => _showCategorySelectionSheet(context, const Color(0xFFEF4444)),
+                        borderRadius: BorderRadius.circular(20),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEF4444).withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: const Color(0xFFEF4444).withValues(alpha: 0.50),
+                              width: 1,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                categoryIcons[_currentCategory],
+                                size: 14,
+                                color: const Color(0xFFEF4444),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                _currentCategory,
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w900,
+                                  color: Color(0xFFEF4444),
+                                  letterSpacing: 0.2,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              const Icon(
+                                Icons.arrow_drop_down_rounded,
+                                size: 16,
+                                color: Color(0xFFEF4444),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Section Title
                   _buildSectionTitle(
                     'Langkah Evakuasi Utama (3S)',
-                    Icons.flash_on_rounded,
-                    const Color(0xFFD32F2F),
+                    Icons.menu_book_rounded,
+                    const Color(0xFFEF4444),
                   ),
                   const SizedBox(height: 10),
-                  _buildEvacuationCard(
-                    '1. SIAGA (Sebelum Gempa)',
+
+                  // Mitigation Cards
+                  _buildMitigationCard(
+                    '1. PRABENCANA (SIAGA)',
                     siagaDesc,
                     Icons.home_work_rounded,
-                    const Color(0xFFD32F2F),
+                    const Color(0xFFEF4444),
                     0,
                   ),
                   const SizedBox(height: 10),
-                  _buildEvacuationCard(
-                    '2. SAAT GEMPA (Guncangan)',
+                  _buildMitigationCard(
+                    '2. SAAT BENCANA (RESPONS)',
                     saatGempaDesc,
-                    Icons.security_rounded,
-                    const Color(0xFFD32F2F),
+                    Icons.crisis_alert_rounded,
+                    const Color(0xFFEF4444),
                     1,
                   ),
                   const SizedBox(height: 10),
-                  _buildEvacuationCard(
-                    '3. PASCA GEMPA (Setelah Gempa)',
+                  _buildMitigationCard(
+                    '3. PASCABENCANA (PULIH)',
                     pascaGempaDesc,
-                    Icons.directions_run_rounded,
-                    const Color(0xFFD32F2F),
+                    Icons.check_circle_rounded,
+                    const Color(0xFFEF4444),
                     2,
                   ),
                   const SizedBox(height: 24),
-                  // Section 3: Kontak Darurat
+
+                  // Emergency Contact Section
                   _buildSectionTitle(
                     'Panggilan Darurat Cepat',
                     Icons.phone_in_talk_rounded,
                     const Color(0xFF1976D2),
                   ),
                   const SizedBox(height: 10),
+
                   Row(
                     children: [
                       Expanded(
-                        child: _buildEmergencyContactCard(
+                        child: _buildEmergencyCard(
                           'BASARNAS',
                           '115',
                           Icons.local_hospital_rounded,
-                          const Color(0xFFE64A19),
+                          const Color(0xFFEF4444),
                         ),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
-                        child: _buildEmergencyContactCard(
-                          'Panggilan Darurat',
+                        child: _buildEmergencyCard(
+                          'PANGGILAN DARURAT',
                           '112',
                           Icons.phone_android_rounded,
-                          const Color(0xFF388E3C),
+                          const Color(0xFF3B82F6),
                         ),
                       ),
                     ],
                   ),
-
-
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
@@ -205,96 +292,246 @@ class _EdukasiBahayaPageState extends State<EdukasiBahayaPage> {
   Widget _buildSectionTitle(String title, IconData icon, Color color) {
     return Row(
       children: [
-        Icon(icon, color: color, size: 20),
-        const SizedBox(width: 8),
+        Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, size: 16, color: color),
+        ),
+        const SizedBox(width: 10),
         Text(
           title,
           style: const TextStyle(
+            color: Colors.black87,
             fontSize: 14,
             fontWeight: FontWeight.w800,
-            color: Color(0xFF2C3E50),
+            letterSpacing: -0.2,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildEvacuationCard(
+  Widget _buildMitigationCard(
     String title,
     String body,
     IconData icon,
-    Color color,
+    Color accentColor,
     int tabIndex,
   ) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: color.withValues(alpha: 0.12),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => PanduanEvakuasiBahayaPage(
-                    cityName: widget.cityName,
-                    initialTabIndex: tabIndex,
-                    locationCategory: widget.locationCategory,
+        borderRadius: BorderRadius.circular(18),
+        child: Stack(
+          children: [
+            // Watermark background icon
+            Positioned(
+              right: -12,
+              bottom: -12,
+              child: Opacity(
+                opacity: 0.08,
+                child: Icon(
+                  icon,
+                  size: 85,
+                  color: accentColor,
+                ),
+              ),
+            ),
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => PanduanEvakuasiBahayaPage(
+                        cityName: widget.cityName,
+                        initialTabIndex: tabIndex,
+                        locationCategory: _currentCategory,
+                      ),
+                    ),
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: accentColor.withValues(alpha: 0.20),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(icon, color: accentColor, size: 22),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    title,
+                                    style: TextStyle(
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.w900,
+                                      color: accentColor,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                ),
+                                Icon(
+                                  Icons.arrow_forward_ios_rounded,
+                                  color: accentColor.withValues(alpha: 0.80),
+                                  size: 11,
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              body,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.black87,
+                                height: 1.45,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              );
-            },
-            child: Padding(
-              padding: const EdgeInsets.all(14),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: color.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(icon, color: color, size: 22),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          title,
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w800,
-                            color: color,
-                            letterSpacing: -0.2,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          body,
-                          style: const TextStyle(
-                            fontSize: 11.5,
-                            color: Color(0xFF4B5563),
-                            height: 1.45,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmergencyCard(
+    String label,
+    String number,
+    IconData icon,
+    Color accentColor,
+  ) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: () async {
+          final messenger = ScaffoldMessenger.of(context);
+          final Uri url = Uri.parse('tel:$number');
+          if (await canLaunchUrl(url)) {
+            await launchUrl(url);
+          } else {
+            messenger.showSnackBar(
+              SnackBar(
+                content: Text('Tidak dapat memanggil nomor $number secara otomatis.'),
+                backgroundColor: Colors.redAccent,
+              ),
+            );
+          }
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            color: accentColor,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: accentColor.withValues(alpha: 0.35),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: Stack(
+              children: [
+                Positioned(
+                  right: -15,
+                  bottom: -15,
+                  child: Opacity(
+                    opacity: 0.15,
+                    child: Icon(
+                      icon,
+                      size: 65,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.20),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(icon, color: Colors.white, size: 18),
+                      ),
+                      const SizedBox(width: 12),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            label,
+                            style: const TextStyle(
+                              fontSize: 8.5,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white70,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                number,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.white,
+                                  height: 1.1,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Icon(
+                                Icons.phone_forwarded_rounded,
+                                size: 11,
+                                color: Colors.white.withValues(alpha: 0.70),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -302,47 +539,115 @@ class _EdukasiBahayaPageState extends State<EdukasiBahayaPage> {
     );
   }
 
-  Widget _buildEmergencyContactCard(
-    String name,
-    String phone,
+  void _showCategorySelectionSheet(BuildContext context, Color themeColor) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(24),
+              topRight: Radius.circular(24),
+            ),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Pilih Kategori Lingkungan',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900,
+                  color: Color(0xFF1F2937),
+                  letterSpacing: -0.3,
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Pilih tipe lingkungan untuk menyesuaikan panduan keselamatan yang relevan.',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFF6B7280),
+                ),
+              ),
+              const SizedBox(height: 20),
+              _buildCategorySheetItem(
+                context,
+                'Dalam Ruangan',
+                Icons.home_rounded,
+                themeColor,
+              ),
+              _buildCategorySheetItem(
+                context,
+                'Luar Ruangan',
+                Icons.landscape_rounded,
+                themeColor,
+              ),
+              _buildCategorySheetItem(
+                context,
+                'Pesisir Pantai',
+                Icons.beach_access_rounded,
+                themeColor,
+              ),
+              _buildCategorySheetItem(
+                context,
+                'Pegunungan',
+                Icons.terrain_rounded,
+                themeColor,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildCategorySheetItem(
+    BuildContext context,
+    String category,
     IconData icon,
-    Color color,
+    Color themeColor,
   ) {
+    final bool isSelected = _currentCategory == category;
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+      margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        color: isSelected ? themeColor.withValues(alpha: 0.1) : Colors.transparent,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isSelected ? themeColor.withValues(alpha: 0.3) : Colors.transparent,
+          width: 1.5,
+        ),
       ),
-      child: Column(
-        children: [
-          Icon(icon, color: color, size: 24),
-          const SizedBox(height: 6),
-          Text(
-            name,
-            style: const TextStyle(
-              fontSize: 11.5,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF2C3E50),
-            ),
+      child: ListTile(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+        ),
+        leading: Icon(
+          icon,
+          color: isSelected ? themeColor : const Color(0xFF4B5563),
+        ),
+        title: Text(
+          category,
+          style: TextStyle(
+            fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+            color: isSelected ? themeColor : const Color(0xFF1F2937),
+            fontSize: 14,
           ),
-          const SizedBox(height: 4),
-          Text(
-            phone,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w800,
-              color: color,
-            ),
-          ),
-        ],
+        ),
+        trailing: isSelected
+            ? Icon(Icons.check_circle_rounded, color: themeColor)
+            : null,
+        onTap: () {
+          Navigator.of(context).pop();
+          setState(() {
+            _currentCategory = category;
+          });
+        },
       ),
     );
   }

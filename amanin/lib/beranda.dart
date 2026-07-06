@@ -53,6 +53,7 @@ class _BerandaPageState extends State<BerandaPage> {
 
   List<NewsModel> _newsList = [];
   bool _isLoadingNews = true;
+  bool _hasNewNotifications = true;
 
   String _currentCityName = 'Memuat lokasi...';
   String _bannerStatus = 'Memuat...';
@@ -247,10 +248,11 @@ class _BerandaPageState extends State<BerandaPage> {
                         onPressed: () {
                           Navigator.of(dialogContext).pop();
                           setState(() {
-                            _currentCityName =
-                                'Lokasi ditolak (Default Tambun Selatan)';
+                            _currentCityName = 'Cianjur';
+                            _userLocation = const LatLng(-6.8219, 107.1397);
                           });
-                          userCityNameNotifier.value = 'Tambun Selatan';
+                          userCityNameNotifier.value = 'Cianjur';
+                          _checkEdukasiStatus();
                         },
                         child: const Text(
                           'Tolak',
@@ -342,30 +344,31 @@ class _BerandaPageState extends State<BerandaPage> {
     );
 
     try {
-      Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.low,
-      ).timeout(const Duration(seconds: 3), onTimeout: () {
-        return Position(
-          latitude: -6.2625, // default Tambun Selatan
-          longitude: 107.0539,
-          timestamp: DateTime.now(),
-          accuracy: 10000.0,
-          altitude: 0.0,
-          altitudeAccuracy: 0.0,
-          heading: 0.0,
-          headingAccuracy: 0.0,
-          speed: 0.0,
-          speedAccuracy: 0.0,
-        );
-      });
+      double lat = -6.8219;
+      double lon = 107.1397;
+
+      if (_userLocation != null) {
+        lat = _userLocation!.latitude;
+        lon = _userLocation!.longitude;
+      } else {
+        try {
+          Position position = await Geolocator.getCurrentPosition(
+            desiredAccuracy: LocationAccuracy.low,
+          ).timeout(const Duration(seconds: 3));
+          lat = position.latitude;
+          lon = position.longitude;
+        } catch (gpsError) {
+          print("GPS fetch error inside _checkEdukasiStatus: $gpsError, using default Cianjur coordinates");
+        }
+      }
 
       final url = Uri.parse('${ApiConfig.baseUrl}/api/edukasi/waspada');
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'latitude': position.latitude,
-          'longitude': position.longitude,
+          'latitude': lat,
+          'longitude': lon,
         }),
       ).timeout(
         const Duration(seconds: 10),
@@ -943,21 +946,42 @@ class _BerandaPageState extends State<BerandaPage> {
     );
   }
   Future<void> _requestLocationPermission() async {
-    String cityName = 'Jakarta Pusat';
-    String fullAddr = '';
+    String cityName = 'Cianjur';
+    String fullAddr = 'Cianjur, Jawa Barat, Indonesia';
+    final fallbackPosition = Position(
+      latitude: -6.8219,
+      longitude: 107.1397,
+      timestamp: DateTime.now(),
+      accuracy: 10.0,
+      altitude: 0.0,
+      altitudeAccuracy: 0.0,
+      heading: 0.0,
+      headingAccuracy: 0.0,
+      speed: 0.0,
+      speedAccuracy: 0.0,
+    );
     Position? position;
 
     try {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) return;
+      if (!serviceEnabled) {
+        position = fallbackPosition;
+        return;
+      }
 
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) return;
+        if (permission == LocationPermission.denied) {
+          position = fallbackPosition;
+          return;
+        }
       }
 
-      if (permission == LocationPermission.deniedForever) return;
+      if (permission == LocationPermission.deniedForever) {
+        position = fallbackPosition;
+        return;
+      }
 
       // Try to get last known position first (instant, skipped on web)
       if (!kIsWeb) {
@@ -990,7 +1014,7 @@ class _BerandaPageState extends State<BerandaPage> {
               place.locality ??
               place.subLocality ??
               place.subAdministrativeArea ??
-              'Jakarta Pusat';
+              'Cianjur';
           cityName = cityName
               .replaceAll('Kabupaten ', '')
               .replaceAll('Kota ', '')
@@ -1028,7 +1052,7 @@ class _BerandaPageState extends State<BerandaPage> {
                   addr['suburb'] ??
                   addr['county'] ??
                   addr['state'] ??
-                  'Jakarta Pusat';
+                  'Cianjur';
               cityName = cityName
                   .replaceAll('Kabupaten ', '')
                   .replaceAll('Kota ', '')
@@ -1045,6 +1069,7 @@ class _BerandaPageState extends State<BerandaPage> {
       }
     } catch (e) {
       print("Location permission error: $e");
+      position = fallbackPosition;
     } finally {
       if (mounted) {
         setState(() {
@@ -1644,43 +1669,52 @@ class _BerandaPageState extends State<BerandaPage> {
                   ),
                 ),
                 const SizedBox(width: 12),
-                // Notification Icon
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Stack(
-                    children: [
-                      const Center(
-                        child: Icon(
-                          Icons.notifications_outlined,
-                          color: Color(0xFF1A1A1A),
-                          size: 24,
+                InkWell(
+                  onTap: () {
+                    setState(() {
+                      _hasNewNotifications = false;
+                    });
+                    _showNotificationsSheet(context);
+                  },
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
                         ),
-                      ),
-                      Positioned(
-                        top: 10,
-                        right: 10,
-                        child: Container(
-                          width: 8,
-                          height: 8,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFFFF5252),
-                            shape: BoxShape.circle,
+                      ],
+                    ),
+                    child: Stack(
+                      children: [
+                        const Center(
+                          child: Icon(
+                            Icons.notifications_outlined,
+                            color: Color(0xFF1A1A1A),
+                            size: 24,
                           ),
                         ),
-                      ),
-                    ],
+                        if (_hasNewNotifications)
+                          Positioned(
+                            top: 10,
+                            right: 10,
+                            child: Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFFF5252),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -4493,6 +4527,162 @@ class _BerandaPageState extends State<BerandaPage> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _showNotificationsSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Color(0xFFF8F9FA),
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(24),
+              topRight: Radius.circular(24),
+            ),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Notifikasi',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFF1F2937),
+                      letterSpacing: -0.3,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded, color: Color(0xFF4B5563)),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Berikut adalah pemberitahuan umum dan informasi pembaruan aplikasi Amanin Anda.',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFF6B7280),
+                ),
+              ),
+              const SizedBox(height: 20),
+              
+              // Notification List Items
+              _buildNotificationItem(
+                title: 'Selamat Datang di Amanin',
+                desc: 'Terima kasih telah bergabung. Lengkapi profil Anda untuk mendapatkan pengalaman terbaik.',
+                time: 'Baru saja',
+                icon: Icons.handshake_rounded,
+                iconColor: const Color(0xFF00BCD4),
+                bgColor: const Color(0xFFE0F7FA),
+              ),
+              _buildNotificationItem(
+                title: 'Fitur Peta Interaktif',
+                desc: 'Kini Anda dapat memantau aktivitas gempa bumi secara real-time langsung melalui peta di beranda.',
+                time: '2 jam yang lalu',
+                icon: Icons.map_rounded,
+                iconColor: const Color(0xFF673AB7),
+                bgColor: const Color(0xFFEDE7F6),
+              ),
+              _buildNotificationItem(
+                title: 'Tips Keamanan Akun',
+                desc: 'Ingat untuk selalu menjaga kerahasiaan kata sandi Anda dan memperbaruinya secara berkala.',
+                time: '1 hari yang lalu',
+                icon: Icons.security_rounded,
+                iconColor: const Color(0xFF009688),
+                bgColor: const Color(0xFFE0F2F1),
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildNotificationItem({
+    required String title,
+    required String desc,
+    required String time,
+    required IconData icon,
+    required Color iconColor,
+    required Color bgColor,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: bgColor,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: iconColor, size: 20),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 14,
+                        color: Color(0xFF1F2937),
+                      ),
+                    ),
+                    Text(
+                      time,
+                      style: const TextStyle(
+                        fontSize: 10,
+                        color: Color(0xFF9CA3AF),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  desc,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF4B5563),
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

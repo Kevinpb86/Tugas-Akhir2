@@ -171,35 +171,45 @@ class _EdukasiWaspadaPageState extends State<EdukasiWaspadaPage> {
                         ),
                       ),
                       const SizedBox(width: 10),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFD97706).withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: const Color(0xFFD97706).withValues(alpha: 0.50),
-                            width: 1,
+                      InkWell(
+                        onTap: () => _showCategorySelectionSheet(context, const Color(0xFFD97706)),
+                        borderRadius: BorderRadius.circular(20),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFD97706).withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: const Color(0xFFD97706).withValues(alpha: 0.50),
+                              width: 1,
+                            ),
                           ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              categoryIcons[_currentCategory],
-                              size: 14,
-                              color: const Color(0xFFD97706),
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              _currentCategory,
-                              style: const TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w900,
-                                color: Color(0xFFD97706),
-                                letterSpacing: 0.2,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                categoryIcons[_currentCategory],
+                                size: 14,
+                                color: const Color(0xFFD97706),
                               ),
-                            ),
-                          ],
+                              const SizedBox(width: 6),
+                              Text(
+                                _currentCategory,
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w900,
+                                  color: Color(0xFFD97706),
+                                  letterSpacing: 0.2,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              const Icon(
+                                Icons.arrow_drop_down_rounded,
+                                size: 16,
+                                color: Color(0xFFD97706),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ],
@@ -527,6 +537,119 @@ class _EdukasiWaspadaPageState extends State<EdukasiWaspadaPage> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  void _showCategorySelectionSheet(BuildContext context, Color themeColor) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(24),
+              topRight: Radius.circular(24),
+            ),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Pilih Kategori Lingkungan',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900,
+                  color: Color(0xFF1F2937),
+                  letterSpacing: -0.3,
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Pilih tipe lingkungan untuk menyesuaikan panduan keselamatan yang relevan.',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFF6B7280),
+                ),
+              ),
+              const SizedBox(height: 20),
+              _buildCategorySheetItem(
+                context,
+                'Dalam Ruangan',
+                Icons.home_rounded,
+                themeColor,
+              ),
+              _buildCategorySheetItem(
+                context,
+                'Luar Ruangan',
+                Icons.landscape_rounded,
+                themeColor,
+              ),
+              _buildCategorySheetItem(
+                context,
+                'Pesisir Pantai',
+                Icons.beach_access_rounded,
+                themeColor,
+              ),
+              _buildCategorySheetItem(
+                context,
+                'Pegunungan',
+                Icons.terrain_rounded,
+                themeColor,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildCategorySheetItem(
+    BuildContext context,
+    String category,
+    IconData icon,
+    Color themeColor,
+  ) {
+    final bool isSelected = _currentCategory == category;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: isSelected ? themeColor.withValues(alpha: 0.1) : Colors.transparent,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isSelected ? themeColor.withValues(alpha: 0.3) : Colors.transparent,
+          width: 1.5,
+        ),
+      ),
+      child: ListTile(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+        ),
+        leading: Icon(
+          icon,
+          color: isSelected ? themeColor : const Color(0xFF4B5563),
+        ),
+        title: Text(
+          category,
+          style: TextStyle(
+            fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+            color: isSelected ? themeColor : const Color(0xFF1F2937),
+            fontSize: 14,
+          ),
+        ),
+        trailing: isSelected
+            ? Icon(Icons.check_circle_rounded, color: themeColor)
+            : null,
+        onTap: () {
+          Navigator.of(context).pop();
+          setState(() {
+            _currentCategory = category;
+          });
+        },
       ),
     );
   }
