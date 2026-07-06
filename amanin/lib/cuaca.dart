@@ -745,7 +745,7 @@ class _CuacaPageState extends State<CuacaPage> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
+            color: Colors.black.withOpacity(0.04),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -756,12 +756,12 @@ class _CuacaPageState extends State<CuacaPage> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: const BoxDecoration(
-              color: Color(0xFFE3F2FD),
+              color: Color(0xFFFFF3F3),
               shape: BoxShape.circle,
             ),
             child: const Icon(
-              Icons.security,
-              color: Color(0xFF2196F3),
+              Icons.security_rounded,
+              color: Color(0xFFED1C24),
               size: 32,
             ),
           ),
@@ -788,7 +788,7 @@ class _CuacaPageState extends State<CuacaPage> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFFF8F9FA),
+              color: const Color(0xFFF9FAFB),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Column(
@@ -796,7 +796,7 @@ class _CuacaPageState extends State<CuacaPage> {
                 Row(
                   children: const [
                     Icon(
-                      Icons.check_circle,
+                      Icons.check_circle_rounded,
                       color: Color(0xFF4CAF50),
                       size: 16,
                     ),
@@ -811,7 +811,7 @@ class _CuacaPageState extends State<CuacaPage> {
                 Row(
                   children: const [
                     Icon(
-                      Icons.check_circle,
+                      Icons.check_circle_rounded,
                       color: Color(0xFF4CAF50),
                       size: 16,
                     ),
@@ -839,7 +839,7 @@ class _CuacaPageState extends State<CuacaPage> {
                 );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF00BCD4),
+                backgroundColor: const Color(0xFFED1C24),
                 foregroundColor: Colors.white,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
@@ -854,7 +854,7 @@ class _CuacaPageState extends State<CuacaPage> {
           ),
           const SizedBox(height: 12),
           const Text(
-            'Disponsori • S&K berlaku',
+            'Disponsori oleh Prudential | S&K berlaku',
             style: TextStyle(fontSize: 10, color: Color(0xFF9E9E9E)),
           ),
         ],
