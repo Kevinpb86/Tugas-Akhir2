@@ -549,127 +549,139 @@ class PanduanEvakuasiBahayaPage extends StatelessWidget {
     required BuildContext context,
     required String headerTitle,
     required String title,
-    required List<Color> gradientColors,
+    required List<Color> gradientColors, // Keeping signature, but we will override with Bahaya theme
     required List<Widget> cards,
   }) {
-    return Container(
-      color: const Color(0xFFF1F5F9), // Modern Slate-100 background
-      child: CustomScrollView(
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8F9FA), // Light background matching Waspada
+      body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
           SliverAppBar(
-            expandedHeight: 280.0,
-            backgroundColor: gradientColors.last,
+            expandedHeight: 180.0,
+            backgroundColor: const Color(0xFFDC2626), // Pinned Appbar color (Red)
             elevation: 0,
             pinned: true,
             automaticallyImplyLeading: false,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.white),
-              onPressed: () => Navigator.of(context).pop(),
+            leading: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: CircleAvatar(
+                backgroundColor: Colors.black.withValues(alpha: 0.20),
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 16, color: Colors.white),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ),
             ),
             title: Column(
               children: [
                 Text(
                   headerTitle,
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: 1.0),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 14,
+                    letterSpacing: 1.0,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   'Zona Bahaya: $cityName',
-                  style: const TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.70),
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),
             centerTitle: true,
             flexibleSpace: FlexibleSpaceBar(
               background: Stack(
+                fit: StackFit.expand,
                 children: [
                   Container(
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       gradient: LinearGradient(
-                        colors: gradientColors,
+                        colors: [
+                          Color(0xFFEF4444), // Vivid Red
+                          Color(0xFFDC2626), // Medium Red
+                          Color(0xFF991B1B), // Dark Red
+                        ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                     ),
                   ),
-                  Positioned(
-                    top: -60,
-                    right: -40,
-                    child: Container(
-                      width: 250,
-                      height: 250,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.08),
+                  // Diagonal strip decor
+                  Positioned.fill(
+                    child: CustomPaint(
+                      painter: _SliverDiagonalPainter(
+                        color: Colors.white.withValues(alpha: 0.035),
                       ),
                     ),
                   ),
+                  // Radial glow
                   Positioned(
-                    bottom: 40,
-                    left: -50,
+                    bottom: -50,
+                    right: -25,
                     child: Container(
-                      width: 150,
-                      height: 150,
+                      width: 180,
+                      height: 180,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.1),
+                        gradient: RadialGradient(
+                          colors: [
+                            const Color(0xFFEF4444).withValues(alpha: 0.45),
+                            Colors.transparent,
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                  Positioned(
-                    right: -20,
-                    top: -10,
-                    child: Icon(Icons.landscape_rounded, size: 240, color: Colors.white.withValues(alpha: 0.15)),
-                  ),
-                  Positioned(
-                    top: 50,
-                    left: 60,
-                    child: Icon(Icons.circle, size: 8, color: Colors.white.withValues(alpha: 0.2)),
-                  ),
-                  Positioned(
-                    top: 100,
-                    right: 180,
-                    child: Icon(Icons.star_rounded, size: 20, color: Colors.white.withValues(alpha: 0.15)),
-                  ),
-                  Positioned(
-                    bottom: 120,
-                    right: 60,
-                    child: Icon(Icons.circle, size: 12, color: Colors.white.withValues(alpha: 0.1)),
-                  ),
+                  // Bottom text content
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 40.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.end,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
+                            color: Colors.black.withValues(alpha: 0.25),
                             borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: const Color(0xFFFCA5A5).withValues(alpha: 0.40),
+                              width: 1.0,
+                            ),
                           ),
                           child: const Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 16),
-                              SizedBox(width: 8),
+                              Icon(Icons.auto_awesome_rounded, color: Color(0xFFFCA5A5), size: 12),
+                              SizedBox(width: 6),
                               Text(
                                 'Panduan Keselamatan',
-                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                                style: TextStyle(
+                                  color: Color(0xFFFCA5A5),
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 9,
+                                  letterSpacing: 0.2,
+                                ),
                               ),
                             ],
                           ),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 8),
                         Text(
                           title,
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 28,
+                            fontSize: 22,
                             fontWeight: FontWeight.w900,
-                            height: 1.2,
-                            letterSpacing: 0.5,
+                            height: 1.1,
+                            letterSpacing: -0.5,
                           ),
                         ),
                       ],
@@ -681,18 +693,81 @@ class PanduanEvakuasiBahayaPage extends StatelessWidget {
           ),
           SliverToBoxAdapter(
             child: Transform.translate(
-              offset: const Offset(0, -32),
+              offset: const Offset(0, -20),
               child: Container(
                 decoration: const BoxDecoration(
-                  color: Color(0xFFF1F5F9),
+                  color: Color(0xFFF8F9FA), // Light background
                   borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(32),
-                    topRight: Radius.circular(32),
+                    topLeft: Radius.circular(24),
+                    topRight: Radius.circular(24),
                   ),
                 ),
-                padding: const EdgeInsets.fromLTRB(24, 56, 24, 40),
+                padding: const EdgeInsets.fromLTRB(20, 48, 20, 40),
                 child: Column(
-                  children: cards,
+                  children: cards.asMap().entries.map((entry) {
+                    final int idx = entry.key;
+                    final Widget card = entry.value;
+                    final bool isLast = idx == cards.length - 1;
+                    final String stepNum = (idx + 1).toString();
+
+                    return IntrinsicHeight(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // ── Timeline Path Column ──
+                          SizedBox(
+                            width: 32,
+                            child: Column(
+                              children: [
+                                // Node: Glowing Number Circle
+                                Container(
+                                  width: 30,
+                                  height: 30,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: const Color(0xFFEF4444), // Flat red circle
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: const Color(0xFFEF4444).withValues(alpha: 0.35),
+                                        blurRadius: 6,
+                                        spreadRadius: 1,
+                                      ),
+                                    ],
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      stepNum,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: 13,
+                                        height: 1.0,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                // Tail: Vertical connector line
+                                Expanded(
+                                  child: Container(
+                                    width: 2.5,
+                                    color: isLast 
+                                      ? Colors.transparent 
+                                      : const Color(0xFFEF4444).withValues(alpha: 0.40),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+
+                          // ── Detail Card Column ──
+                          Expanded(
+                            child: card,
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
                 ),
               ),
             ),
@@ -707,122 +782,163 @@ class PanduanEvakuasiBahayaPage extends StatelessWidget {
     required String action,
     required String desc,
     required IconData icon,
-    Color primaryColor = const Color(0xFFF57C00),
-    Color lightBgColor = const Color(0xFFFFF8E1),
-    Color borderColor = const Color(0xFFFFCC80),
-    Color iconBgColor = const Color(0xFFFFF3E0),
+    Color primaryColor = const Color(0xFFEF4444),
+    Color lightBgColor = const Color(0xFFFEF2F2),
+    Color borderColor = const Color(0xFFFCA5A5),
+    Color iconBgColor = const Color(0xFFFEF2F2),
   }) {
+    // Force override with Edukasi Bahaya's Red Theme
+    primaryColor = const Color(0xFFEF4444); // Vivid Red
+    borderColor = const Color(0xFFFCA5A5); // Lighter red
+    iconBgColor = const Color(0xFFFEF2F2); // Very light red
     return Container(
-      margin: const EdgeInsets.only(bottom: 20),
+      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: primaryColor.withValues(alpha: 0.06), // Sangat soft
-            blurRadius: 20,
-            offset: const Offset(0, 10),
+            color: const Color(0xFFEF4444).withValues(alpha: 0.12),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         child: Stack(
           children: [
-            // Watermark Icon raksasa di background (sangat transparan)
+            // ── Watermark icon (large, faint) ──
             Positioned(
               right: -15,
               bottom: -15,
               child: Opacity(
                 opacity: 0.18,
-                child: Icon(
-                  icon,
-                  size: 100,
-                  color: primaryColor,
-                ),
+                child: Icon(icon, size: 95, color: const Color(0xFFEF4444)),
               ),
             ),
-            // Garis aksen vertikal di kiri
+
+            // ── Left accent bar ──
             Positioned(
               left: 0,
               top: 0,
               bottom: 0,
               child: Container(
-                width: 6,
-                color: primaryColor,
+                width: 5,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFEF4444),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    bottomLeft: Radius.circular(16),
+                  ),
+                ),
               ),
             ),
-            // Konten utama
-            Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: () {},
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Column(
+
+            // ── Main Content ──
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 14, 14, 14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header row: icon box + title + badge
+                  Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          // Badge Nomor
-                          Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: lightBgColor,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: borderColor, width: 1.5),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: primaryColor.withValues(alpha: 0.1),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Center(
-                              child: Text(
-                                number,
-                                style: TextStyle(
-                                  color: primaryColor,
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 18,
-                                ),
-                              ),
-                            ),
+                      // Icon in rounded red container
+                      Container(
+                        padding: const EdgeInsets.all(9),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEF4444).withValues(alpha: 0.13),
+                          borderRadius: BorderRadius.circular(11),
+                          border: Border.all(
+                            color: const Color(0xFFEF4444).withValues(alpha: 0.30),
+                            width: 1,
                           ),
-                          const SizedBox(width: 16),
-                          // Judul Aksi
-                          Expanded(
-                            child: Text(
+                        ),
+                        child: Icon(icon, size: 18, color: const Color(0xFFEF4444)),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
                               action,
-                              style: TextStyle(
-                                color: primaryColor, // Menggunakan primaryColor untuk judul aksi
-                                fontSize: 17,
+                              style: const TextStyle(
+                                color: Color(0xFF991B1B), // Deeper red for title
+                                fontSize: 13,
                                 fontWeight: FontWeight.w900,
                                 letterSpacing: 0.3,
+                                height: 1.3,
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      // Deskripsi (dibuat menjorok sejajar dengan teks judul)
-                      Padding(
-                        padding: const EdgeInsets.only(left: 56.0),
-                        child: Text(
-                          desc,
-                          style: const TextStyle(
-                            color: Color(0xFF475569),
-                            fontSize: 14,
-                            height: 1.6,
-                          ),
+                            const SizedBox(height: 5),
+                            // "Langkah Penting" badge
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFEF4444).withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.bolt_rounded,
+                                      size: 10,
+                                      color: const Color(0xFFEF4444)),
+                                  const SizedBox(width: 3),
+                                  const Text(
+                                    'Langkah Penting',
+                                    style: TextStyle(
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF991B1B),
+                                      letterSpacing: 0.2,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
-                ),
+
+                  const SizedBox(height: 12),
+
+                  // Divider
+                  Container(
+                    height: 1,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          const Color(0xFFEF4444).withValues(alpha: 0.60),
+                          const Color(0xFFEF4444).withValues(alpha: 0.0),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  // Description text
+                  Text(
+                    desc,
+                    style: const TextStyle(
+                      color: Color(0xFF374151),
+                      fontSize: 12.5,
+                      height: 1.60,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -830,4 +946,28 @@ class PanduanEvakuasiBahayaPage extends StatelessWidget {
       ),
     );
   }
+}
+
+class _SliverDiagonalPainter extends CustomPainter {
+  final Color color;
+  const _SliverDiagonalPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 1.0
+      ..style = PaintingStyle.stroke;
+    const spacing = 24.0;
+    for (double i = -size.height; i < size.width + size.height; i += spacing) {
+      canvas.drawLine(
+        Offset(i, 0),
+        Offset(i + size.height, size.height),
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_SliverDiagonalPainter old) => old.color != color;
 }

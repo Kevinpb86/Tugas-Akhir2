@@ -40,7 +40,7 @@ class _EdukasiPageState extends State<EdukasiPage> {
   }
 
   Future<void> _requestLocationPermission() async {
-    String cityName = 'Jakarta Pusat';
+    String cityName = 'Cianjur';
     Position? position;
 
     try {

@@ -4,7 +4,6 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'login.dart'; // For navigation to login
 import 'services/api_config.dart';
-import 'main.dart'; // For isLoggedInNotifier
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 
@@ -40,17 +39,33 @@ class _RegisterPageState extends State<RegisterPage> {
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
       if (googleUser != null) {
-        // Success
-        userNameNotifier.value = googleUser.displayName ?? 'Pengguna Google';
-        userEmailNotifier.value = googleUser.email;
-        userPhotoUrlNotifier.value = googleUser.photoUrl ?? '';
-        isLoggedInNotifier.value = true;
+        final response = await http.post(
+          Uri.parse('${ApiConfig.baseUrl}/auth/google'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            'email': googleUser.email,
+            'full_name': googleUser.displayName ?? 'Pengguna Google',
+            'google_id': googleUser.id,
+          }),
+        );
 
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Daftar/Login Google Berhasil!')),
-          );
-          Navigator.pop(context); // Kembali ke halaman sebelumnya
+        if (response.statusCode == 200) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Registrasi Google Berhasil! Silakan masuk.')),
+            );
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const LoginPage()),
+            );
+          }
+        } else {
+          final error = jsonDecode(response.body);
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Registrasi Google gagal: ${error['detail'] ?? 'Gagal menghubungi server'}')),
+            );
+          }
         }
       }
     } catch (error) {
@@ -67,24 +82,33 @@ class _RegisterPageState extends State<RegisterPage> {
       final LoginResult result = await FacebookAuth.instance.login();
 
       if (result.status == LoginStatus.success) {
-        // Success
-        final userData = await FacebookAuth.instance.getUserData();
+        final accessToken = result.accessToken!.tokenString;
+        
+        final response = await http.post(
+          Uri.parse('${ApiConfig.baseUrl}/auth/facebook'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            'access_token': accessToken,
+          }),
+        );
 
-        userNameNotifier.value = userData['name'] ?? 'Pengguna Facebook';
-        userEmailNotifier.value = userData['email'] ?? '';
-
-        if (userData['picture'] != null &&
-            userData['picture']['data'] != null) {
-          userPhotoUrlNotifier.value = userData['picture']['data']['url'] ?? '';
-        }
-
-        isLoggedInNotifier.value = true;
-
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Daftar/Login Facebook Berhasil!')),
-          );
-          Navigator.pop(context);
+        if (response.statusCode == 200) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Registrasi Facebook Berhasil! Silakan masuk.')),
+            );
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const LoginPage()),
+            );
+          }
+        } else {
+          final error = jsonDecode(response.body);
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Registrasi Facebook gagal: ${error['detail'] ?? 'Gagal menghubungi server'}')),
+            );
+          }
         }
       } else if (result.status == LoginStatus.cancelled) {
         if (mounted) {
