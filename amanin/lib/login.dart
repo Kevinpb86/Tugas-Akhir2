@@ -34,23 +34,39 @@ class _LoginPageState extends State<LoginPage> {
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
       if (googleUser != null) {
-        userNameNotifier.value = googleUser.displayName ?? 'Pengguna Google';
-        userEmailNotifier.value = googleUser.email;
-        userPhotoUrlNotifier.value = googleUser.photoUrl ?? '';
-        isLoggedInNotifier.value = true;
+        final response = await http.post(
+          Uri.parse('${ApiConfig.baseUrl}/auth/google'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            'email': googleUser.email,
+            'full_name': googleUser.displayName ?? 'Pengguna Google',
+            'google_id': googleUser.id,
+          }),
+        );
 
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Login Google Berhasil!')),
-          );
-          Navigator.pop(context);
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          userNameNotifier.value = data['full_name'] ?? googleUser.displayName ?? 'Pengguna Google';
+          userEmailNotifier.value = data['email'] ?? googleUser.email;
+          userPhotoUrlNotifier.value = googleUser.photoUrl ?? '';
+          isLoggedInNotifier.value = true;
+
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Login Google Berhasil!')),
+            );
+            Navigator.pop(context);
+          }
+        } else {
+          final error = jsonDecode(response.body);
+          if (mounted) {
+            _showTopSnackBar('Login Google gagal: ${error['detail'] ?? 'Gagal menghubungi server'}');
+          }
         }
       }
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Login Google gagal: $error')));
+        _showTopSnackBar('Login Google gagal: $error');
       }
     }
   }
@@ -60,23 +76,34 @@ class _LoginPageState extends State<LoginPage> {
       final LoginResult result = await FacebookAuth.instance.login();
 
       if (result.status == LoginStatus.success) {
-        final userData = await FacebookAuth.instance.getUserData();
+        final accessToken = result.accessToken!.tokenString;
 
-        userNameNotifier.value = userData['name'] ?? 'Pengguna Facebook';
-        userEmailNotifier.value = userData['email'] ?? '';
+        final response = await http.post(
+          Uri.parse('${ApiConfig.baseUrl}/auth/facebook'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            'access_token': accessToken,
+          }),
+        );
 
-        if (userData['picture'] != null &&
-            userData['picture']['data'] != null) {
-          userPhotoUrlNotifier.value = userData['picture']['data']['url'] ?? '';
-        }
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          userNameNotifier.value = data['full_name'] ?? 'Pengguna Facebook';
+          userEmailNotifier.value = data['email'] ?? '';
+          userPhotoUrlNotifier.value = data['facebook_picture'] ?? '';
+          isLoggedInNotifier.value = true;
 
-        isLoggedInNotifier.value = true;
-
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Login Facebook Berhasil!')),
-          );
-          Navigator.pop(context);
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Login Facebook Berhasil!')),
+            );
+            Navigator.pop(context);
+          }
+        } else {
+          final error = jsonDecode(response.body);
+          if (mounted) {
+            _showTopSnackBar('Login Facebook gagal: ${error['detail'] ?? 'Gagal menghubungi server'}');
+          }
         }
       } else if (result.status == LoginStatus.cancelled) {
         if (mounted) {
@@ -93,9 +120,7 @@ class _LoginPageState extends State<LoginPage> {
       }
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Login Facebook gagal: $error')));
+        _showTopSnackBar('Login Facebook gagal: $error');
       }
     }
   }
@@ -656,5 +681,77 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ),
     );
+  }
+
+  void _showTopSnackBar(String message, {bool isError = true}) {
+    final overlay = Overlay.of(context);
+    late OverlayEntry overlayEntry;
+
+    overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        top: MediaQuery.of(context).padding.top + 16,
+        left: 16,
+        right: 16,
+        child: Material(
+          color: Colors.transparent,
+          child: TweenAnimationBuilder<double>(
+            duration: const Duration(milliseconds: 400),
+            tween: Tween(begin: -80.0, end: 0.0),
+            curve: Curves.easeOutBack,
+            builder: (context, value, child) {
+              return Transform.translate(
+                offset: Offset(0, value),
+                child: Opacity(
+                  opacity: ((value + 80.0) / 80.0).clamp(0.0, 1.0),
+                  child: child,
+                ),
+              );
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              decoration: BoxDecoration(
+                color: isError ? const Color(0xFFEF4444) : const Color(0xFF10B981),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.15),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    isError ? Icons.error_outline_rounded : Icons.check_circle_outline_rounded,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      message,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    overlay.insert(overlayEntry);
+
+    Future.delayed(const Duration(seconds: 3), () {
+      if (overlayEntry.mounted) {
+        overlayEntry.remove();
+      }
+    });
   }
 }

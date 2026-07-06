@@ -40,6 +40,8 @@ async def predict_risk(data: EarthquakeData):
         selected_scaler = ml_scalers.get(source)
         if selected_scaler is not None:
             features_scaled = selected_scaler.transform(features)
+            # Clip data agar nilainya tidak keluar dari range [0, 1] jika ada input ekstrem
+            features_scaled = np.clip(features_scaled, 0, 1)
         else:
             # Fallback ke normalisasi manual jika file scaler tidak tersedia
             if source == "usgs":

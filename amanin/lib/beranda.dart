@@ -22,6 +22,7 @@ import 'services/anomali_service.dart';
 import 'services/news_service.dart';
 import 'services/api_config.dart';
 import 'isi_berita.dart';
+import 'semua_berita.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'dart:convert';
@@ -52,6 +53,7 @@ class _BerandaPageState extends State<BerandaPage> {
 
   List<NewsModel> _newsList = [];
   bool _isLoadingNews = true;
+  bool _hasNewNotifications = true;
 
   String _currentCityName = 'Memuat lokasi...';
   String _bannerStatus = 'Memuat...';
@@ -246,10 +248,11 @@ class _BerandaPageState extends State<BerandaPage> {
                         onPressed: () {
                           Navigator.of(dialogContext).pop();
                           setState(() {
-                            _currentCityName =
-                                'Lokasi ditolak (Default Tambun Selatan)';
+                            _currentCityName = 'Cianjur';
+                            _userLocation = const LatLng(-6.8219, 107.1397);
                           });
-                          userCityNameNotifier.value = 'Tambun Selatan';
+                          userCityNameNotifier.value = 'Cianjur';
+                          _checkEdukasiStatus();
                         },
                         child: const Text(
                           'Tolak',
@@ -341,30 +344,31 @@ class _BerandaPageState extends State<BerandaPage> {
     );
 
     try {
-      Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.low,
-      ).timeout(const Duration(seconds: 3), onTimeout: () {
-        return Position(
-          latitude: -6.2625, // default Tambun Selatan
-          longitude: 107.0539,
-          timestamp: DateTime.now(),
-          accuracy: 10000.0,
-          altitude: 0.0,
-          altitudeAccuracy: 0.0,
-          heading: 0.0,
-          headingAccuracy: 0.0,
-          speed: 0.0,
-          speedAccuracy: 0.0,
-        );
-      });
+      double lat = -6.8219;
+      double lon = 107.1397;
+
+      if (_userLocation != null) {
+        lat = _userLocation!.latitude;
+        lon = _userLocation!.longitude;
+      } else {
+        try {
+          Position position = await Geolocator.getCurrentPosition(
+            desiredAccuracy: LocationAccuracy.low,
+          ).timeout(const Duration(seconds: 3));
+          lat = position.latitude;
+          lon = position.longitude;
+        } catch (gpsError) {
+          print("GPS fetch error inside _checkEdukasiStatus: $gpsError, using default Cianjur coordinates");
+        }
+      }
 
       final url = Uri.parse('${ApiConfig.baseUrl}/api/edukasi/waspada');
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'latitude': position.latitude,
-          'longitude': position.longitude,
+          'latitude': lat,
+          'longitude': lon,
         }),
       ).timeout(
         const Duration(seconds: 10),
@@ -942,21 +946,42 @@ class _BerandaPageState extends State<BerandaPage> {
     );
   }
   Future<void> _requestLocationPermission() async {
-    String cityName = 'Jakarta Pusat';
-    String fullAddr = '';
+    String cityName = 'Cianjur';
+    String fullAddr = 'Cianjur, Jawa Barat, Indonesia';
+    final fallbackPosition = Position(
+      latitude: -6.8219,
+      longitude: 107.1397,
+      timestamp: DateTime.now(),
+      accuracy: 10.0,
+      altitude: 0.0,
+      altitudeAccuracy: 0.0,
+      heading: 0.0,
+      headingAccuracy: 0.0,
+      speed: 0.0,
+      speedAccuracy: 0.0,
+    );
     Position? position;
 
     try {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) return;
+      if (!serviceEnabled) {
+        position = fallbackPosition;
+        return;
+      }
 
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) return;
+        if (permission == LocationPermission.denied) {
+          position = fallbackPosition;
+          return;
+        }
       }
 
-      if (permission == LocationPermission.deniedForever) return;
+      if (permission == LocationPermission.deniedForever) {
+        position = fallbackPosition;
+        return;
+      }
 
       // Try to get last known position first (instant, skipped on web)
       if (!kIsWeb) {
@@ -989,7 +1014,7 @@ class _BerandaPageState extends State<BerandaPage> {
               place.locality ??
               place.subLocality ??
               place.subAdministrativeArea ??
-              'Jakarta Pusat';
+              'Cianjur';
           cityName = cityName
               .replaceAll('Kabupaten ', '')
               .replaceAll('Kota ', '')
@@ -1027,7 +1052,7 @@ class _BerandaPageState extends State<BerandaPage> {
                   addr['suburb'] ??
                   addr['county'] ??
                   addr['state'] ??
-                  'Jakarta Pusat';
+                  'Cianjur';
               cityName = cityName
                   .replaceAll('Kabupaten ', '')
                   .replaceAll('Kota ', '')
@@ -1044,6 +1069,7 @@ class _BerandaPageState extends State<BerandaPage> {
       }
     } catch (e) {
       print("Location permission error: $e");
+      position = fallbackPosition;
     } finally {
       if (mounted) {
         setState(() {
@@ -1643,43 +1669,52 @@ class _BerandaPageState extends State<BerandaPage> {
                   ),
                 ),
                 const SizedBox(width: 12),
-                // Notification Icon
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Stack(
-                    children: [
-                      const Center(
-                        child: Icon(
-                          Icons.notifications_outlined,
-                          color: Color(0xFF1A1A1A),
-                          size: 24,
+                InkWell(
+                  onTap: () {
+                    setState(() {
+                      _hasNewNotifications = false;
+                    });
+                    _showNotificationsSheet(context);
+                  },
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
                         ),
-                      ),
-                      Positioned(
-                        top: 10,
-                        right: 10,
-                        child: Container(
-                          width: 8,
-                          height: 8,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFFFF5252),
-                            shape: BoxShape.circle,
+                      ],
+                    ),
+                    child: Stack(
+                      children: [
+                        const Center(
+                          child: Icon(
+                            Icons.notifications_outlined,
+                            color: Color(0xFF1A1A1A),
+                            size: 24,
                           ),
                         ),
-                      ),
-                    ],
+                        if (_hasNewNotifications)
+                          Positioned(
+                            top: 10,
+                            right: 10,
+                            child: Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFFF5252),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -3544,10 +3579,10 @@ class _BerandaPageState extends State<BerandaPage> {
           children: [
             Row(
               children: const [
-                Icon(Icons.shopping_bag, color: Color(0xFF0088CC), size: 24),
+                Icon(Icons.shield_rounded, color: Color(0xFFED1C24), size: 24),
                 SizedBox(width: 8),
                 Text(
-                  'Perlengkapan Siaga',
+                  'Layanan Proteksi Bencana',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -3557,11 +3592,11 @@ class _BerandaPageState extends State<BerandaPage> {
               ],
             ),
             const Text(
-              'Diskon Spesial',
+              'Prudential Partner',
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF00BCD4),
+                color: Color(0xFFED1C24),
               ),
             ),
           ],
@@ -3574,7 +3609,7 @@ class _BerandaPageState extends State<BerandaPage> {
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
+                color: Colors.black.withOpacity(0.06),
                 blurRadius: 20,
                 offset: const Offset(0, 4),
               ),
@@ -3587,59 +3622,28 @@ class _BerandaPageState extends State<BerandaPage> {
             child: Row(
               children: [
                 _buildSurvivalItemCard(
-                  title: 'Tas Siaga 72 Jam',
-                  desc:
-                      'Paket survival kit lengkap untuk 3 hari darurat. Tas anti-air & senter',
-                  oldPrice: 'Rp 650.000',
-                  newPrice: 'Rp 455.000',
-                  discount: '30%',
-                  icon: Icons.backpack,
+                  title: 'PRUActive Family',
+                  desc: 'Proteksi diri dan tunjangan kecelakaan pasca gempa bumi.',
+                  tag: 'Terpopuler',
+                  icon: Icons.family_restroom_rounded,
+                  iconColor: const Color(0xFFED1C24),
+                  bgColor: const Color(0xFFFFF3F3),
+                ),
+                _buildSurvivalItemCard(
+                  title: 'PRUMapan Aset',
+                  desc: 'Jaminan ganti rugi kerusakan rumah dan aset dari bencana.',
+                  tag: 'Proteksi Aset',
+                  icon: Icons.home_work_rounded,
                   iconColor: const Color(0xFF4CAF50),
                   bgColor: const Color(0xFFE8F5E9),
                 ),
                 _buildSurvivalItemCard(
-                  title: 'Radio Engkol Surya',
-                  desc:
-                      'Radio dengan baterai cadangan, senter, dan pemutar engkol daya.',
-                  oldPrice: 'Rp 300.000',
-                  newPrice: 'Rp 210.000',
-                  discount: '30%',
-                  icon: Icons.radio,
-                  iconColor: const Color(0xFF26A69A),
-                  bgColor: const Color(0xFFE0F2F1),
-                ),
-                _buildSurvivalItemCard(
-                  title: 'Kotak P3K Lengkap',
-                  desc:
-                      'Alat medis standar untuk luka ringan dan perban pendarahan.',
-                  oldPrice: 'Rp 150.000',
-                  newPrice: 'Rp 127.500',
-                  discount: '15%',
-                  icon: Icons.medical_services,
-                  iconColor: const Color(0xFFEF5350),
-                  bgColor: const Color(0xFFFFEAEA),
-                ),
-                _buildSurvivalItemCard(
-                  title: 'Power Station Mini',
-                  desc:
-                      'Baterai portabel 20000mAh tahan lama untuk charge HP berulang.',
-                  oldPrice: '',
-                  newPrice: 'Rp 550.000',
-                  discount: '',
-                  icon: Icons.battery_charging_full,
-                  iconColor: const Color(0xFF42A5F5),
+                  title: 'PRUSolusi Sehat',
+                  desc: 'Cover rawat inap & ICU darurat akibat cedera gempa bumi.',
+                  tag: 'Medis Instan',
+                  icon: Icons.medical_services_rounded,
+                  iconColor: const Color(0xFF2196F3),
                   bgColor: const Color(0xFFE3F2FD),
-                ),
-                _buildSurvivalItemCard(
-                  title: 'Senter LED Darurat',
-                  desc:
-                      'Senter terang dengan fitur SOS dan daya tahan baterai super.',
-                  oldPrice: 'Rp 120.000',
-                  newPrice: 'Rp 85.000',
-                  discount: '29%',
-                  icon: Icons.flashlight_on,
-                  iconColor: const Color(0xFFFFB300),
-                  bgColor: const Color(0xFFFFF8E1),
                 ),
               ],
             ),
@@ -3652,9 +3656,7 @@ class _BerandaPageState extends State<BerandaPage> {
   Widget _buildSurvivalItemCard({
     required String title,
     required String desc,
-    required String oldPrice,
-    required String newPrice,
-    required String discount,
+    required String tag,
     required IconData icon,
     required Color iconColor,
     required Color bgColor,
@@ -3666,66 +3668,55 @@ class _BerandaPageState extends State<BerandaPage> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(color: Colors.grey.shade100, width: 1),
       ),
       child: Row(
         children: [
-          Stack(
-            children: [
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  color: bgColor,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(icon, color: iconColor, size: 40),
-              ),
-              if (discount.isNotEmpty)
-                Positioned(
-                  top: 8,
-                  left: 8,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFF5252),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      discount,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-            ],
+          Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              color: bgColor,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Icon(icon, color: iconColor, size: 36),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1A1A1A),
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1A1A1A),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: iconColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        tag,
+                        style: TextStyle(
+                          color: iconColor,
+                          fontSize: 8,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -3739,56 +3730,36 @@ class _BerandaPageState extends State<BerandaPage> {
                 ),
                 const SizedBox(height: 8),
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (oldPrice.isNotEmpty)
-                          Text(
-                            oldPrice,
-                            style: const TextStyle(
-                              fontSize: 11,
-                              color: Color(0xFF9E9E9E),
-                              decoration: TextDecoration.lineThrough,
+                    SizedBox(
+                      height: 30,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const TokoAmaninPage(),
                             ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: iconColor,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
                           ),
-                        Text(
-                          newPrice,
-                          style: const TextStyle(
-                            fontSize: 14,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: const Text(
+                          'Cek Info',
+                          style: TextStyle(
+                            fontSize: 11,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFFFF5252),
-                            height: 1.1,
                           ),
-                        ),
-                      ],
-                    ),
-                    const Spacer(),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const TokoAmaninPage(),
-                          ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF00BCD4),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: const Text(
-                        'Beli',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
@@ -3811,7 +3782,7 @@ class _BerandaPageState extends State<BerandaPage> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
+            color: Colors.black.withOpacity(0.04),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -3822,12 +3793,12 @@ class _BerandaPageState extends State<BerandaPage> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: const BoxDecoration(
-              color: Color(0xFFE3F2FD),
+              color: Color(0xFFFFF3F3),
               shape: BoxShape.circle,
             ),
             child: const Icon(
-              Icons.security,
-              color: Color(0xFF2196F3),
+              Icons.security_rounded,
+              color: Color(0xFFED1C24),
               size: 32,
             ),
           ),
@@ -3850,7 +3821,7 @@ class _BerandaPageState extends State<BerandaPage> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFFF5F5F5),
+              color: const Color(0xFFF9FAFB),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Column(
@@ -3858,7 +3829,7 @@ class _BerandaPageState extends State<BerandaPage> {
                 Row(
                   children: const [
                     Icon(
-                      Icons.check_circle,
+                      Icons.check_circle_rounded,
                       color: Color(0xFF4CAF50),
                       size: 16,
                     ),
@@ -3873,7 +3844,7 @@ class _BerandaPageState extends State<BerandaPage> {
                 Row(
                   children: const [
                     Icon(
-                      Icons.check_circle,
+                      Icons.check_circle_rounded,
                       color: Color(0xFF4CAF50),
                       size: 16,
                     ),
@@ -3901,7 +3872,7 @@ class _BerandaPageState extends State<BerandaPage> {
                 );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF00BCD4),
+                backgroundColor: const Color(0xFFED1C24),
                 foregroundColor: Colors.white,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
@@ -3916,7 +3887,7 @@ class _BerandaPageState extends State<BerandaPage> {
           ),
           const SizedBox(height: 12),
           const Text(
-            'Disponsori Ã¢â‚¬Â¢ S&K berlaku',
+            'Disponsori oleh Prudential | S&K berlaku',
             style: TextStyle(fontSize: 10, color: Color(0xFF9E9E9E)),
           ),
         ],
@@ -4360,7 +4331,12 @@ class _BerandaPageState extends State<BerandaPage> {
             ),
             TextButton(
               onPressed: () {
-                // Navigate to all news
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const SemuaBeritaPage(),
+                  ),
+                );
               },
               style: TextButton.styleFrom(
                 padding: EdgeInsets.zero,
@@ -4551,6 +4527,162 @@ class _BerandaPageState extends State<BerandaPage> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _showNotificationsSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Color(0xFFF8F9FA),
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(24),
+              topRight: Radius.circular(24),
+            ),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Notifikasi',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFF1F2937),
+                      letterSpacing: -0.3,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded, color: Color(0xFF4B5563)),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Berikut adalah pemberitahuan umum dan informasi pembaruan aplikasi Amanin Anda.',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFF6B7280),
+                ),
+              ),
+              const SizedBox(height: 20),
+              
+              // Notification List Items
+              _buildNotificationItem(
+                title: 'Selamat Datang di Amanin',
+                desc: 'Terima kasih telah bergabung. Lengkapi profil Anda untuk mendapatkan pengalaman terbaik.',
+                time: 'Baru saja',
+                icon: Icons.handshake_rounded,
+                iconColor: const Color(0xFF00BCD4),
+                bgColor: const Color(0xFFE0F7FA),
+              ),
+              _buildNotificationItem(
+                title: 'Fitur Peta Interaktif',
+                desc: 'Kini Anda dapat memantau aktivitas gempa bumi secara real-time langsung melalui peta di beranda.',
+                time: '2 jam yang lalu',
+                icon: Icons.map_rounded,
+                iconColor: const Color(0xFF673AB7),
+                bgColor: const Color(0xFFEDE7F6),
+              ),
+              _buildNotificationItem(
+                title: 'Tips Keamanan Akun',
+                desc: 'Ingat untuk selalu menjaga kerahasiaan kata sandi Anda dan memperbaruinya secara berkala.',
+                time: '1 hari yang lalu',
+                icon: Icons.security_rounded,
+                iconColor: const Color(0xFF009688),
+                bgColor: const Color(0xFFE0F2F1),
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildNotificationItem({
+    required String title,
+    required String desc,
+    required String time,
+    required IconData icon,
+    required Color iconColor,
+    required Color bgColor,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: bgColor,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: iconColor, size: 20),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 14,
+                        color: Color(0xFF1F2937),
+                      ),
+                    ),
+                    Text(
+                      time,
+                      style: const TextStyle(
+                        fontSize: 10,
+                        color: Color(0xFF9CA3AF),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  desc,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF4B5563),
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
