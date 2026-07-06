@@ -13,8 +13,8 @@ MODEL_BMKG_PATH = os.path.join(MODEL_DIR, "bmkg_model.pkl")
 SCALER_BMKG_PATH = os.path.join(MODEL_DIR, "scaler_bmkg.pkl")
 MODEL_USGS_PATH = os.path.join(MODEL_DIR, "usgs_model.pkl")
 SCALER_USGS_PATH = os.path.join(MODEL_DIR, "scaler_usgs.pkl")
-MODEL_ANOMALI_PATH = os.path.join(MODEL_DIR, "model_anomali.pkl")
-SCALER_ANOMALI_PATH = os.path.join(MODEL_DIR, "scaler_anomali.pkl")
+MODEL_ANOMALI_PATH = os.path.join(MODEL_DIR, "isolation_forest_bmkg.pkl")
+SCALER_ANOMALI_PATH = os.path.join(MODEL_DIR, "scaler_isolation_bmkg.pkl")
 REKOMENDASI_EDUKASI_PATH = os.path.join(MODEL_DIR, "rekomendasi_edukasi.pkl")
 
 ml_models = {

@@ -121,16 +121,7 @@ class _CuacaPageState extends State<CuacaPage> {
         centerTitle: true,
         backgroundColor: const Color(0xFFF8F9FA),
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1A1A)),
-          onPressed: () {
-            if (widget.onBack != null) {
-              widget.onBack!();
-            } else {
-              Navigator.pop(context);
-            }
-          },
-        ),
+        automaticallyImplyLeading: false,
         actions: [
           IconButton(
             icon: const Icon(Icons.share_outlined, color: Color(0xFF1A1A1A)),

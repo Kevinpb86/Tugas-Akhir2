@@ -16,7 +16,6 @@ class _SemuaVideoPageState extends State<SemuaVideoPage> {
   final ScrollController _scrollController = ScrollController();
 
   List<Map<String, dynamic>> _videos = [];
-  Map<String, dynamic>? _featuredVideo;
   String? _nextPageToken;
 
   bool _isLoading = true;
@@ -59,7 +58,11 @@ class _SemuaVideoPageState extends State<SemuaVideoPage> {
       _playingVideoId = videoId;
       _youtubeController = YoutubePlayerController(
         initialVideoId: videoId,
-        flags: const YoutubePlayerFlags(autoPlay: true, mute: false),
+        flags: const YoutubePlayerFlags(
+          autoPlay: false, 
+          mute: false,
+          forceHD: false,
+        ),
       );
     });
   }
@@ -82,7 +85,6 @@ class _SemuaVideoPageState extends State<SemuaVideoPage> {
       setState(() {
         _videos = response.videos;
         _nextPageToken = response.nextPageToken;
-        _featuredVideo = response.featuredVideo;
         _isLoading = false;
       });
     } catch (e) {
@@ -123,134 +125,7 @@ class _SemuaVideoPageState extends State<SemuaVideoPage> {
     }
   }
 
-  Widget _buildFeaturedVideo() {
-    if (_featuredVideo == null) return const SizedBox.shrink();
 
-    final bool isPlaying =
-        _playingVideoId == _featuredVideo!['id'] && _youtubeController != null;
-
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: () {
-          if (!isPlaying) _playVideo(_featuredVideo!['id']);
-        },
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: Container(
-          margin: const EdgeInsets.only(bottom: 24),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.85),
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.amber.withValues(alpha: 0.15),
-                blurRadius: 15,
-                spreadRadius: 2,
-                offset: const Offset(0, 5),
-              ),
-            ],
-            border: Border.all(color: Colors.amber.shade300.withValues(alpha: 0.5), width: 1.5),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header: Video Hari Ini
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 10,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.amber.shade50,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(14),
-                    topRight: Radius.circular(14),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.star, color: Colors.amber.shade700, size: 20),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Pilihan Hari Ini',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.amber.shade900,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // Thumbnail or Video Player
-              ClipRRect(
-                child: isPlaying
-                    ? YoutubePlayer(
-                        controller: _youtubeController!,
-                        showVideoProgressIndicator: true,
-                      )
-                    : Stack(
-                        children: [
-                          _featuredVideo!['thumbnail'] != null
-                              ? Image.network(
-                                  _featuredVideo!['thumbnail'],
-                                  width: double.infinity,
-                                  height: 200,
-                                  fit: BoxFit.cover,
-                                )
-                              : Container(height: 200, color: Colors.grey[300]),
-                          Center(
-                            heightFactor: 3.5,
-                            child: Icon(
-                              Icons.play_circle_fill,
-                              size: 56,
-                              color: Colors.white.withValues(alpha: 0.9),
-                            ),
-                          ),
-                        ],
-                      ),
-              ),
-              // Title & Desc
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _decodeHtml(_featuredVideo!['title'] ?? 'Tanpa Judul'),
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1A1A1A),
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      _decodeHtml(_featuredVideo!['description'] ?? 'Tidak ada deskripsi'),
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey[700],
-                        height: 1.4,
-                      ),
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildVideoCard(Map<String, dynamic> video) {
     final bool isPlaying =
@@ -293,6 +168,14 @@ class _SemuaVideoPageState extends State<SemuaVideoPage> {
                     ? YoutubePlayer(
                         controller: _youtubeController!,
                         showVideoProgressIndicator: true,
+                        bottomActions: [
+                          const SizedBox(width: 14.0),
+                          CurrentPosition(),
+                          const SizedBox(width: 8.0),
+                          ProgressBar(isExpanded: true),
+                          RemainingDuration(),
+                          const PlaybackSpeedButton(),
+                        ],
                       )
                     : Container(
                         height: 160,
@@ -476,18 +359,9 @@ class _SemuaVideoPageState extends State<SemuaVideoPage> {
                 : ListView.builder(
                     controller: _scrollController,
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-                    itemCount:
-                        _videos.length + (_featuredVideo != null ? 1 : 0) + 1,
+                    itemCount: _videos.length + 1,
                     itemBuilder: (context, index) {
-                      // Jika index paling atas, tampilkan Featured Video
-                      if (index == 0 && _featuredVideo != null) {
-                        return _buildFeaturedVideo();
-                      }
-
-                      // Adjust index karena ada Featured Video
-                      final videoIndex = _featuredVideo != null
-                          ? index - 1
-                          : index;
+                      final videoIndex = index;
 
                       // Jika index paling bawah, tampilkan loading indicator jika masih memuat data berikutnya
                       if (videoIndex == _videos.length) {
