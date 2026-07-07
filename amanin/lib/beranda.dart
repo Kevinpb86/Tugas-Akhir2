@@ -111,10 +111,10 @@ class _BerandaPageState extends State<BerandaPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showLocationPermissionDialog();
     });
-    
+
     // Dengarkan perubahan state demonstrasi
     DemoState.selectedDemoGempa.addListener(_onDemoStateChanged);
-    
+
     _fetchEarthquakeData();
     _fetchWeatherData();
     _fetchNewsData();
@@ -126,7 +126,7 @@ class _BerandaPageState extends State<BerandaPage> {
     if (demoGempa != null) {
       double lat = double.tryParse(demoGempa.lintang) ?? 0.0;
       double lon = double.tryParse(demoGempa.bujur) ?? 0.0;
-      
+
       setState(() {
         _isDemoMode = true;
         _isLatestQuakeAnomali = true;
@@ -1256,12 +1256,13 @@ class _BerandaPageState extends State<BerandaPage> {
       }
 
       // Jalankan pengecekan AI secara diam-diam
-      final bool isAnomali = await AnomaliService.checkSingleAnomali(
+      final anomaliResult = await AnomaliService.checkSingleAnomali(
         magnitude: mag,
         kedalaman: depth,
         lintang: lat,
         bujur: lon,
       );
+      final bool isAnomali = anomaliResult.isAnomali;
 
       String? mlPred;
       try {
@@ -3245,7 +3246,7 @@ class _BerandaPageState extends State<BerandaPage> {
     );
   }
 
-  void _showAnomalyInfoDialog() {
+  void _showAnomalyExplanationDialog() {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -3265,35 +3266,38 @@ class _BerandaPageState extends State<BerandaPage> {
           children: [
             Row(
               children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFF5252).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(
-                    Icons.warning_amber_rounded,
-                    color: Color(0xFFFF5252),
-                  ),
+                Icon(
+                  _isLatestQuakeAnomali
+                      ? Icons.warning_amber_rounded
+                      : Icons.check_circle_outline_rounded,
+                  color: _isLatestQuakeAnomali
+                      ? const Color(0xFFD84315)
+                      : const Color(0xFF2E7D32),
+                  size: 24,
                 ),
-                const SizedBox(width: 16),
-                const Expanded(
-                  child: Text(
-                    'Apa itu Anomali Gempa?',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1E293B),
-                    ),
+                const SizedBox(width: 10),
+                Text(
+                  _isLatestQuakeAnomali
+                      ? 'Karakteristik Gempa Tidak Biasa'
+                      : 'Karakteristik Gempa Normal',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: _isLatestQuakeAnomali
+                        ? const Color(0xFFD84315)
+                        : const Color(0xFF2E7D32),
                   ),
                 ),
               ],
             ),
-            const Text(
-              'X',
-              style: TextStyle(
+            const SizedBox(height: 16),
+            Text(
+              _isLatestQuakeAnomali
+                  ? 'Sistem mendeteksi adanya variasi karakteristik pada gempa ini. Kombinasi kekuatan (magnitudo) atau kedalamannya berbeda dari pola riwayat gempa yang biasanya terjadi di wilayah ini.'
+                  : 'Kombinasi kekuatan (magnitudo) dan kedalaman gempa ini tergolong wajar dan sesuai dengan pola aktivitas seismik yang umum terjadi di wilayah ini.',
+              style: const TextStyle(
                 fontSize: 14,
-                color: Color(0xFF475569),
+                color: Color(0xFF334155),
                 height: 1.5,
               ),
             ),
@@ -3358,90 +3362,77 @@ class _BerandaPageState extends State<BerandaPage> {
         ? const Color(0xFFFFEBEE)
         : const Color(0xFFE8F5E9);
 
-    return Container(
-      key: _mapCardKey,
+    return GestureDetector(
+      onTap: () {
+        _showAnomalyExplanationDialog();
+      },
+      child: Container(
+        key: _mapCardKey,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
         border: _isLatestQuakeAnomali
             ? Border.all(color: Colors.red.shade400, width: 2)
-            : Border.all(color: Colors.black.withValues(alpha: 0.05), width: 1),
+            : Border.all(color: Colors.green.shade400, width: 2),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 30,
             offset: const Offset(0, 10),
           ),
-          if (_isLatestQuakeAnomali)
-            BoxShadow(
-              color: Colors.red.withValues(alpha: 0.2),
-              blurRadius: 15,
-              spreadRadius: 2,
-            ),
+          BoxShadow(
+            color: _isLatestQuakeAnomali
+                ? Colors.red.withValues(alpha: 0.2)
+                : Colors.green.withValues(alpha: 0.2),
+            blurRadius: 15,
+            spreadRadius: 2,
+          ),
         ],
       ),
       child: Column(
         children: [
-          if (_isLatestQuakeAnomali)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              decoration: const BoxDecoration(
-                color: Color(0xFFE65100), // Orange Gelap
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(22),
-                  topRight: Radius.circular(22),
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(
-                    Icons.info_outline_rounded,
-                    color: Colors.white,
-                    size: 18,
-                  ),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: const Text(
-                      'Terdapat Variasi Karakteristik Gempa',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  GestureDetector(
-                    onTap: () {
-                      _showAnomalyInfoDialog();
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.question_mark_rounded,
-                        color: Colors.white,
-                        size: 14,
-                      ),
-                    ),
-                  ),
-                ],
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            decoration: BoxDecoration(
+              color: _isLatestQuakeAnomali
+                  ? const Color(0xFFE65100) // Orange Gelap
+                  : const Color(0xFF2E7D32), // Hijau Gelap
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(22),
+                topRight: Radius.circular(22),
               ),
             ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  _isLatestQuakeAnomali
+                      ? Icons.info_outline_rounded
+                      : Icons.check_circle_outline_rounded,
+                  color: Colors.white,
+                  size: 18,
+                ),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    _isLatestQuakeAnomali
+                        ? 'Terdapat Variasi Karakteristik Gempa'
+                        : 'Karakteristik Gempa Terdeteksi Normal',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
           Stack(
             children: [
               ClipRRect(
-                borderRadius: _isLatestQuakeAnomali
-                    ? BorderRadius.zero
-                    : const BorderRadius.only(
-                        topLeft: Radius.circular(24),
-                        topRight: Radius.circular(24),
-                      ),
+                borderRadius: BorderRadius.zero,
                 child: SizedBox(
                   height: 200,
                   width: double.infinity,
@@ -3718,7 +3709,6 @@ class _BerandaPageState extends State<BerandaPage> {
                   const Color(0xFFFF9800),
                 ),
                 const SizedBox(height: 20),
-
                 SizedBox(
                   width: double.infinity,
                   height: 48,
@@ -3755,7 +3745,7 @@ class _BerandaPageState extends State<BerandaPage> {
           ),
         ],
       ),
-    );
+    ));
   }
 
   Widget _buildInfoBox(

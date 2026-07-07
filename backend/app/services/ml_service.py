@@ -14,7 +14,7 @@ SCALER_BMKG_PATH = os.path.join(MODEL_DIR, "scaler_bmkg.pkl")
 MODEL_USGS_PATH = os.path.join(MODEL_DIR, "usgs_model.pkl")
 SCALER_USGS_PATH = os.path.join(MODEL_DIR, "scaler_usgs.pkl")
 MODEL_ANOMALI_PATH = os.path.join(MODEL_DIR, "isolation_forest_bmkg.pkl")
-SCALER_ANOMALI_PATH = os.path.join(MODEL_DIR, "scaler_isolation_bmkg.pkl")
+SCALER_ANOMALI_PATH = os.path.join(MODEL_DIR, "scaler_isolation_forest_bmkg.pkl")
 REKOMENDASI_EDUKASI_PATH = os.path.join(MODEL_DIR, "rekomendasi_edukasi.pkl")
 
 ml_models = {
@@ -76,6 +76,7 @@ def load_ml_models():
             print(f"Warning: Model Rekomendasi Edukasi tidak ditemukan di {REKOMENDASI_EDUKASI_PATH}")
     except Exception as e:
         print(f"Error loading models: {e}")
+
 
 LOCAL_COORDINATES = {
     "lembang": (-6.82, 107.62),
