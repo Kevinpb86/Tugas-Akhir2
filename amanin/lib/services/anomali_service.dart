@@ -61,6 +61,17 @@ class AnomaliGempaModel {
   }
 }
 
+/// Hasil pengecekan anomali satu gempa dari endpoint /predict-anomali.
+class AnomaliCheckResult {
+  final bool isAnomali;
+  final double score;
+
+  AnomaliCheckResult({
+    required this.isAnomali,
+    required this.score,
+  });
+}
+
 class DemoState {
   // Global value notifier to track the selected demo earthquake
   static final ValueNotifier<AnomaliGempaModel?> selectedDemoGempa = ValueNotifier(null);
@@ -116,7 +127,7 @@ class AnomaliService {
     }
   }
 
-  static Future<bool> checkSingleAnomali({
+  static Future<AnomaliCheckResult> checkSingleAnomali({
     required double magnitude,
     required double kedalaman,
     required double lintang,
@@ -132,15 +143,20 @@ class AnomaliService {
           'latitude': lintang,
           'longitude': bujur,
         }),
-      ).timeout(const Duration(seconds: 5));
+      ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        return data['is_anomali'] ?? false;
+        return AnomaliCheckResult(
+          isAnomali: data['is_anomali'] ?? false,
+          score: (data['confidence'] ?? 0).toDouble(),
+        );
       }
-      return false; // Anggap normal jika gagal
+      // Anggap normal jika gagal
+      return AnomaliCheckResult(isAnomali: false, score: 0);
     } catch (e) {
-      return false; // Jangan tampilkan error ke user, anggap normal jika backend mati
+      // Jangan tampilkan error ke user, anggap normal jika backend mati
+      return AnomaliCheckResult(isAnomali: false, score: 0);
     }
   }
 }

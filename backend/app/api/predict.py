@@ -113,7 +113,7 @@ async def get_anomali_history(limit: int = 5):
         g = _format_gempa_bmkg(*row)
         g["is_anomali"] = True
         g["status_anomali"] = "Anomali Terdeteksi"
-        g["anomaly_score"] = round(abs(score), 4)
+        g["anomaly_score"] = round(score, 4)
         hasil_list.append(g)
 
     return {
@@ -235,7 +235,7 @@ async def predict_anomali(data: AnomaliData):
 
         try:
             score = ml_service.anomali_model.decision_function(features_for_model)[0]
-            confidence_val = round(float(abs(score)), 4)
+            confidence_val = round(float(score), 4)
         except Exception:
             confidence_val = 1.0
 
@@ -293,7 +293,7 @@ async def get_anomali_terkini():
             
             try:
                 score = ml_service.anomali_model.decision_function(features_for_model)[0]
-                confidence_val = round(float(abs(score)), 4)
+                confidence_val = round(float(score), 4)
             except Exception:
                 confidence_val = 1.0
 
