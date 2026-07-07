@@ -8,6 +8,7 @@ import 'utils/map_utils.dart';
 import 'fullscreen_map.dart';
 import 'cuaca.dart';
 import 'edukasi_bahaya.dart';
+import 'panduan_anomali.dart';
 import 'edukasi_waspada.dart';
 import 'edukasi_aman.dart';
 import 'akun.dart';
@@ -3317,6 +3318,35 @@ class _BerandaPageState extends State<BerandaPage> {
                   'Mengerti',
                   style: TextStyle(
                     color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const PanduanAnomaliPage(),
+                    ),
+                  );
+                },
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  side: const BorderSide(color: Color(0xFF0F172A)),
+                ),
+                child: const Text(
+                  'Pelajari Lebih Lanjut',
+                  style: TextStyle(
+                    color: Color(0xFF0F172A),
                     fontWeight: FontWeight.bold,
                   ),
                 ),
