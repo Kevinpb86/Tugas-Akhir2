@@ -1,11 +1,127 @@
+import os
 import numpy as np
+import pandas as pd
 import requests
+from datetime import timedelta
 from fastapi import APIRouter, HTTPException
 from app.api_schemas.earthquake import EarthquakeData, AnomaliData
+from app.config.database import SessionLocal
+from app.db_models.earthquake import Earthquake
 from app.services import ml_service
 from app.services.ml_service import ml_models, ml_scalers, resolve_coordinates, validate_study_area
 
 router = APIRouter()
+
+HISTORY_CSV_PATH = os.path.abspath(os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+    "data", "historical_data_bmkg_2021-2026.csv"
+))
+
+BULAN_ID = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun",
+            "Jul", "Agu", "Sep", "Okt", "Nov", "Des"]
+
+
+def _format_gempa_bmkg(event_time, lat, lon, depth, mag, wilayah, dirasakan):
+    # event_time tersimpan dalam UTC, tampilkan sebagai WIB (UTC+7) seperti format BMKG
+    wib = event_time + timedelta(hours=7)
+    return {
+        "Tanggal": f"{wib.day:02d} {BULAN_ID[wib.month - 1]} {wib.year}",
+        "Jam": wib.strftime("%H:%M:%S WIB"),
+        "DateTime": event_time.isoformat() + "+00:00",
+        "Coordinates": f"{lat},{lon}",
+        "Lintang": f"{abs(lat):.2f} {'LS' if lat < 0 else 'LU'}",
+        "Bujur": f"{abs(lon):.2f} {'BT' if lon >= 0 else 'BB'}",
+        "Magnitude": str(mag),
+        "Kedalaman": f"{depth:g} km",
+        "Wilayah": wilayah or "",
+        "Dirasakan": dirasakan or "",
+    }
+
+
+@router.get("/anomali-history")
+async def get_anomali_history(limit: int = 5):
+    """Scan riwayat gempa (tabel earthquakes di DB, fallback ke CSV historis
+    jika DB tidak tersedia/kosong), jalankan Isolation Forest, dan kembalikan
+    gempa asli yang terdeteksi anomali (maksimal `limit`)."""
+    if ml_service.anomali_model is None:
+        raise HTTPException(status_code=503, detail="Model anomali belum tersedia.")
+
+    rows = []
+    data_source = None
+
+    # 1) Coba dari database
+    try:
+        db = SessionLocal()
+        try:
+            db_rows = (
+                db.query(Earthquake)
+                .order_by(Earthquake.event_time.desc())
+                .all()
+            )
+            if db_rows:
+                rows = [
+                    (r.event_time, r.latitude, r.longitude, r.depth,
+                     r.magnitude, r.wilayah, r.dirasakan)
+                    for r in db_rows
+                ]
+                data_source = "database"
+        finally:
+            db.close()
+    except Exception as e:
+        print(f"DB tidak tersedia, fallback ke CSV historis: {e}")
+
+    # 2) Fallback ke CSV historis
+    if not rows:
+        if not os.path.exists(HISTORY_CSV_PATH):
+            raise HTTPException(
+                status_code=503,
+                detail="Riwayat gempa tidak tersedia (database mati dan CSV historis tidak ditemukan)."
+            )
+        df = pd.read_csv(HISTORY_CSV_PATH)
+        df["datetime"] = pd.to_datetime(df["datetime"], utc=True).dt.tz_localize(None)
+        rows = [
+            (row["datetime"].to_pydatetime(), float(row["latitude"]), float(row["longitude"]),
+             float(row["depth"]), float(row["magnitude"]),
+             row["wilayah"] if pd.notna(row["wilayah"]) else "",
+             row["dirasakan"] if pd.notna(row["dirasakan"]) else "")
+            for _, row in df.iterrows()
+        ]
+        data_source = "csv_historis"
+
+    # Prediksi anomali seluruh riwayat sekaligus (batch)
+    features = np.array([[mag, depth, lat, lon]
+                         for (_, lat, lon, depth, mag, _, _) in rows])
+    if ml_service.anomali_scaler is not None:
+        features_for_model = ml_service.anomali_scaler.transform(features)
+    else:
+        features_for_model = features
+
+    predictions = ml_service.anomali_model.predict(features_for_model)
+    scores = ml_service.anomali_model.decision_function(features_for_model)
+
+    # Ambil hanya yang anomali (-1), urutkan dari yang paling anomali (skor terendah)
+    anomali_rows = [
+        (rows[i], float(scores[i]))
+        for i in range(len(rows))
+        if int(predictions[i]) == -1
+    ]
+    anomali_rows.sort(key=lambda x: x[1])
+    anomali_rows = anomali_rows[:limit]
+
+    hasil_list = []
+    for row, score in anomali_rows:
+        g = _format_gempa_bmkg(*row)
+        g["is_anomali"] = True
+        g["status_anomali"] = "Anomali Terdeteksi"
+        g["anomaly_score"] = round(score, 4)
+        hasil_list.append(g)
+
+    return {
+        "source": data_source,
+        "total_diperiksa": len(rows),
+        "total_anomali": int((predictions == -1).sum()),
+        "data": hasil_list
+    }
 
 @router.post("/predict")
 async def predict_risk(data: EarthquakeData):
@@ -99,14 +215,10 @@ async def predict_anomali(data: AnomaliData):
 
     try:
         features = np.array([[
-            data.latitude,
-            data.longitude,
+            data.magnitude,
             data.depth,
-            0,
-            0,
-            0,
-            1,
-            12
+            data.latitude,
+            data.longitude
         ]])
 
         if ml_service.anomali_scaler is not None:
@@ -123,7 +235,7 @@ async def predict_anomali(data: AnomaliData):
 
         try:
             score = ml_service.anomali_model.decision_function(features_for_model)[0]
-            confidence_val = round(float(abs(score)), 4)
+            confidence_val = round(float(score), 4)
         except Exception:
             confidence_val = 1.0
 
@@ -166,7 +278,7 @@ async def get_anomali_terkini():
             lon = float(coords_str[1])
             
             # Lakukan prediksi Anomali
-            features = np.array([[lat, lon, depth, 0, 0, 0, 1, 12]])
+            features = np.array([[mag, depth, lat, lon]])
             if ml_service.anomali_scaler is not None:
                 features_for_model = ml_service.anomali_scaler.transform(features)
             else:
@@ -181,7 +293,7 @@ async def get_anomali_terkini():
             
             try:
                 score = ml_service.anomali_model.decision_function(features_for_model)[0]
-                confidence_val = round(float(abs(score)), 4)
+                confidence_val = round(float(score), 4)
             except Exception:
                 confidence_val = 1.0
 
@@ -199,76 +311,6 @@ async def get_anomali_terkini():
 
     return {"data": hasil_list}
 
-@router.get("/anomali-simulasi")
-async def get_anomali_simulasi():
-    if ml_service.anomali_model is None:
-        raise HTTPException(status_code=503, detail="Model anomali belum tersedia.")
-
-    url = "https://data.bmkg.go.id/DataMKG/TEWS/gempadirasakan.json"
-    try:
-        res = requests.get(url, timeout=10)
-        res.raise_for_status()
-        data_bmkg = res.json()
-        gempa_list = data_bmkg.get("Infogempa", {}).get("gempa", [])
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Gagal mengambil data dari BMKG: {str(e)}")
-
-    # Sisipkan 1 Gempa Fiktif (Megathrust Anomali) di urutan pertama
-    fake_quake = {
-        "Tanggal": "HARI INI (SIMULASI)",
-        "Jam": "SEKARANG WIB",
-        "DateTime": "2024-01-01T00:00:00+00:00",
-        "Coordinates": "-8.50,105.00",
-        "Lintang": "8.50 LS",
-        "Bujur": "105.00 BT",
-        "Magnitude": "8.9",
-        "Kedalaman": "5 km",
-        "Wilayah": "Pusat gempa berada di laut 200 km Barat Daya Ujung Kulon (SIMULASI)",
-        "Dirasakan": "VIII-IX Jakarta, VIII Bandung"
-    }
-    gempa_list.insert(0, fake_quake)
-
-    hasil_list = []
-    for g in gempa_list:
-        try:
-            mag = float(g.get("Magnitude", "0"))
-            depth_str = g.get("Kedalaman", "0").replace(" km", "")
-            depth = float(depth_str)
-            coords_str = g.get("Coordinates", "0,0").split(",")
-            lat = float(coords_str[0])
-            lon = float(coords_str[1])
-            
-            features = np.array([[lat, lon, depth, 0, 0, 0, 1, 12]])
-            if ml_service.anomali_scaler is not None:
-                features_for_model = ml_service.anomali_scaler.transform(features)
-            else:
-                features_for_model = features
-                
-            prediction = ml_service.anomali_model.predict(features_for_model)
-            pred_value = int(prediction[0])
-            
-            if "SIMULASI" in g.get("Wilayah", ""):
-                pred_value = -1
-            is_anomali = (pred_value == -1)
-            label = "Anomali Terdeteksi" if is_anomali else "Normal"
-            
-            try:
-                score = ml_service.anomali_model.decision_function(features_for_model)[0]
-                confidence_val = round(float(abs(score)), 4)
-            except Exception:
-                confidence_val = 1.0
-
-            g_copy = dict(g)
-            g_copy["is_anomali"] = is_anomali
-            g_copy["status_anomali"] = label
-            g_copy["anomaly_score"] = confidence_val
-            
-            hasil_list.append(g_copy)
-        except Exception as parse_error:
-            print(f"Error parsing earthquake: {parse_error}")
-            hasil_list.append(g)
-
-    return {"data": hasil_list}
 
 @router.get("/reverse-geocode")
 async def reverse_geocode(lat: float, lon: float):

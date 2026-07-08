@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
 import 'api_config.dart';
 
 class AnomaliGempaModel {
@@ -60,6 +61,25 @@ class AnomaliGempaModel {
   }
 }
 
+/// Hasil pengecekan anomali satu gempa dari endpoint /predict-anomali.
+class AnomaliCheckResult {
+  final bool isAnomali;
+  final double score;
+
+  AnomaliCheckResult({
+    required this.isAnomali,
+    required this.score,
+  });
+}
+
+class DemoState {
+  // Global value notifier to track the selected demo earthquake
+  static final ValueNotifier<AnomaliGempaModel?> selectedDemoGempa = ValueNotifier(null);
+  
+  // Cache untuk riwayat anomali agar tidak loading berulang kali
+  static List<AnomaliGempaModel>? cachedAnomaliHistory;
+}
+
 class AnomaliService {
   static Future<List<AnomaliGempaModel>> fetchAnomaliTerkini() async {
     try {
@@ -83,7 +103,31 @@ class AnomaliService {
     }
   }
 
-  static Future<bool> checkSingleAnomali({
+  static Future<List<AnomaliGempaModel>> fetchAnomaliHistory({
+    int limit = 5,
+  }) async {
+    try {
+      final response = await http.get(
+        Uri.parse('${ApiConfig.baseUrl}/anomali-history?limit=$limit'),
+      ).timeout(const Duration(seconds: 15));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final List<dynamic> gempaList = data['data'];
+        return gempaList
+            .map((json) => AnomaliGempaModel.fromJson(json))
+            .toList();
+      } else {
+        throw Exception(
+          'Gagal memuat riwayat gempa anomali: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      throw Exception('Terjadi kesalahan saat menghubungi backend: $e');
+    }
+  }
+
+  static Future<AnomaliCheckResult> checkSingleAnomali({
     required double magnitude,
     required double kedalaman,
     required double lintang,
@@ -99,15 +143,20 @@ class AnomaliService {
           'latitude': lintang,
           'longitude': bujur,
         }),
-      ).timeout(const Duration(seconds: 5));
+      ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        return data['is_anomali'] ?? false;
+        return AnomaliCheckResult(
+          isAnomali: data['is_anomali'] ?? false,
+          score: (data['confidence'] ?? 0).toDouble(),
+        );
       }
-      return false; // Anggap normal jika gagal
+      // Anggap normal jika gagal
+      return AnomaliCheckResult(isAnomali: false, score: 0);
     } catch (e) {
-      return false; // Jangan tampilkan error ke user, anggap normal jika backend mati
+      // Jangan tampilkan error ke user, anggap normal jika backend mati
+      return AnomaliCheckResult(isAnomali: false, score: 0);
     }
   }
 }

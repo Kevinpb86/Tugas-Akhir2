@@ -545,47 +545,19 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _handleLogin() async {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const Center(child: CircularProgressIndicator()),
-    );
+    // Mode demo: langsung login tanpa verifikasi ke backend
+    final email = _emailController.text.trim();
+    userEmailNotifier.value = email.isNotEmpty ? email : 'demo@amanin.id';
+    userNameNotifier.value = email.isNotEmpty
+        ? email.split('@').first
+        : 'Pengguna Demo';
+    isLoggedInNotifier.value = true;
 
-    try {
-      final response = await http.post(
-        Uri.parse('${ApiConfig.baseUrl}/login'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'email': _emailController.text,
-          'password': _passwordController.text,
-        }),
-      );
-
-      if (mounted) Navigator.pop(context);
-
-      if (response.statusCode == 200) {
-        isLoggedInNotifier.value = true;
-        if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('Login Berhasil!')));
-          Navigator.pop(context);
-        }
-      } else {
-        final error = jsonDecode(response.body);
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(error['detail'] ?? 'Login Gagal')),
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) Navigator.pop(context);
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Terjadi kesalahan: ')));
-      }
+    if (mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Login Berhasil!')));
+      Navigator.pop(context);
     }
   }
 

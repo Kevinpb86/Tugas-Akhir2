@@ -8,6 +8,7 @@ import 'utils/map_utils.dart';
 import 'fullscreen_map.dart';
 import 'cuaca.dart';
 import 'edukasi_bahaya.dart';
+import 'panduan_anomali.dart';
 import 'edukasi_waspada.dart';
 import 'edukasi_aman.dart';
 import 'akun.dart';
@@ -25,6 +26,7 @@ import 'isi_berita.dart';
 import 'semua_berita.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'dart:ui';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:share_plus/share_plus.dart';
@@ -45,7 +47,6 @@ class _BerandaPageState extends State<BerandaPage> {
   bool _isLoadingQuake = true;
   bool _isLatestQuakeAnomali = false;
   bool _actualIsAnomali = false;
-  int _secretTapCount = 0;
   bool _isDemoMode = false;
 
   CuacaModel? _latestCuaca;
@@ -80,7 +81,9 @@ class _BerandaPageState extends State<BerandaPage> {
     final int hour = DateTime.now().hour;
     final bool isNight = checkNight && (hour >= 18 || hour < 6);
 
-    if (cond.contains('petir') || cond.contains('kilat') || cond.contains('badai')) {
+    if (cond.contains('petir') ||
+        cond.contains('kilat') ||
+        cond.contains('badai')) {
       return Icons.thunderstorm_rounded;
     } else if (cond.contains('hujan')) {
       return Icons.umbrella_rounded;
@@ -95,7 +98,7 @@ class _BerandaPageState extends State<BerandaPage> {
       }
       return Icons.wb_sunny_rounded;
     }
-    
+
     if (isNight) {
       return Icons.nightlight_round;
     }
@@ -109,13 +112,56 @@ class _BerandaPageState extends State<BerandaPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showLocationPermissionDialog();
     });
+
+    // Dengarkan perubahan state demonstrasi
+    DemoState.selectedDemoGempa.addListener(_onDemoStateChanged);
+
     _fetchEarthquakeData();
     _fetchWeatherData();
     _fetchNewsData();
   }
 
+  void _onDemoStateChanged() {
+    if (!mounted) return;
+    final demoGempa = DemoState.selectedDemoGempa.value;
+    if (demoGempa != null) {
+      double lat = double.tryParse(demoGempa.lintang) ?? 0.0;
+      double lon = double.tryParse(demoGempa.bujur) ?? 0.0;
+
+      setState(() {
+        _isDemoMode = true;
+        _isLatestQuakeAnomali = true;
+        _latestQuake = GempaModel(
+          tanggal: demoGempa.tanggal,
+          jam: demoGempa.jam,
+          dateTime: demoGempa.dateTime,
+          coordinates: demoGempa.coordinates,
+          lintang: demoGempa.lintang,
+          bujur: demoGempa.bujur,
+          magnitude: demoGempa.magnitude,
+          kedalaman: demoGempa.kedalaman,
+          wilayah: demoGempa.wilayah,
+          potensi: demoGempa.potensi,
+          dirasakan: demoGempa.dirasakan,
+          shakemap: demoGempa.shakemap,
+          isAnomali: true,
+        );
+        if (lat != 0.0 && lon != 0.0) {
+          _earthquakeLocation = LatLng(lat, lon);
+        }
+      });
+    } else {
+      setState(() {
+        _isDemoMode = false;
+        _isLatestQuakeAnomali = _actualIsAnomali;
+      });
+      _fetchEarthquakeData();
+    }
+  }
+
   @override
   void dispose() {
+    DemoState.selectedDemoGempa.removeListener(_onDemoStateChanged);
     _scrollController.dispose();
     super.dispose();
   }
@@ -277,9 +323,9 @@ class _BerandaPageState extends State<BerandaPage> {
                           borderRadius: BorderRadius.circular(14),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF00BCD4).withValues(
-                                alpha: 0.3,
-                              ),
+                              color: const Color(
+                                0xFF00BCD4,
+                              ).withValues(alpha: 0.3),
                               blurRadius: 6,
                               offset: const Offset(0, 3),
                             ),
@@ -298,12 +344,14 @@ class _BerandaPageState extends State<BerandaPage> {
                           onPressed: () async {
                             Navigator.of(dialogContext).pop();
 
-                          showDialog(
-                            context: context,
-                            barrierDismissible: false,
-                            builder: (c) => const Center(
-                              child: CircularProgressIndicator(color: Colors.white),
-                            ),
+                            showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (c) => const Center(
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                ),
+                              ),
                             );
 
                             await _requestLocationPermission();
@@ -321,9 +369,9 @@ class _BerandaPageState extends State<BerandaPage> {
                               fontSize: 14,
                             ),
                           ),
-                          ),
                         ),
                       ),
+                    ),
                   ],
                 ),
               ],
@@ -338,9 +386,8 @@ class _BerandaPageState extends State<BerandaPage> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (c) => const Center(
-        child: CircularProgressIndicator(color: Colors.white),
-      ),
+      builder: (c) =>
+          const Center(child: CircularProgressIndicator(color: Colors.white)),
     );
 
     try {
@@ -358,22 +405,25 @@ class _BerandaPageState extends State<BerandaPage> {
           lat = position.latitude;
           lon = position.longitude;
         } catch (gpsError) {
-          print("GPS fetch error inside _checkEdukasiStatus: $gpsError, using default Cianjur coordinates");
+          print(
+            "GPS fetch error inside _checkEdukasiStatus: $gpsError, using default Cianjur coordinates",
+          );
         }
       }
 
       final url = Uri.parse('${ApiConfig.baseUrl}/api/edukasi/waspada');
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'latitude': lat,
-          'longitude': lon,
-        }),
-      ).timeout(
-        const Duration(seconds: 10),
-        onTimeout: () => throw Exception('Koneksi ke server timeout. Pastikan HP dan laptop di WiFi yang sama.'),
-      );
+      final response = await http
+          .post(
+            url,
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({'latitude': lat, 'longitude': lon}),
+          )
+          .timeout(
+            const Duration(seconds: 10),
+            onTimeout: () => throw Exception(
+              'Koneksi ke server timeout. Pastikan HP dan laptop di WiFi yang sama.',
+            ),
+          );
 
       if (!mounted) return;
       Navigator.of(context).pop(); // Tutup loading
@@ -381,26 +431,36 @@ class _BerandaPageState extends State<BerandaPage> {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         String status = data['status'] ?? '';
-        
+
         if (status.contains("Bahaya")) {
-          setState(() { _bannerStatus = 'Bahaya Tinggi'; });
+          setState(() {
+            _bannerStatus = 'Bahaya Tinggi';
+          });
           _showEarthquakeWarningDialog();
         } else if (status.contains("WASPADA") || status.contains("Waspada")) {
-          setState(() { _bannerStatus = 'Bahaya Sedang'; });
+          setState(() {
+            _bannerStatus = 'Bahaya Sedang';
+          });
           _showEarthquakeWaspadaDialog();
         } else {
-          setState(() { _bannerStatus = 'Bahaya Rendah'; });
+          setState(() {
+            _bannerStatus = 'Bahaya Rendah';
+          });
           _showEarthquakeAmanDialog();
         }
       } else {
-        setState(() { _bannerStatus = 'Bahaya Rendah'; });
+        setState(() {
+          _bannerStatus = 'Bahaya Rendah';
+        });
         _showEarthquakeAmanDialog();
       }
     } catch (e) {
       if (mounted) Navigator.of(context).pop();
       print("ERROR CEK EDUKASI: $e");
       if (mounted) {
-        setState(() { _bannerStatus = 'Bahaya Rendah'; });
+        setState(() {
+          _bannerStatus = 'Bahaya Rendah';
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Gagal mengambil data dari server: $e')),
         );
@@ -443,15 +503,22 @@ class _BerandaPageState extends State<BerandaPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const VibrationWaveWidget(isLeft: true, color: Color(0xFFEF4444)),
+                        const VibrationWaveWidget(
+                          isLeft: true,
+                          color: Color(0xFFEF4444),
+                        ),
                         const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.all(5),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFEE2E2), // Light red outer ring
+                            color: const Color(
+                              0xFFFEE2E2,
+                            ), // Light red outer ring
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: const Color(0xFFFCA5A5).withValues(alpha: 0.5),
+                              color: const Color(
+                                0xFFFCA5A5,
+                              ).withValues(alpha: 0.5),
                               width: 2,
                             ),
                           ),
@@ -460,7 +527,10 @@ class _BerandaPageState extends State<BerandaPage> {
                             height: 52,
                             decoration: const BoxDecoration(
                               gradient: LinearGradient(
-                                colors: [Color(0xFFEF4444), Color(0xFFB91C1C)], // Red gradient
+                                colors: [
+                                  Color(0xFFEF4444),
+                                  Color(0xFFB91C1C),
+                                ], // Red gradient
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                               ),
@@ -481,7 +551,10 @@ class _BerandaPageState extends State<BerandaPage> {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        const VibrationWaveWidget(isLeft: false, color: Color(0xFFEF4444)),
+                        const VibrationWaveWidget(
+                          isLeft: false,
+                          color: Color(0xFFEF4444),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 18),
@@ -500,7 +573,10 @@ class _BerandaPageState extends State<BerandaPage> {
 
                     // Location Pin Chip
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFF1F5F9), // Slate 100
                         borderRadius: BorderRadius.circular(20),
@@ -558,7 +634,9 @@ class _BerandaPageState extends State<BerandaPage> {
                                 decoration: BoxDecoration(
                                   color: const Color(0xFFFEE2E2), // Light red
                                   borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(color: const Color(0xFFFCA5A5)),
+                                  border: Border.all(
+                                    color: const Color(0xFFFCA5A5),
+                                  ),
                                 ),
                                 child: const Icon(
                                   Icons.warning_amber_rounded,
@@ -608,7 +686,9 @@ class _BerandaPageState extends State<BerandaPage> {
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFFEF4444).withValues(alpha: 0.30),
+                            color: const Color(
+                              0xFFEF4444,
+                            ).withValues(alpha: 0.30),
                             blurRadius: 12,
                             offset: const Offset(0, 4),
                           ),
@@ -621,12 +701,18 @@ class _BerandaPageState extends State<BerandaPage> {
                             MaterialPageRoute(
                               builder: (context) {
                                 String locCat = 'Dalam Ruangan';
-                                if (_environmentType.contains('Pantai') || _environmentType.contains('Pesisir')) {
+                                if (_environmentType.contains('Pantai') ||
+                                    _environmentType.contains('Pesisir')) {
                                   locCat = 'Pesisir Pantai';
-                                } else if (_environmentType.contains('Gunung') || _environmentType.contains('Pegunungan')) {
+                                } else if (_environmentType.contains(
+                                      'Gunung',
+                                    ) ||
+                                    _environmentType.contains('Pegunungan')) {
                                   locCat = 'Pegunungan';
                                 } else {
-                                  locCat = _isIndoor ? 'Dalam Ruangan' : 'Luar Ruangan';
+                                  locCat = _isIndoor
+                                      ? 'Dalam Ruangan'
+                                      : 'Luar Ruangan';
                                 }
                                 return EdukasiBahayaPage(
                                   cityName: _currentCityName,
@@ -636,7 +722,11 @@ class _BerandaPageState extends State<BerandaPage> {
                             ),
                           );
                         },
-                        icon: const Icon(Icons.menu_book_rounded, size: 16, color: Colors.white),
+                        icon: const Icon(
+                          Icons.menu_book_rounded,
+                          size: 16,
+                          color: Colors.white,
+                        ),
                         label: const Text(
                           'Lihat Panduan Keselamatan',
                           style: TextStyle(
@@ -666,7 +756,11 @@ class _BerandaPageState extends State<BerandaPage> {
                 child: Material(
                   color: Colors.transparent,
                   child: IconButton(
-                    icon: const Icon(Icons.close_rounded, color: Color(0xFF94A3B8), size: 20),
+                    icon: const Icon(
+                      Icons.close_rounded,
+                      color: Color(0xFF94A3B8),
+                      size: 20,
+                    ),
                     onPressed: () => Navigator.of(dialogContext).pop(),
                     splashRadius: 18,
                   ),
@@ -677,7 +771,9 @@ class _BerandaPageState extends State<BerandaPage> {
         );
       },
     );
-  }  void _showEarthquakeWaspadaDialog() {
+  }
+
+  void _showEarthquakeWaspadaDialog() {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -710,15 +806,22 @@ class _BerandaPageState extends State<BerandaPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const VibrationWaveWidget(isLeft: true, color: Color(0xFFFFC107)),
+                        const VibrationWaveWidget(
+                          isLeft: true,
+                          color: Color(0xFFFFC107),
+                        ),
                         const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.all(5),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFEF9C3), // Light yellow outer ring
+                            color: const Color(
+                              0xFFFEF9C3,
+                            ), // Light yellow outer ring
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: const Color(0xFFFDE047).withValues(alpha: 0.5),
+                              color: const Color(
+                                0xFFFDE047,
+                              ).withValues(alpha: 0.5),
                               width: 2,
                             ),
                           ),
@@ -727,7 +830,10 @@ class _BerandaPageState extends State<BerandaPage> {
                             height: 52,
                             decoration: const BoxDecoration(
                               gradient: LinearGradient(
-                                colors: [Color(0xFFFFD54F), Color(0xFFFFC107)], // Yellow gradient
+                                colors: [
+                                  Color(0xFFFFD54F),
+                                  Color(0xFFFFC107),
+                                ], // Yellow gradient
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                               ),
@@ -748,7 +854,10 @@ class _BerandaPageState extends State<BerandaPage> {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        const VibrationWaveWidget(isLeft: false, color: Color(0xFFFFC107)),
+                        const VibrationWaveWidget(
+                          isLeft: false,
+                          color: Color(0xFFFFC107),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 18),
@@ -767,7 +876,10 @@ class _BerandaPageState extends State<BerandaPage> {
 
                     // Location Pin Chip
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFF1F5F9), // Slate 100
                         borderRadius: BorderRadius.circular(20),
@@ -823,9 +935,13 @@ class _BerandaPageState extends State<BerandaPage> {
                               Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFFEF9C3), // Light yellow
+                                  color: const Color(
+                                    0xFFFEF9C3,
+                                  ), // Light yellow
                                   borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(color: const Color(0xFFFDE047)),
+                                  border: Border.all(
+                                    color: const Color(0xFFFDE047),
+                                  ),
                                 ),
                                 child: const Icon(
                                   Icons.warning_amber_rounded,
@@ -875,7 +991,9 @@ class _BerandaPageState extends State<BerandaPage> {
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFFFFC107).withValues(alpha: 0.30),
+                            color: const Color(
+                              0xFFFFC107,
+                            ).withValues(alpha: 0.30),
                             blurRadius: 12,
                             offset: const Offset(0, 4),
                           ),
@@ -888,12 +1006,18 @@ class _BerandaPageState extends State<BerandaPage> {
                             MaterialPageRoute(
                               builder: (context) {
                                 String locCat = 'Dalam Ruangan';
-                                if (_environmentType.contains('Pantai') || _environmentType.contains('Pesisir')) {
+                                if (_environmentType.contains('Pantai') ||
+                                    _environmentType.contains('Pesisir')) {
                                   locCat = 'Pesisir Pantai';
-                                } else if (_environmentType.contains('Gunung') || _environmentType.contains('Pegunungan')) {
+                                } else if (_environmentType.contains(
+                                      'Gunung',
+                                    ) ||
+                                    _environmentType.contains('Pegunungan')) {
                                   locCat = 'Pegunungan';
                                 } else {
-                                  locCat = _isIndoor ? 'Dalam Ruangan' : 'Luar Ruangan';
+                                  locCat = _isIndoor
+                                      ? 'Dalam Ruangan'
+                                      : 'Luar Ruangan';
                                 }
                                 return EdukasiWaspadaPage(
                                   cityName: _currentCityName,
@@ -903,7 +1027,11 @@ class _BerandaPageState extends State<BerandaPage> {
                             ),
                           );
                         },
-                        icon: const Icon(Icons.menu_book_rounded, size: 16, color: Colors.white),
+                        icon: const Icon(
+                          Icons.menu_book_rounded,
+                          size: 16,
+                          color: Colors.white,
+                        ),
                         label: const Text(
                           'Lihat Panduan Keselamatan',
                           style: TextStyle(
@@ -933,7 +1061,11 @@ class _BerandaPageState extends State<BerandaPage> {
                 child: Material(
                   color: Colors.transparent,
                   child: IconButton(
-                    icon: const Icon(Icons.close_rounded, color: Color(0xFF94A3B8), size: 20),
+                    icon: const Icon(
+                      Icons.close_rounded,
+                      color: Color(0xFF94A3B8),
+                      size: 20,
+                    ),
                     onPressed: () => Navigator.of(dialogContext).pop(),
                     splashRadius: 18,
                   ),
@@ -945,6 +1077,7 @@ class _BerandaPageState extends State<BerandaPage> {
       },
     );
   }
+
   Future<void> _requestLocationPermission() async {
     String cityName = 'Cianjur';
     String fullAddr = 'Cianjur, Jawa Barat, Indonesia';
@@ -987,7 +1120,7 @@ class _BerandaPageState extends State<BerandaPage> {
       if (!kIsWeb) {
         position = await Geolocator.getLastKnownPosition();
       }
-      
+
       // If null, get current position with a timeout (e.g. 3 seconds)
       position ??= await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.low,
@@ -1034,9 +1167,9 @@ class _BerandaPageState extends State<BerandaPage> {
           final url = Uri.parse(
             '${ApiConfig.baseUrl}/reverse-geocode?lat=${position.latitude}&lon=${position.longitude}',
           );
-          final response = await http.get(
-            url,
-          ).timeout(const Duration(seconds: 8));
+          final response = await http
+              .get(url)
+              .timeout(const Duration(seconds: 8));
           if (response.statusCode == 200) {
             final data = json.decode(response.body);
             print("[Beranda] Nominatim full address: ${data['address']}");
@@ -1124,29 +1257,32 @@ class _BerandaPageState extends State<BerandaPage> {
       }
 
       // Jalankan pengecekan AI secara diam-diam
-      final bool isAnomali = await AnomaliService.checkSingleAnomali(
+      final anomaliResult = await AnomaliService.checkSingleAnomali(
         magnitude: mag,
         kedalaman: depth,
         lintang: lat,
         bujur: lon,
       );
+      final bool isAnomali = anomaliResult.isAnomali;
 
       String? mlPred;
       try {
         final url = Uri.parse('${ApiConfig.baseUrl}/predict');
-        final response = await http.post(
-          url,
-          headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({
-            'source': 'bmkg',
-            'magnitude': mag,
-            'depth': depth,
-            'latitude': lat,
-            'longitude': lon,
-            'location_name': quake.wilayah,
-          }),
-        ).timeout(const Duration(seconds: 5));
-        
+        final response = await http
+            .post(
+              url,
+              headers: {'Content-Type': 'application/json'},
+              body: jsonEncode({
+                'source': 'bmkg',
+                'magnitude': mag,
+                'depth': depth,
+                'latitude': lat,
+                'longitude': lon,
+                'location_name': quake.wilayah,
+              }),
+            )
+            .timeout(const Duration(seconds: 5));
+
         if (response.statusCode == 200) {
           final data = jsonDecode(response.body);
           mlPred = data['risk_level']?.toString().toUpperCase();
@@ -1238,10 +1374,6 @@ class _BerandaPageState extends State<BerandaPage> {
                     _buildHeader(),
                     const SizedBox(height: 24),
 
-                    // Compact Earthquake Warning Banner
-                    _buildEarthquakeWarningBanner(),
-                    const SizedBox(height: 16),
-
                     // Earthquake Status Section
                     _buildEarthquakeStatus(),
                     const SizedBox(height: 16),
@@ -1249,6 +1381,10 @@ class _BerandaPageState extends State<BerandaPage> {
                     // Merged Earthquake Card
                     _buildEarthquakeCard(),
                     const SizedBox(height: 20),
+
+                    // Compact Earthquake Warning Banner
+                    _buildEarthquakeWarningBanner(),
+                    const SizedBox(height: 16),
 
                     // Environment Status Card removed
 
@@ -1559,81 +1695,62 @@ class _BerandaPageState extends State<BerandaPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Text(
+                    Localization.of(context).get('home_header_title'),
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1A1A1A),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
                   GestureDetector(
-                    onTap: () {
-                      _secretTapCount++;
-                      if (_secretTapCount >= 5) {
-                        _secretTapCount = 0;
-                        setState(() {
-                          _isDemoMode = !_isDemoMode;
-                          _isLatestQuakeAnomali = _isDemoMode ? true : _actualIsAnomali;
-                        });
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(_isDemoMode ? 'Mode Demo Anomali Aktif' : 'Mode Demo Anomali Nonaktif'),
-                            duration: const Duration(seconds: 2),
-                            backgroundColor: _isDemoMode ? Colors.red : Colors.green,
-                          ),
-                        );
-                      }
+                    onTap: () async {
+                      setState(() {
+                        _currentCityName = 'Memuat lokasi...';
+                      });
+                      await _requestLocationPermission();
+                      _checkEdukasiStatus();
                     },
-                    child: Text(
-                      Localization.of(context).get('home_header_title'),
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1A1A1A),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE0F7FA), // Light cyan
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.location_on,
+                            color: Color(0xFF00BCD4),
+                            size: 14,
+                          ),
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              _currentCityName,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: Color(0xFF00BCD4),
+                                fontWeight: FontWeight.w600,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          const Icon(
+                            Icons.sync_rounded,
+                            color: Color(0xFF00BCD4),
+                            size: 14,
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                const SizedBox(height: 4),
-                GestureDetector(
-                  onTap: () async {
-                    setState(() {
-                      _currentCityName = 'Memuat lokasi...';
-                    });
-                    await _requestLocationPermission();
-                    _checkEdukasiStatus();
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE0F7FA), // Light cyan
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.location_on,
-                          color: Color(0xFF00BCD4),
-                          size: 14,
-                        ),
-                        const SizedBox(width: 4),
-                        Flexible(
-                          child: Text(
-                            _currentCityName,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: Color(0xFF00BCD4),
-                              fontWeight: FontWeight.w600,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        const Icon(
-                          Icons.sync_rounded,
-                          color: Color(0xFF00BCD4),
-                          size: 14,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
                 ],
               ),
             ),
@@ -1889,15 +2006,22 @@ class _BerandaPageState extends State<BerandaPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const VibrationWaveWidget(isLeft: true, color: Color(0xFF10B981)),
+                        const VibrationWaveWidget(
+                          isLeft: true,
+                          color: Color(0xFF10B981),
+                        ),
                         const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.all(5),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFD1FAE5), // Light green outer ring
+                            color: const Color(
+                              0xFFD1FAE5,
+                            ), // Light green outer ring
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: const Color(0xFFA7F3D0).withValues(alpha: 0.5),
+                              color: const Color(
+                                0xFFA7F3D0,
+                              ).withValues(alpha: 0.5),
                               width: 2,
                             ),
                           ),
@@ -1906,7 +2030,10 @@ class _BerandaPageState extends State<BerandaPage> {
                             height: 52,
                             decoration: const BoxDecoration(
                               gradient: LinearGradient(
-                                colors: [Color(0xFF34D399), Color(0xFF059669)], // Green gradient
+                                colors: [
+                                  Color(0xFF34D399),
+                                  Color(0xFF059669),
+                                ], // Green gradient
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                               ),
@@ -1927,7 +2054,10 @@ class _BerandaPageState extends State<BerandaPage> {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        const VibrationWaveWidget(isLeft: false, color: Color(0xFF10B981)),
+                        const VibrationWaveWidget(
+                          isLeft: false,
+                          color: Color(0xFF10B981),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 18),
@@ -1946,7 +2076,10 @@ class _BerandaPageState extends State<BerandaPage> {
 
                     // Location Pin Chip
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFF1F5F9), // Slate 100
                         borderRadius: BorderRadius.circular(20),
@@ -2004,7 +2137,9 @@ class _BerandaPageState extends State<BerandaPage> {
                                 decoration: BoxDecoration(
                                   color: const Color(0xFFD1FAE5), // Light green
                                   borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(color: const Color(0xFFA7F3D0)),
+                                  border: Border.all(
+                                    color: const Color(0xFFA7F3D0),
+                                  ),
                                 ),
                                 child: const Icon(
                                   Icons.check_circle_outline_rounded,
@@ -2054,7 +2189,9 @@ class _BerandaPageState extends State<BerandaPage> {
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF10B981).withValues(alpha: 0.30),
+                            color: const Color(
+                              0xFF10B981,
+                            ).withValues(alpha: 0.30),
                             blurRadius: 12,
                             offset: const Offset(0, 4),
                           ),
@@ -2067,12 +2204,18 @@ class _BerandaPageState extends State<BerandaPage> {
                             MaterialPageRoute(
                               builder: (context) {
                                 String locCat = 'Dalam Ruangan';
-                                if (_environmentType.contains('Pantai') || _environmentType.contains('Pesisir')) {
+                                if (_environmentType.contains('Pantai') ||
+                                    _environmentType.contains('Pesisir')) {
                                   locCat = 'Pesisir Pantai';
-                                } else if (_environmentType.contains('Gunung') || _environmentType.contains('Pegunungan')) {
+                                } else if (_environmentType.contains(
+                                      'Gunung',
+                                    ) ||
+                                    _environmentType.contains('Pegunungan')) {
                                   locCat = 'Pegunungan';
                                 } else {
-                                  locCat = _isIndoor ? 'Dalam Ruangan' : 'Luar Ruangan';
+                                  locCat = _isIndoor
+                                      ? 'Dalam Ruangan'
+                                      : 'Luar Ruangan';
                                 }
                                 return EdukasiAmanPage(
                                   cityName: _currentCityName,
@@ -2082,7 +2225,11 @@ class _BerandaPageState extends State<BerandaPage> {
                             ),
                           );
                         },
-                        icon: const Icon(Icons.menu_book_rounded, size: 16, color: Colors.white),
+                        icon: const Icon(
+                          Icons.menu_book_rounded,
+                          size: 16,
+                          color: Colors.white,
+                        ),
                         label: const Text(
                           'Lihat Panduan Keselamatan',
                           style: TextStyle(
@@ -2112,7 +2259,11 @@ class _BerandaPageState extends State<BerandaPage> {
                 child: Material(
                   color: Colors.transparent,
                   child: IconButton(
-                    icon: const Icon(Icons.close_rounded, color: Color(0xFF94A3B8), size: 20),
+                    icon: const Icon(
+                      Icons.close_rounded,
+                      color: Color(0xFF94A3B8),
+                      size: 20,
+                    ),
                     onPressed: () => Navigator.of(dialogContext).pop(),
                     splashRadius: 18,
                   ),
@@ -2396,10 +2547,6 @@ class _BerandaPageState extends State<BerandaPage> {
                     _buildHeader(),
                     const SizedBox(height: 24),
 
-                    // Compact Earthquake Warning Banner
-                    _buildEarthquakeWarningBanner(),
-                    const SizedBox(height: 16),
-
                     // Earthquake Status Section
                     _buildEarthquakeStatus(),
                     const SizedBox(height: 16),
@@ -2407,6 +2554,10 @@ class _BerandaPageState extends State<BerandaPage> {
                     // Merged Earthquake Card
                     _buildEarthquakeCard(),
                     const SizedBox(height: 20),
+
+                    // Compact Earthquake Warning Banner
+                    _buildEarthquakeWarningBanner(),
+                    const SizedBox(height: 16),
 
                     // Environment Status Card removed
 
@@ -2972,9 +3123,11 @@ class _BerandaPageState extends State<BerandaPage> {
   // --- 3D EARTHQUAKE WARNING BANNER ---
   Widget _buildEarthquakeWarningBanner() {
     String locCat = _isIndoor ? 'Dalam Ruangan' : 'Luar Ruangan';
-    if (_environmentType.contains('Pantai') || _environmentType.contains('Pesisir')) {
+    if (_environmentType.contains('Pantai') ||
+        _environmentType.contains('Pesisir')) {
       locCat = 'Pesisir Pantai';
-    } else if (_environmentType.contains('Gunung') || _environmentType.contains('Pegunungan')) {
+    } else if (_environmentType.contains('Gunung') ||
+        _environmentType.contains('Pegunungan')) {
       locCat = 'Pegunungan';
     }
 
@@ -3094,6 +3247,118 @@ class _BerandaPageState extends State<BerandaPage> {
     );
   }
 
+  void _showAnomalyExplanationDialog() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
+        ),
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  _isLatestQuakeAnomali
+                      ? Icons.warning_amber_rounded
+                      : Icons.check_circle_outline_rounded,
+                  color: _isLatestQuakeAnomali
+                      ? const Color(0xFFD84315)
+                      : const Color(0xFF2E7D32),
+                  size: 24,
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  _isLatestQuakeAnomali
+                      ? 'Karakteristik Gempa Tidak Biasa'
+                      : 'Karakteristik Gempa Normal',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: _isLatestQuakeAnomali
+                        ? const Color(0xFFD84315)
+                        : const Color(0xFF2E7D32),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              _isLatestQuakeAnomali
+                  ? 'Sistem mendeteksi adanya variasi karakteristik pada gempa ini. Kombinasi kekuatan (magnitudo) atau kedalamannya berbeda dari pola riwayat gempa yang biasanya terjadi di wilayah ini.'
+                  : 'Kombinasi kekuatan (magnitudo) dan kedalaman gempa ini tergolong wajar dan sesuai dengan pola aktivitas seismik yang umum terjadi di wilayah ini.',
+              style: const TextStyle(
+                fontSize: 14,
+                color: Color(0xFF334155),
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0F172A),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Mengerti',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const PanduanAnomaliPage(),
+                    ),
+                  );
+                },
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  side: const BorderSide(color: Color(0xFF0F172A)),
+                ),
+                child: const Text(
+                  'Pelajari Lebih Lanjut',
+                  style: TextStyle(
+                    color: Color(0xFF0F172A),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildEarthquakeCard() {
     final double magValue =
         double.tryParse(_latestQuake?.magnitude ?? '') ?? 0.0;
@@ -3127,70 +3392,77 @@ class _BerandaPageState extends State<BerandaPage> {
         ? const Color(0xFFFFEBEE)
         : const Color(0xFFE8F5E9);
 
-    return Container(
-      key: _mapCardKey,
+    return GestureDetector(
+      onTap: () {
+        _showAnomalyExplanationDialog();
+      },
+      child: Container(
+        key: _mapCardKey,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
         border: _isLatestQuakeAnomali
             ? Border.all(color: Colors.red.shade400, width: 2)
-            : Border.all(color: Colors.black.withValues(alpha: 0.05), width: 1),
+            : Border.all(color: Colors.green.shade400, width: 2),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 30,
             offset: const Offset(0, 10),
           ),
-          if (_isLatestQuakeAnomali)
-            BoxShadow(
-              color: Colors.red.withValues(alpha: 0.2),
-              blurRadius: 15,
-              spreadRadius: 2,
-            ),
+          BoxShadow(
+            color: _isLatestQuakeAnomali
+                ? Colors.red.withValues(alpha: 0.2)
+                : Colors.green.withValues(alpha: 0.2),
+            blurRadius: 15,
+            spreadRadius: 2,
+          ),
         ],
       ),
       child: Column(
         children: [
-          if (_isLatestQuakeAnomali)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              decoration: const BoxDecoration(
-                color: Color(0xFFFF5252),
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(22),
-                  topRight: Radius.circular(22),
-                ),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            decoration: BoxDecoration(
+              color: _isLatestQuakeAnomali
+                  ? const Color(0xFFE65100) // Orange Gelap
+                  : const Color(0xFF2E7D32), // Hijau Gelap
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(22),
+                topRight: Radius.circular(22),
               ),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.warning_amber_rounded,
-                    color: Colors.white,
-                    size: 18,
-                  ),
-                  SizedBox(width: 8),
-                  Text(
-                    'Peringatan: Aktivitas Seismik Tidak Biasa!',
-                    style: TextStyle(
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  _isLatestQuakeAnomali
+                      ? Icons.info_outline_rounded
+                      : Icons.check_circle_outline_rounded,
+                  color: Colors.white,
+                  size: 18,
+                ),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    _isLatestQuakeAnomali
+                        ? 'Terdapat Variasi Karakteristik Gempa'
+                        : 'Karakteristik Gempa Terdeteksi Normal',
+                    style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                       fontSize: 13,
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
+          ),
           Stack(
             children: [
               ClipRRect(
-                borderRadius: _isLatestQuakeAnomali
-                    ? BorderRadius.zero
-                    : const BorderRadius.only(
-                        topLeft: Radius.circular(24),
-                        topRight: Radius.circular(24),
-                      ),
+                borderRadius: BorderRadius.zero,
                 child: SizedBox(
                   height: 200,
                   width: double.infinity,
@@ -3350,7 +3622,8 @@ class _BerandaPageState extends State<BerandaPage> {
               children: [
                 Builder(
                   builder: (context) {
-                    final double magVal = double.tryParse(_latestQuake?.magnitude ?? '') ?? 0.0;
+                    final double magVal =
+                        double.tryParse(_latestQuake?.magnitude ?? '') ?? 0.0;
                     Color magTextColor;
                     Color magBgColor;
                     if (magVal < 4.0) {
@@ -3364,7 +3637,15 @@ class _BerandaPageState extends State<BerandaPage> {
                       magBgColor = const Color(0xFFFFEBEE);
                     }
 
-                    final double depthVal = double.tryParse(_latestQuake?.kedalaman.replaceAll(RegExp(r'[^0-9.]'), '') ?? '') ?? 0.0;
+                    final double depthVal =
+                        double.tryParse(
+                          _latestQuake?.kedalaman.replaceAll(
+                                RegExp(r'[^0-9.]'),
+                                '',
+                              ) ??
+                              '',
+                        ) ??
+                        0.0;
                     Color depthTextColor;
                     Color depthBgColor;
                     if (depthVal <= 60.0) {
@@ -3425,8 +3706,8 @@ class _BerandaPageState extends State<BerandaPage> {
                     _mlEarthquakePrediction == 'TINGGI'
                         ? const Color(0xFFF44336)
                         : _mlEarthquakePrediction == 'SEDANG'
-                            ? const Color(0xFFFFC107)
-                            : const Color(0xFF4CAF50),
+                        ? const Color(0xFFFFC107)
+                        : const Color(0xFF4CAF50),
                   ),
                   const SizedBox(height: 16),
                 ],
@@ -3458,7 +3739,6 @@ class _BerandaPageState extends State<BerandaPage> {
                   const Color(0xFFFF9800),
                 ),
                 const SizedBox(height: 20),
-
                 SizedBox(
                   width: double.infinity,
                   height: 48,
@@ -3495,10 +3775,15 @@ class _BerandaPageState extends State<BerandaPage> {
           ),
         ],
       ),
-    );
+    ));
   }
 
-  Widget _buildInfoBox(String value, String label, Color textColor, Color bgColor) {
+  Widget _buildInfoBox(
+    String value,
+    String label,
+    Color textColor,
+    Color bgColor,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
       decoration: BoxDecoration(
@@ -3519,10 +3804,7 @@ class _BerandaPageState extends State<BerandaPage> {
           const SizedBox(height: 4),
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Color(0xFF64748B),
-            ),
+            style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
           ),
         ],
       ),
@@ -3602,18 +3884,14 @@ class _BerandaPageState extends State<BerandaPage> {
           ],
         ),
         const SizedBox(height: 16),
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.06),
-                blurRadius: 20,
-                offset: const Offset(0, 4),
-              ),
-            ],
+        ScrollConfiguration(
+          behavior: ScrollConfiguration.of(context).copyWith(
+            scrollbars: false,
+            dragDevices: {
+              PointerDeviceKind.touch,
+              PointerDeviceKind.mouse,
+              PointerDeviceKind.trackpad,
+            },
           ),
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
@@ -3623,7 +3901,8 @@ class _BerandaPageState extends State<BerandaPage> {
               children: [
                 _buildSurvivalItemCard(
                   title: 'PRUActive Family',
-                  desc: 'Proteksi diri dan tunjangan kecelakaan pasca gempa bumi.',
+                  desc:
+                      'Proteksi diri dan tunjangan kecelakaan pasca gempa bumi.',
                   tag: 'Terpopuler',
                   icon: Icons.family_restroom_rounded,
                   iconColor: const Color(0xFFED1C24),
@@ -3631,7 +3910,8 @@ class _BerandaPageState extends State<BerandaPage> {
                 ),
                 _buildSurvivalItemCard(
                   title: 'PRUMapan Aset',
-                  desc: 'Jaminan ganti rugi kerusakan rumah dan aset dari bencana.',
+                  desc:
+                      'Jaminan ganti rugi kerusakan rumah dan aset dari bencana.',
                   tag: 'Proteksi Aset',
                   icon: Icons.home_work_rounded,
                   iconColor: const Color(0xFF4CAF50),
@@ -3639,7 +3919,8 @@ class _BerandaPageState extends State<BerandaPage> {
                 ),
                 _buildSurvivalItemCard(
                   title: 'PRUSolusi Sehat',
-                  desc: 'Cover rawat inap & ICU darurat akibat cedera gempa bumi.',
+                  desc:
+                      'Cover rawat inap & ICU darurat akibat cedera gempa bumi.',
                   tag: 'Medis Instan',
                   icon: Icons.medical_services_rounded,
                   iconColor: const Color(0xFF2196F3),
@@ -3663,12 +3944,19 @@ class _BerandaPageState extends State<BerandaPage> {
   }) {
     return Container(
       width: 320,
-      margin: const EdgeInsets.only(right: 16),
+      margin: const EdgeInsets.only(right: 16, bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.grey.shade100, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 15,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -3702,7 +3990,10 @@ class _BerandaPageState extends State<BerandaPage> {
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: iconColor.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(6),
@@ -3747,9 +4038,7 @@ class _BerandaPageState extends State<BerandaPage> {
                           backgroundColor: iconColor,
                           foregroundColor: Colors.white,
                           elevation: 0,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
@@ -4110,7 +4399,10 @@ class _BerandaPageState extends State<BerandaPage> {
                                         )
                                       : Center(
                                           child: Icon(
-                                            _getWeatherIcon(_latestCuaca?.cuaca ?? '', checkNight: true),
+                                            _getWeatherIcon(
+                                              _latestCuaca?.cuaca ?? '',
+                                              checkNight: true,
+                                            ),
                                             color: Colors.white,
                                             size: 22,
                                           ),
@@ -4564,7 +4856,10 @@ class _BerandaPageState extends State<BerandaPage> {
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close_rounded, color: Color(0xFF4B5563)),
+                    icon: const Icon(
+                      Icons.close_rounded,
+                      color: Color(0xFF4B5563),
+                    ),
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                 ],
@@ -4572,17 +4867,15 @@ class _BerandaPageState extends State<BerandaPage> {
               const SizedBox(height: 8),
               const Text(
                 'Berikut adalah pemberitahuan umum dan informasi pembaruan aplikasi Amanin Anda.',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Color(0xFF6B7280),
-                ),
+                style: TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
               ),
               const SizedBox(height: 20),
-              
+
               // Notification List Items
               _buildNotificationItem(
                 title: 'Selamat Datang di Amanin',
-                desc: 'Terima kasih telah bergabung. Lengkapi profil Anda untuk mendapatkan pengalaman terbaik.',
+                desc:
+                    'Terima kasih telah bergabung. Lengkapi profil Anda untuk mendapatkan pengalaman terbaik.',
                 time: 'Baru saja',
                 icon: Icons.handshake_rounded,
                 iconColor: const Color(0xFF00BCD4),
@@ -4590,7 +4883,8 @@ class _BerandaPageState extends State<BerandaPage> {
               ),
               _buildNotificationItem(
                 title: 'Fitur Peta Interaktif',
-                desc: 'Kini Anda dapat memantau aktivitas gempa bumi secara real-time langsung melalui peta di beranda.',
+                desc:
+                    'Kini Anda dapat memantau aktivitas gempa bumi secara real-time langsung melalui peta di beranda.',
                 time: '2 jam yang lalu',
                 icon: Icons.map_rounded,
                 iconColor: const Color(0xFF673AB7),
@@ -4598,7 +4892,8 @@ class _BerandaPageState extends State<BerandaPage> {
               ),
               _buildNotificationItem(
                 title: 'Tips Keamanan Akun',
-                desc: 'Ingat untuk selalu menjaga kerahasiaan kata sandi Anda dan memperbaruinya secara berkala.',
+                desc:
+                    'Ingat untuk selalu menjaga kerahasiaan kata sandi Anda dan memperbaruinya secara berkala.',
                 time: '1 hari yang lalu',
                 icon: Icons.security_rounded,
                 iconColor: const Color(0xFF009688),
@@ -4639,10 +4934,7 @@ class _BerandaPageState extends State<BerandaPage> {
         children: [
           Container(
             padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: bgColor,
-              shape: BoxShape.circle,
-            ),
+            decoration: BoxDecoration(color: bgColor, shape: BoxShape.circle),
             child: Icon(icon, color: iconColor, size: 20),
           ),
           const SizedBox(width: 14),
@@ -4701,7 +4993,8 @@ class VibrationWaveWidget extends StatefulWidget {
   State<VibrationWaveWidget> createState() => _VibrationWaveWidgetState();
 }
 
-class _VibrationWaveWidgetState extends State<VibrationWaveWidget> with SingleTickerProviderStateMixin {
+class _VibrationWaveWidgetState extends State<VibrationWaveWidget>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
   @override
@@ -4751,18 +5044,18 @@ class VibrationWavePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final baseColor = color;
     final strokeWidth = 1.6;
-    
+
     // Draw 3 wave arcs radiating outward
     for (int i = 0; i < 3; i++) {
       // Calculate individual wave progress, offset by wave index
       double waveProgress = (progress + i / 3.0) % 1.0;
-      
+
       // Calculate radius and opacity
       // Radius goes from 8 to 28
       double radius = 8.0 + (waveProgress * 20.0);
       // Opacity fades out as it expands
       double opacity = 1.0 - waveProgress;
-      
+
       final paint = Paint()
         ..color = baseColor.withValues(alpha: opacity)
         ..style = PaintingStyle.stroke
@@ -4782,10 +5075,7 @@ class VibrationWavePainter extends CustomPainter {
         );
       } else {
         canvas.drawArc(
-          Rect.fromCircle(
-            center: Offset(-4, size.height / 2),
-            radius: radius,
-          ),
+          Rect.fromCircle(center: Offset(-4, size.height / 2), radius: radius),
           -0.84, // start angle
           1.68, // sweep angle
           false,
@@ -4797,7 +5087,9 @@ class VibrationWavePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant VibrationWavePainter oldDelegate) {
-    return oldDelegate.progress != progress || oldDelegate.isLeft != isLeft || oldDelegate.color != color;
+    return oldDelegate.progress != progress ||
+        oldDelegate.isLeft != isLeft ||
+        oldDelegate.color != color;
   }
 }
 
@@ -4837,7 +5129,9 @@ class _EarthquakeWarning3DBanner extends StatelessWidget {
       gradientColors = const [
         Color(0xFFD97706), // Amber pekat mendalam (kiri)
         Color(0xFFEAB308), // Kuning murni hangat (tengah)
-        Color(0xFFF1C40F), // Kuning Sunflower pekat (kanan - tidak pudar ke putih)
+        Color(
+          0xFFF1C40F,
+        ), // Kuning Sunflower pekat (kanan - tidak pudar ke putih)
       ];
       shadowColor = const Color(0xFFD97706);
       accentLight = Colors.white;
@@ -4909,11 +5203,7 @@ class _EarthquakeWarning3DBanner extends StatelessWidget {
                   top: -6,
                   child: Opacity(
                     opacity: 0.10,
-                    child: Icon(
-                      iconData,
-                      size: 90,
-                      color: accentLight,
-                    ),
+                    child: Icon(iconData, size: 90, color: accentLight),
                   ),
                 ),
 
@@ -4939,7 +5229,9 @@ class _EarthquakeWarning3DBanner extends StatelessWidget {
                 // Card content
                 Padding(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 12),
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
@@ -5008,7 +5300,9 @@ class _EarthquakeWarning3DBanner extends StatelessWidget {
                         children: [
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 3),
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
                             decoration: BoxDecoration(
                               color: accentLight.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(20),
@@ -5030,7 +5324,9 @@ class _EarthquakeWarning3DBanner extends StatelessWidget {
                           const SizedBox(height: 8),
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 6),
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.white.withValues(alpha: 0.13),
                               borderRadius: BorderRadius.circular(30),
@@ -5047,8 +5343,7 @@ class _EarthquakeWarning3DBanner extends StatelessWidget {
                                   style: TextStyle(
                                     fontSize: 9,
                                     fontWeight: FontWeight.w800,
-                                    color: Colors.white
-                                        .withValues(alpha: 0.95),
+                                    color: Colors.white.withValues(alpha: 0.95),
                                     letterSpacing: 0.8,
                                   ),
                                 ),
@@ -5087,9 +5382,7 @@ class _DiagonalStripePainter extends CustomPainter {
       ..strokeWidth = 1.2
       ..style = PaintingStyle.stroke;
     const spacing = 20.0;
-    for (double i = -size.height;
-        i < size.width + size.height;
-        i += spacing) {
+    for (double i = -size.height; i < size.width + size.height; i += spacing) {
       canvas.drawLine(
         Offset(i, 0),
         Offset(i + size.height, size.height),
