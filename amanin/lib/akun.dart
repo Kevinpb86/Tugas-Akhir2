@@ -3,6 +3,7 @@ import 'login.dart';
 import 'utils/localization.dart';
 import 'main.dart'; // Import main.dart to access localeNotifier
 import 'ubah_profil.dart';
+import 'demonstrasi.dart';
 
 class AkunPage extends StatefulWidget {
   const AkunPage({super.key});
@@ -260,6 +261,46 @@ class _AkunPageState extends State<AkunPage> {
                 isLast: true,
               ),
             ],
+          ),
+        ),
+        const SizedBox(height: 24),
+        const Padding(
+          padding: EdgeInsets.only(left: 8, bottom: 12),
+          child: Text(
+            'DEMONSTRASI',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF757575),
+              letterSpacing: 1.2,
+            ),
+          ),
+        ),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.03),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: _buildSettingsItem(
+            Icons.play_circle_outline,
+            'Demonstrasi',
+            isFirst: true,
+            isLast: true,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const DemonstrasiPage(),
+                ),
+              );
+            },
           ),
         ),
         const SizedBox(height: 24),
