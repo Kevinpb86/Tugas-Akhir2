@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'klasifikasi_seismik.dart';
 
 import 'ui/analisis_gempa_page.dart';
+import 'riwayat_gempa.dart';
 
 class FiturPage extends StatelessWidget {
   const FiturPage({super.key});
@@ -60,6 +61,23 @@ class FiturPage extends StatelessWidget {
               );
             },
           ),
+          const SizedBox(height: 16),
+          _buildFeatureCard(
+            context,
+            icon: Icons.history_rounded,
+            title: 'Riwayat Gempa',
+            description:
+                'Menampilkan data historis gempa bumi terkini dan riwayat dari berbagai filter pencarian.',
+            color: const Color(0xFF2196F3),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const RiwayatGempaPage(quakes: []),
+                ),
+              );
+            },
+          ),
         ],
       ),
     );
@@ -73,20 +91,17 @@ class FiturPage extends StatelessWidget {
     required Color color,
     VoidCallback? onTap,
   }) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
+    return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.85),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.2), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 15,
-            offset: const Offset(0, 4),
+            color: color.withValues(alpha: 0.1),
+            blurRadius: 20,
+            spreadRadius: 2,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -100,55 +115,65 @@ class FiturPage extends StatelessWidget {
                   context,
                 ).showSnackBar(SnackBar(content: Text('Membuka $title...')));
               },
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
           child: Padding(
-            padding: const EdgeInsets.all(20.0),
+            padding: const EdgeInsets.all(24.0),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
+                    color: color.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  child: Icon(icon, color: color, size: 32),
+                  child: Icon(icon, color: color, size: 36),
                 ),
                 const SizedBox(width: 20),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
                         title,
                         style: const TextStyle(
                           fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w800,
                           color: Color(0xFF1A1A1A),
+                          letterSpacing: 0.2,
                         ),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         description,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
-                          color: Color(0xFF757575),
-                          height: 1.4,
+                          color: Colors.grey.shade700,
+                          height: 1.5,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 12),
-                Icon(
-                  Icons.arrow_forward_ios,
-                  color: const Color(0xFF9E9E9E).withValues(alpha: 0.5),
-                  size: 16,
+                const SizedBox(width: 16),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8F9FA),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.grey.shade200),
+                  ),
+                  child: Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    color: color,
+                    size: 16,
+                  ),
                 ),
               ],
             ),
           ),
-        ),
-      ),
         ),
       ),
     );

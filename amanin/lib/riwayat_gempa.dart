@@ -34,6 +34,9 @@ class _RiwayatGempaPageState extends State<RiwayatGempaPage> {
     if (_currentPosition == null) {
       _getCurrentLocation();
     }
+    if (_filteredQuakes.isEmpty) {
+      _fetchAndFilterData();
+    }
   }
 
   Future<void> _getCurrentLocation() async {
@@ -128,17 +131,20 @@ class _RiwayatGempaPageState extends State<RiwayatGempaPage> {
   }
 
   Widget _buildFilterChips() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      physics: const BouncingScrollPhysics(),
-      child: Row(
-        children: [
-          _buildChip(0, 'Terkini'),
-          _buildChip(1, 'M ≥ 5'),
-          _buildChip(2, 'Jarak Jauh'),
-          _buildChip(3, 'Jarak Dekat'),
-          _buildChip(4, 'Anomali'),
-        ],
+    return ScrollConfiguration(
+      behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        child: Row(
+          children: [
+            _buildChip(0, 'Terkini'),
+            _buildChip(1, 'M ≥ 5'),
+            _buildChip(2, 'Jarak Jauh'),
+            _buildChip(3, 'Jarak Dekat'),
+            _buildChip(4, 'Anomali'),
+          ],
+        ),
       ),
     );
   }
