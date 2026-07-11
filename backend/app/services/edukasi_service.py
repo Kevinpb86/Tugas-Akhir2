@@ -3,6 +3,7 @@ import numpy as np
 from sqlalchemy.orm import Session
 
 from app.db_models.earthquake import Earthquake
+from app.db_models.edukasi import RiskSource
 from app.repositories.edukasi_repo import EdukasiRepository
 from app.services.ml_service import rekomendasi_edukasi_model
 
@@ -10,6 +11,26 @@ class EdukasiService:
     def __init__(self, db: Session):
         self.db = db
         self.repo = EdukasiRepository(db)
+
+    def _get_nearest_risk_source_desc(self, lat: float, lon: float) -> str:
+        try:
+            sources = self.db.query(RiskSource).all()
+            if not sources:
+                return "gempa merusak Cianjur M5.6"
+                
+            nearest_desc = "gempa merusak Cianjur M5.6"
+            min_dist = float('inf')
+            
+            for s in sources:
+                dist = ((lat - s.latitude) ** 2 + (lon - s.longitude) ** 2) ** 0.5
+                if dist < min_dist:
+                    min_dist = dist
+                    nearest_desc = s.description
+                    
+            return nearest_desc
+        except Exception as e:
+            print(f"Error querying RiskSource: {e}")
+            return "gempa merusak Cianjur M5.6"
 
     def get_edukasi_status(self, lat: float, lon: float):
         # 1. Check if there's an earthquake today near the location (approx 1 degree = ~111km)
@@ -52,14 +73,17 @@ class EdukasiService:
                 
                 if mapped_cluster == 2:
                     status = "Bahaya (Merah)"
+                    message = f"Terdeteksi gempa aktif {mag} SR (Kedalaman {depth} km) di sekitar Anda yang berpotensi menimbulkan kerusakan langsung."
                 elif mapped_cluster == 1:
                     status = "WASPADA (Kuning)"
+                    message = f"Terdeteksi gempa aktif {mag} SR (Kedalaman {depth} km) di sekitar Anda. Guncangan berisiko merambat dan memengaruhi kestabilan bangunan."
                 else:
                     status = "AMAN (Hijau)"
+                    message = f"Terdeteksi gempa aktif {mag} SR (Kedalaman {depth} km) di sekitar Anda dengan potensi dampak guncangan yang sangat lemah."
                     
                 return {
                     "status": status,
-                    "message": f"Peringatan: Ditemukan gempa {mag} SR hari ini di sekitar Anda.",
+                    "message": message,
                     "data": {
                         "source": "BMKG Real-time",
                         "earthquake_id": recent_quake.id,
@@ -81,16 +105,21 @@ class EdukasiService:
             except Exception:
                 mapped_kode = 0
                 
+            ref_desc = self._get_nearest_risk_source_desc(lat, lon)
+            
             if mapped_kode == 2:
                 status = "Bahaya (Merah)"
+                message = f"Pernah terjadi gempa merusak setempat atau berada langsung di jalur sesar aktif utama (seperti {ref_desc})."
             elif mapped_kode == 1:
                 status = "WASPADA (Kuning)"
+                message = f"Pernah terdampak rambatan guncangan gempa dari daerah sekitar (seperti {ref_desc}) meskipun bukan pusat episentrum."
             else:
                 status = "AMAN (Hijau)"
+                message = "Tidak memiliki riwayat kerusakan seismik lokal dan aman dari dampak rambatan guncangan gempa besar di sekitarnya."
                 
             return {
                 "status": status,
-                "message": "Kondisi saat ini aman (tidak ada gempa real-time hari ini). Status area didasarkan pada data historis.",
+                "message": message,
                 "data": {
                     "source": "Database CSV (ZonaGPS)",
                     "lat_grid": nearest.lat_grid,
