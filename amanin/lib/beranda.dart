@@ -31,6 +31,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class BerandaPage extends StatefulWidget {
   final VoidCallback? onNavigateToCuaca;
@@ -60,10 +61,41 @@ class _BerandaPageState extends State<BerandaPage> {
   String _bannerStatus = 'Memuat...';
   String? _mlEarthquakePrediction;
   LatLng? _userLocation;
+  String _edukasiExplanation = '';
 
   bool _isIndoor = true;
   String _environmentType = 'Pesisir Pantai';
   String _nearbyMountainName = '';
+
+  LatLng _fallbackLocation = const LatLng(-6.8219, 107.1397);
+  String _fallbackCityName = 'Cianjur';
+  String _fallbackFullAddr = 'Cianjur, Jawa Barat, Indonesia';
+
+  Future<void> _initFallbackLocation() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      bool useSafe = prefs.getBool('use_safe_fallback_location') ?? false;
+      
+      // Toggle the value for the NEXT app session
+      await prefs.setBool('use_safe_fallback_location', !useSafe);
+      
+      if (useSafe) {
+        setState(() {
+          _fallbackLocation = const LatLng(-7.1, 107.4);
+          _fallbackCityName = 'Ciwidey';
+          _fallbackFullAddr = 'Ciwidey, Bandung, Jawa Barat, Indonesia';
+        });
+      } else {
+        setState(() {
+          _fallbackLocation = const LatLng(-6.8219, 107.1397);
+          _fallbackCityName = 'Cianjur';
+          _fallbackFullAddr = 'Cianjur, Jawa Barat, Indonesia';
+        });
+      }
+    } catch (e) {
+      print("Error initializing fallback location: $e");
+    }
+  }
 
   bool _showHelpTour = false;
   int _helpTourStep = 1;
@@ -108,6 +140,7 @@ class _BerandaPageState extends State<BerandaPage> {
   @override
   void initState() {
     super.initState();
+    _initFallbackLocation();
     // Memanggil dialog persetujuan setelah frame pertama selesai dirender
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showLocationPermissionDialog();
@@ -294,10 +327,10 @@ class _BerandaPageState extends State<BerandaPage> {
                         onPressed: () {
                           Navigator.of(dialogContext).pop();
                           setState(() {
-                            _currentCityName = 'Cianjur';
-                            _userLocation = const LatLng(-6.8219, 107.1397);
+                            _currentCityName = _fallbackCityName;
+                            _userLocation = _fallbackLocation;
                           });
-                          userCityNameNotifier.value = 'Cianjur';
+                          userCityNameNotifier.value = _fallbackCityName;
                           _checkEdukasiStatus();
                         },
                         child: const Text(
@@ -391,8 +424,8 @@ class _BerandaPageState extends State<BerandaPage> {
     );
 
     try {
-      double lat = -6.8219;
-      double lon = 107.1397;
+      double lat = _fallbackLocation.latitude;
+      double lon = _fallbackLocation.longitude;
 
       if (_userLocation != null) {
         lat = _userLocation!.latitude;
@@ -406,7 +439,7 @@ class _BerandaPageState extends State<BerandaPage> {
           lon = position.longitude;
         } catch (gpsError) {
           print(
-            "GPS fetch error inside _checkEdukasiStatus: $gpsError, using default Cianjur coordinates",
+            "GPS fetch error inside _checkEdukasiStatus: $gpsError, using default alternating coordinates",
           );
         }
       }
@@ -431,6 +464,11 @@ class _BerandaPageState extends State<BerandaPage> {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         String status = data['status'] ?? '';
+        String explanation = data['message'] ?? '';
+
+        setState(() {
+          _edukasiExplanation = explanation;
+        });
 
         if (status.contains("Bahaya")) {
           setState(() {
@@ -604,6 +642,7 @@ class _BerandaPageState extends State<BerandaPage> {
                     const SizedBox(height: 16),
 
                     // Message text
+                    // Message text
                     const Text(
                       'Peringatan! Wilayah Anda berada di zona rawan gempa tingkat tinggi. Segera cari tempat perlindungan.',
                       textAlign: TextAlign.center,
@@ -666,6 +705,53 @@ class _BerandaPageState extends State<BerandaPage> {
                                     ),
                                   ),
                                 ],
+                              ),
+                            ],
+                          ),
+                          const Divider(height: 20, color: Color(0xFFE2E8F0)),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFEFF6FF), // Light blue
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: const Color(0xFFBFDBFE),
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Icons.info_outline_rounded,
+                                  color: Color(0xFF3B82F6),
+                                  size: 16,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Penyebab Risiko',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: Color(0xFF94A3B8),
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      _edukasiExplanation,
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w500,
+                                        color: Color(0xFF475569),
+                                        height: 1.4,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ],
                           ),
@@ -974,6 +1060,53 @@ class _BerandaPageState extends State<BerandaPage> {
                               ),
                             ],
                           ),
+                          const Divider(height: 20, color: Color(0xFFE2E8F0)),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFEFF6FF), // Light blue
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: const Color(0xFFBFDBFE),
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Icons.info_outline_rounded,
+                                  color: Color(0xFF3B82F6),
+                                  size: 16,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Penyebab Risiko',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: Color(0xFF94A3B8),
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      _edukasiExplanation,
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w500,
+                                        color: Color(0xFF475569),
+                                        height: 1.4,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     ),
@@ -1079,11 +1212,11 @@ class _BerandaPageState extends State<BerandaPage> {
   }
 
   Future<void> _requestLocationPermission() async {
-    String cityName = 'Cianjur';
-    String fullAddr = 'Cianjur, Jawa Barat, Indonesia';
+    String cityName = _fallbackCityName;
+    String fullAddr = _fallbackFullAddr;
     final fallbackPosition = Position(
-      latitude: -6.8219,
-      longitude: 107.1397,
+      latitude: _fallbackLocation.latitude,
+      longitude: _fallbackLocation.longitude,
       timestamp: DateTime.now(),
       accuracy: 10.0,
       altitude: 0.0,
@@ -2169,6 +2302,53 @@ class _BerandaPageState extends State<BerandaPage> {
                                     ),
                                   ),
                                 ],
+                              ),
+                            ],
+                          ),
+                          const Divider(height: 20, color: Color(0xFFE2E8F0)),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFEFF6FF), // Light blue
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: const Color(0xFFBFDBFE),
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Icons.info_outline_rounded,
+                                  color: Color(0xFF3B82F6),
+                                  size: 16,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Penyebab Risiko',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: Color(0xFF94A3B8),
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      _edukasiExplanation,
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w500,
+                                        color: Color(0xFF475569),
+                                        height: 1.4,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ],
                           ),

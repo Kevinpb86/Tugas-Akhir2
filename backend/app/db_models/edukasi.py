@@ -12,3 +12,13 @@ class ZonaGPS(Base):
     
     # Kode klaster (Menggunakan String untuk mengantisipasi format campuran huruf/angka)
     kode_klaster = Column(String(50), nullable=False)
+
+
+class RiskSource(Base):
+    __tablename__ = "risk_sources"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), nullable=False)
+    description = Column(String(200), nullable=False)
+    latitude = Column(Float, nullable=False)
+    longitude = Column(Float, nullable=False)
