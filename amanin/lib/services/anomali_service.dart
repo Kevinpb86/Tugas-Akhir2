@@ -3,6 +3,79 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import 'api_config.dart';
 
+/// Kontribusi satu fitur (Magnitudo/Kedalaman/Lintang/Bujur) terhadap skor
+/// anomali, dihitung backend memakai SHAP TreeExplainer (IF_SHAP_explainer.pkl).
+class ShapContribution {
+  final String feature;
+  final String label;
+  final String unit;
+  final double shapValue;
+  final double kontribusiPersen;
+  final String arah; // "anomali" atau "normal"
+  final double? nilaiAktual;
+  final double? rataRataHistoris;
+  final double? deviasiStd;
+  final String? keterangan;
+
+  ShapContribution({
+    required this.feature,
+    required this.label,
+    required this.unit,
+    required this.shapValue,
+    required this.kontribusiPersen,
+    required this.arah,
+    this.nilaiAktual,
+    this.rataRataHistoris,
+    this.deviasiStd,
+    this.keterangan,
+  });
+
+  factory ShapContribution.fromJson(Map<String, dynamic> json) {
+    return ShapContribution(
+      feature: json['feature'] ?? '',
+      label: json['label'] ?? '',
+      unit: json['unit'] ?? '',
+      shapValue: (json['shap_value'] ?? 0).toDouble(),
+      kontribusiPersen: (json['kontribusi_persen'] ?? 0).toDouble(),
+      arah: json['arah'] ?? 'normal',
+      nilaiAktual: json['nilai_aktual'] == null
+          ? null
+          : (json['nilai_aktual'] as num).toDouble(),
+      rataRataHistoris: json['rata_rata_historis'] == null
+          ? null
+          : (json['rata_rata_historis'] as num).toDouble(),
+      deviasiStd: json['deviasi_std'] == null
+          ? null
+          : (json['deviasi_std'] as num).toDouble(),
+      keterangan: json['keterangan'],
+    );
+  }
+}
+
+/// Penjelasan lengkap kenapa suatu gempa ditandai anomali, dihasilkan
+/// backend dari model SHAP (IF_SHAP_explainer.pkl) — bukan teks statis.
+class ShapExplanation {
+  final double baseValue;
+  final List<ShapContribution> contributions;
+  final String summary;
+
+  ShapExplanation({
+    required this.baseValue,
+    required this.contributions,
+    required this.summary,
+  });
+
+  factory ShapExplanation.fromJson(Map<String, dynamic> json) {
+    return ShapExplanation(
+      baseValue: (json['base_value'] ?? 0).toDouble(),
+      contributions: (json['contributions'] as List<dynamic>? ?? [])
+          .map((c) => ShapContribution.fromJson(c))
+          .toList(),
+      summary: json['summary'] ?? '',
+    );
+  }
+}
+
 class AnomaliGempaModel {
   final String tanggal;
   final String jam;
@@ -21,6 +94,7 @@ class AnomaliGempaModel {
   final bool isAnomali;
   final String statusAnomali;
   final double anomalyScore;
+  final ShapExplanation? shapExplanation;
 
   AnomaliGempaModel({
     required this.tanggal,
@@ -38,6 +112,7 @@ class AnomaliGempaModel {
     required this.isAnomali,
     required this.statusAnomali,
     required this.anomalyScore,
+    this.shapExplanation,
   });
 
   factory AnomaliGempaModel.fromJson(Map<String, dynamic> json) {
@@ -57,6 +132,9 @@ class AnomaliGempaModel {
       isAnomali: json['is_anomali'] ?? false,
       statusAnomali: json['status_anomali'] ?? 'Normal',
       anomalyScore: (json['anomaly_score'] ?? 0).toDouble(),
+      shapExplanation: json['shap_explanation'] == null
+          ? null
+          : ShapExplanation.fromJson(json['shap_explanation']),
     );
   }
 }

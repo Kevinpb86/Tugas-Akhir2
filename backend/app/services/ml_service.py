@@ -15,7 +15,10 @@ MODEL_USGS_PATH = os.path.join(MODEL_DIR, "usgs_model.pkl")
 SCALER_USGS_PATH = os.path.join(MODEL_DIR, "scaler_usgs.pkl")
 MODEL_ANOMALI_PATH = os.path.join(MODEL_DIR, "isolation_forest_bmkg.pkl")
 SCALER_ANOMALI_PATH = os.path.join(MODEL_DIR, "scaler_isolation_forest_bmkg.pkl")
+SHAP_EXPLAINER_ANOMALI_PATH = os.path.join(MODEL_DIR, "IF_SHAP_explainer.pkl")
 REKOMENDASI_EDUKASI_PATH = os.path.join(MODEL_DIR, "rekomendasi_edukasi.pkl")
+
+ANOMALI_FEATURE_NAMES = ["mag", "depth", "latitude", "longitude"]
 
 ml_models = {
     "bmkg": None,
@@ -27,11 +30,12 @@ ml_scalers = {
 }
 anomali_model = None
 anomali_scaler = None
+anomali_shap_explainer = None
 rekomendasi_edukasi_model = None
 
 def load_ml_models():
     warnings.filterwarnings("ignore", category=InconsistentVersionWarning)
-    global anomali_model, anomali_scaler, rekomendasi_edukasi_model
+    global anomali_model, anomali_scaler, anomali_shap_explainer, rekomendasi_edukasi_model
     try:
         if os.path.exists(MODEL_BMKG_PATH):
             ml_models["bmkg"] = joblib.load(MODEL_BMKG_PATH)
@@ -69,6 +73,12 @@ def load_ml_models():
         else:
             print(f"Warning: Scaler Anomali tidak ditemukan di {SCALER_ANOMALI_PATH}")
 
+        if os.path.exists(SHAP_EXPLAINER_ANOMALI_PATH):
+            anomali_shap_explainer = joblib.load(SHAP_EXPLAINER_ANOMALI_PATH)
+            print("SHAP Explainer Anomali berhasil diload!")
+        else:
+            print(f"Warning: SHAP Explainer Anomali tidak ditemukan di {SHAP_EXPLAINER_ANOMALI_PATH}")
+
         if os.path.exists(REKOMENDASI_EDUKASI_PATH):
             rekomendasi_edukasi_model = joblib.load(REKOMENDASI_EDUKASI_PATH)
             print("Model Rekomendasi Edukasi berhasil diload!")
@@ -76,6 +86,108 @@ def load_ml_models():
             print(f"Warning: Model Rekomendasi Edukasi tidak ditemukan di {REKOMENDASI_EDUKASI_PATH}")
     except Exception as e:
         print(f"Error loading models: {e}")
+
+
+FEATURE_LABELS_ID = {
+    "mag": "Magnitudo",
+    "depth": "Kedalaman",
+    "latitude": "Lintang",
+    "longitude": "Bujur",
+}
+
+FEATURE_UNITS_ID = {
+    "mag": "SR",
+    "depth": "km",
+    "latitude": "°",
+    "longitude": "°",
+}
+
+
+def _deviation_label(n_std: float) -> str:
+    """Terjemahkan seberapa jauh nilai fitur dari rata-rata historis (dalam satuan
+    standar deviasi/z-score) menjadi label bahasa Indonesia yang mudah dipahami awam."""
+    n = abs(n_std)
+    if n < 0.5:
+        return "sesuai kebiasaan historis"
+    if n < 1.5:
+        return "sedikit berbeda dari kebiasaan historis"
+    if n < 3.0:
+        return "cukup jauh berbeda dari kebiasaan historis"
+    return "sangat jauh berbeda dari kebiasaan historis"
+
+
+def explain_anomali(features_for_model: np.ndarray, features_raw: Optional[np.ndarray] = None) -> Optional[dict]:
+    """Hitung kontribusi tiap fitur terhadap skor anomali memakai SHAP TreeExplainer
+    yang sudah dilatih (IF_SHAP_explainer.pkl), lalu susun penjelasan lengkap
+    (angka SHAP asli + narasi awam + perbandingan ke rata-rata historis) dalam bahasa Indonesia.
+
+    `features_raw` (opsional): nilai fitur asli sebelum di-scaling, dipakai untuk
+    menampilkan angka yang dikenali user (mis. "22 km") alih-alih nilai ter-scaling.
+    """
+    if anomali_shap_explainer is None:
+        return None
+
+    shap_values = anomali_shap_explainer.shap_values(features_for_model)[0]
+    total_abs = float(np.abs(shap_values).sum()) or 1.0
+
+    # Rata-rata & simpangan baku historis dari scaler (traceable ke data training),
+    # dipakai untuk membandingkan nilai gempa ini terhadap kebiasaan historis.
+    means = getattr(anomali_scaler, "mean_", None)
+    stds = getattr(anomali_scaler, "scale_", None)
+
+    raw_row = features_raw[0] if features_raw is not None else None
+
+    contributions = []
+    for i, name in enumerate(ANOMALI_FEATURE_NAMES):
+        value = float(shap_values[i])
+        persen_kontribusi = round(abs(value) / total_abs * 100, 1)
+        arah = "anomali" if value < 0 else "normal"
+
+        entry = {
+            "feature": name,
+            "label": FEATURE_LABELS_ID.get(name, name),
+            "unit": FEATURE_UNITS_ID.get(name, ""),
+            "shap_value": round(value, 4),
+            "kontribusi_persen": persen_kontribusi,
+            "arah": arah,
+        }
+
+        if raw_row is not None:
+            entry["nilai_aktual"] = round(float(raw_row[i]), 2)
+
+        if means is not None and stds is not None and raw_row is not None:
+            rata_rata_historis = float(means[i])
+            n_std = (float(raw_row[i]) - rata_rata_historis) / float(stds[i])
+            entry["rata_rata_historis"] = round(rata_rata_historis, 2)
+            entry["deviasi_std"] = round(n_std, 2)
+            entry["keterangan"] = _deviation_label(n_std)
+
+        contributions.append(entry)
+
+    # Urutkan dari kontribusi paling besar (paling mendorong ke arah anomali/normal)
+    contributions.sort(key=lambda c: abs(c["shap_value"]), reverse=True)
+
+    dominant = contributions[0]
+    arah_teks = "mendorong ke arah anomali" if dominant["shap_value"] < 0 else "mendorong ke arah normal"
+
+    if "nilai_aktual" in dominant and "rata_rata_historis" in dominant:
+        narasi = (
+            f"Faktor paling berpengaruh adalah {dominant['label']} "
+            f"({dominant['nilai_aktual']} {dominant['unit']}, {dominant['keterangan']} "
+            f"yang rata-ratanya {dominant['rata_rata_historis']} {dominant['unit']}), "
+            f"berkontribusi {dominant['kontribusi_persen']}% dan {arah_teks}."
+        )
+    else:
+        narasi = (
+            f"Faktor paling berpengaruh adalah {dominant['label']} "
+            f"(kontribusi {dominant['kontribusi_persen']}%), yang {arah_teks}."
+        )
+
+    return {
+        "base_value": round(float(anomali_shap_explainer.expected_value[0]), 4),
+        "contributions": contributions,
+        "summary": narasi,
+    }
 
 
 LOCAL_COORDINATES = {
