@@ -110,10 +110,19 @@ async def get_anomali_history(limit: int = 5):
 
     hasil_list = []
     for row, score in anomali_rows:
+        _, lat, lon, depth, mag, _, _ = row
         g = _format_gempa_bmkg(*row)
         g["is_anomali"] = True
         g["status_anomali"] = "Anomali Terdeteksi"
         g["anomaly_score"] = round(score, 4)
+
+        fitur_row = np.array([[mag, depth, lat, lon]])
+        if ml_service.anomali_scaler is not None:
+            fitur_row_scaled = ml_service.anomali_scaler.transform(fitur_row)
+        else:
+            fitur_row_scaled = fitur_row
+        g["shap_explanation"] = ml_service.explain_anomali(fitur_row_scaled, fitur_row)
+
         hasil_list.append(g)
 
     return {
@@ -239,11 +248,14 @@ async def predict_anomali(data: AnomaliData):
         except Exception:
             confidence_val = 1.0
 
+        shap_explanation = ml_service.explain_anomali(features_for_model, features)
+
         return {
             "is_anomali": is_anomali,
             "label": label,
             "prediction_code": pred_value,
-            "confidence": confidence_val
+            "confidence": confidence_val,
+            "shap_explanation": shap_explanation
         }
 
     except Exception as e:
@@ -302,7 +314,9 @@ async def get_anomali_terkini():
             g_copy["is_anomali"] = is_anomali
             g_copy["status_anomali"] = label
             g_copy["anomaly_score"] = confidence_val
-            
+
+            g_copy["shap_explanation"] = ml_service.explain_anomali(features_for_model, features)
+
             hasil_list.append(g_copy)
         except Exception as parse_error:
             # Skip jika ada gempa yang gagal diparse
