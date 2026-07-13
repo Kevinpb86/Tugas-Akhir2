@@ -74,6 +74,8 @@ class MlService {
     required double magnitude,
     required double depth,
     required String locationName,
+    double? latitude,
+    double? longitude,
     String source = 'bmkg',
   }) async {
     try {
@@ -87,6 +89,8 @@ class MlService {
           'magnitude': magnitude,
           'depth': depth,
           'location_name': locationName,
+          'latitude': latitude,
+          'longitude': longitude,
           'source': source,
         }),
       );
