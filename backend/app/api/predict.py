@@ -146,7 +146,7 @@ async def predict_risk(data: EarthquakeData):
     lat = data.latitude
     lon = data.longitude
     
-    if data.location_name:
+    if data.location_name and (lat is None or lon is None):
         lat, lon = resolve_coordinates(data.location_name)
         
     if lat is None or lon is None:
