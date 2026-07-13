@@ -4,6 +4,7 @@ import pandas as pd
 import requests
 from datetime import timedelta
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import FileResponse
 from app.api_schemas.earthquake import EarthquakeData, AnomaliData
 from app.config.database import SessionLocal
 from app.db_models.earthquake import Earthquake
@@ -110,10 +111,19 @@ async def get_anomali_history(limit: int = 5):
 
     hasil_list = []
     for row, score in anomali_rows:
+        _, lat, lon, depth, mag, _, _ = row
         g = _format_gempa_bmkg(*row)
         g["is_anomali"] = True
         g["status_anomali"] = "Anomali Terdeteksi"
         g["anomaly_score"] = round(score, 4)
+
+        fitur_row = np.array([[mag, depth, lat, lon]])
+        if ml_service.anomali_scaler is not None:
+            fitur_row_scaled = ml_service.anomali_scaler.transform(fitur_row)
+        else:
+            fitur_row_scaled = fitur_row
+        g["shap_explanation"] = ml_service.explain_anomali(fitur_row_scaled, fitur_row)
+
         hasil_list.append(g)
 
     return {
@@ -137,7 +147,7 @@ async def predict_risk(data: EarthquakeData):
     lat = data.latitude
     lon = data.longitude
     
-    if data.location_name:
+    if data.location_name and (lat is None or lon is None):
         lat, lon = resolve_coordinates(data.location_name)
         
     if lat is None or lon is None:
@@ -239,11 +249,14 @@ async def predict_anomali(data: AnomaliData):
         except Exception:
             confidence_val = 1.0
 
+        shap_explanation = ml_service.explain_anomali(features_for_model, features)
+
         return {
             "is_anomali": is_anomali,
             "label": label,
             "prediction_code": pred_value,
-            "confidence": confidence_val
+            "confidence": confidence_val,
+            "shap_explanation": shap_explanation
         }
 
     except Exception as e:
@@ -302,7 +315,9 @@ async def get_anomali_terkini():
             g_copy["is_anomali"] = is_anomali
             g_copy["status_anomali"] = label
             g_copy["anomaly_score"] = confidence_val
-            
+
+            g_copy["shap_explanation"] = ml_service.explain_anomali(features_for_model, features)
+
             hasil_list.append(g_copy)
         except Exception as parse_error:
             # Skip jika ada gempa yang gagal diparse
@@ -324,4 +339,48 @@ async def reverse_geocode(lat: float, lon: float):
             raise HTTPException(status_code=res.status_code, detail="Gagal menghubungi server geocoding")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/download-dataset")
+async def download_dataset(filename: str):
+    """
+    Download training dataset files from backend/data/.
+    Only allow filenames that match our expected training datasets to prevent path traversal.
+    """
+    allowed_files = [
+        "2008-2012.csv",
+        "2013-2017.csv",
+        "2018-2022.csv",
+        "2023-2025.csv",
+        "1990-1994.csv",
+        "1995-1999.csv",
+        "2000-2004.csv",
+        "2005-2009.csv",
+        "2010-2014.csv",
+        "2015-2019.csv",
+        "2020-2026.csv"
+    ]
+    
+    if filename not in allowed_files:
+        raise HTTPException(
+            status_code=400,
+            detail="File tidak diperbolehkan untuk diunduh atau tidak ditemukan."
+        )
+        
+    file_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+        "data", filename
+    )
+    
+    if not os.path.exists(file_path):
+        raise HTTPException(
+            status_code=404,
+            detail="File tidak ditemukan di server."
+        )
+        
+    return FileResponse(
+        path=file_path,
+        media_type="text/csv",
+        filename=filename
+    )
 

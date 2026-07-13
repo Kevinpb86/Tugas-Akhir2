@@ -37,7 +37,9 @@ class NNDService:
                 "log_R+": float,
             }
         """
-
+        if earthquake.magnitude < mc:
+            return None
+        
         neighbors = (
             self.db.query(Earthquake)
             .filter(

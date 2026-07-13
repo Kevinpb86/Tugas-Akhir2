@@ -99,27 +99,28 @@ class _MainScreenState extends State<MainScreen> {
                 1,
               ),
               Transform.translate(
-                offset: const Offset(0, -16),
+                offset: const Offset(0, -20),
                 child: InkWell(
                   onTap: () => _onItemTapped(2),
                   child: Container(
-                    width: 56,
-                    height: 56,
+                    width: 62,
+                    height: 62,
                     decoration: BoxDecoration(
                       color: const Color(0xFF0088CC),
                       shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 4.0),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF0088CC).withValues(alpha: 0.3),
-                          blurRadius: 16,
-                          spreadRadius: 2,
-                          offset: const Offset(0, 8),
+                          color: const Color(0xFF0088CC).withValues(alpha: 0.35),
+                          blurRadius: 12,
+                          spreadRadius: 1,
+                          offset: const Offset(0, 6),
                         ),
                       ],
                     ),
                     child: const Center(
                       child: Icon(
-                        Icons.dashboard_customize_rounded,
+                        Icons.sensors_rounded,
                         color: Colors.white,
                         size: 28,
                       ),

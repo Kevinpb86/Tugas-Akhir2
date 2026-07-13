@@ -1,13 +1,12 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/analisis_gempa_model.dart';
-import 'api_config.dart';
 
 class NetworkService {
   static Future<EarthquakeNetwork> fetchNetwork() async {
     final response = await http.get(
       Uri.parse(
-        "https://amanin.fastapicloud.dev/earthquakes/network?days=8",
+        "https://amanin-501952e2.fastapicloud.dev/earthquakes/map?days=30",
       ),
     ).timeout(const Duration(seconds: 10));
 
@@ -18,5 +17,19 @@ class NetworkService {
     return EarthquakeNetwork.fromJson(
       jsonDecode(response.body),
     );
+  }
+}
+
+class EarthquakeMapService {
+  static Future<EarthquakeMapData> fetchMapData({required int days}) async {
+    final response = await http
+        .get(Uri.parse('https://amanin-501952e2.fastapicloud.dev/earthquakes/map?days=$days'))
+        .timeout(const Duration(seconds: 10));
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to load earthquake map data');
+    }
+
+    return EarthquakeMapData.fromJson(jsonDecode(response.body));
   }
 }
