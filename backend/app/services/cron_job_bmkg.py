@@ -12,8 +12,12 @@ from app.repositories.earthquake_repo import (
 from app.services.fetch_bmkg_service import BMKGService
 from app.services.extarct_features import NNDService
 from app.services.rf_service import MLService
+from app.services.influence_zones_service import (
+    InfluenceZoneService
+)
 
 MC = 4.7
+
 
 def run_job():
 
@@ -24,6 +28,8 @@ def run_job():
     bmkg_service = BMKGService()
     nnd_service = NNDService(db)
     ml_service = MLService()
+    influence_service = InfluenceZoneService(db)
+
     try:
         logger.info("Fetching BMKG data...")
 
@@ -32,7 +38,9 @@ def run_job():
         quakes = bmkg_service.transform(raw)
 
         if not quakes:
-            logger.warning("No earthquake data found")
+            logger.warning(
+                "No earthquake data found"
+            )
             return
 
         inserted = 0
@@ -48,9 +56,9 @@ def run_job():
                 skipped += 1
                 continue
 
-            # ==================================================
+            # ==========================================
             # INSERT EARTHQUAKE
-            # ==================================================
+            # ==========================================
 
             db.add(quake)
 
@@ -58,45 +66,80 @@ def run_job():
             db.flush()
 
             logger.info(
-                f"Processing earthquake_id={quake.id}"
+                f"Processing earthquake_id="
+                f"{quake.id}"
             )
 
-            # ==================================================
-            # COMPUTE NND
-            # ==================================================
+            # ==========================================
+            # DEFAULT STATUS
+            # ==========================================
 
-            nnd_result = nnd_service.compute(quake, mc=MC)
-            prediction_result = None
+            quake.status = "below_mc"
 
-            if nnd_result:
-                prediction_result = ml_service.predict(
-                    log_n=nnd_result["log_N+"],
-                    log_t=nnd_result["log_T+"],
-                    log_r=nnd_result["log_R+"],
-                    dm=nnd_result["dm+"],
+            # ==========================================
+            # NND + RF
+            # ==========================================
+
+            if quake.magnitude >= MC:
+
+                nnd_result = nnd_service.compute(
+                    quake,
+                    mc=MC
                 )
 
-                analysis = SeismicAnalysis(
-                    earthquake_id=quake.id,
-                    parent_earthquake_id=nnd_result[
-                        "parent_earthquake_id"
-                    ],
-                    n_value=nnd_result["N+"],
-                    log_n=nnd_result["log_N+"],
-                    log_t=nnd_result["log_T+"],
-                    log_r=nnd_result["log_R+"],
-                    dm=nnd_result["dm+"],
-                    prediction=prediction_result["prediction"],
-                    probability=prediction_result["probability"],
-                )
+                if nnd_result:
 
-                db.add(analysis)
+                    prediction_result = (
+                        ml_service.predict(
+                            log_n=nnd_result["log_N+"],
+                            log_t=nnd_result["log_T+"],
+                            log_r=nnd_result["log_R+"],
+                            dm=nnd_result["dm+"],
+                        )
+                    )
 
-            # ==================================================
-            # UPDATE STATUS
-            # ==================================================
+                    analysis = SeismicAnalysis(
+                        earthquake_id=quake.id,
 
-            quake.status = "processed"
+                        parent_earthquake_id=
+                        nnd_result[
+                            "parent_earthquake_id"
+                        ],
+
+                        n_value=nnd_result["N+"],
+
+                        log_n=nnd_result["log_N+"],
+                        log_t=nnd_result["log_T+"],
+                        log_r=nnd_result["log_R+"],
+
+                        dm=nnd_result["dm+"],
+
+                        prediction=
+                        prediction_result[
+                            "prediction"
+                        ],
+
+                        probability=
+                        prediction_result[
+                            "probability"
+                        ],
+                    )
+
+                    db.add(analysis)
+
+                    # supaya analysis bisa dipakai
+                    db.flush()
+
+                    # ==================================
+                    # CREATE INFLUENCE ZONE
+                    # ==================================
+
+                    influence_service.create_if_background(
+                        earthquake=quake,
+                        analysis=analysis,
+                    )
+
+                    quake.status = "processed"
 
             inserted += 1
 
@@ -111,8 +154,10 @@ def run_job():
             )
 
         else:
+
             logger.info(
-                f"No new data → skipped={skipped}"
+                f"No new data → "
+                f"skipped={skipped}"
             )
 
     except SQLAlchemyError as exc:
