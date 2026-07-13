@@ -1,0 +1,81 @@
+datetime,latitude,longitude,magnitude,depth,dirasakan,wilayah,source
+2026-06-16 05:07:05+00:00,-1.07,120.06,3.9,10,II-III Sigi,Pusat gempa berada di darat 40 km timur laut Sigi,BMKG_JSON
+2026-06-16 05:14:13+00:00,1.28,126.45,4.1,10,II-III Batang Dua,Pusat gempa berada di laut 116 km barat Jailolo,BMKG_JSON
+2026-06-16 07:49:01+00:00,4.76,96.79,2,4,II Bener Meriah,Pusat gempa berada di darat 8 km barat laut Kab. Bener Meriah,BMKG_JSON
+2026-06-16 08:04:42+00:00,-1.06,120.18,4.7,9,"III-IV Sigi, III Palu",Pusat gempa berada di darat 49 km timur laut Sigi,BMKG_JSON
+2026-06-16 10:23:51+00:00,0.53,126.59,4,22,"II-III Kota Ternate, II-III Batang Dua",Pusat gempa berada di laut 90 km barat Ternate,BMKG_JSON
+2026-06-16 11:03:51+00:00,-1.29,120.31,4.7,3,"III-IV Sigi, III-IV Palu",Pusat gempa berada di darat 48 km timur Sigi,BMKG_JSON
+2026-06-16 18:29:38+00:00,-1.14,120.33,5.1,5,"III-IV Palu, III-IV Sigi",Pusat gempa berada di darat 54 km barat laut Poso,BMKG_JSON
+2026-06-17 01:08:01+00:00,-9.66,119.47,3.6,14,"IV Sumba Barat, II-III Sumba Barat Daya",Pusat gempa berada di darat 8 km timur Waikabubak,BMKG_JSON
+2026-06-17 03:44:16+00:00,-9.57,119.44,5,10,"III Sumba Barat Daya, III Sumba Timur, III-IV Sumba Barat",Pusat gempa berada di darat 10 km timur laut Waikabubak,BMKG_JSON
+2026-06-17 09:44:47+00:00,5.18,94.84,3.9,19,"II-III Aceh Jaya, II Banda Aceh",Pusat gempa berada di laut 85 km barat Jantho,BMKG_JSON
+2026-06-18 03:25:54+00:00,-1.21,120.19,3,5,II Sigi,Pusat gempa berada di darat 40 km Timur laut Sigi,BMKG_JSON
+2026-06-18 04:46:28+00:00,-1.14,120.14,2.3,5,II Sigi,Pusat gempa berada di darat 40 km Timur Laut Sigi,BMKG_JSON
+2026-06-18 04:53:42+00:00,-1.12,120.14,3.2,5,II-III SIgi,Pusat gempa berada di darat 41 km Timur Laut Sigi,BMKG_JSON
+2026-06-18 05:02:37+00:00,-1.16,120.1,2.2,5,II Sigi,Pusat gempa berada di darat 35 km Timur Laut Sigi,BMKG_JSON
+2026-06-18 06:18:14+00:00,-1.23,120.22,2.2,5,II Sigi,Pusat gempa berada di darat 42 km timur laut Sigi,BMKG_JSON
+2026-06-18 10:08:13+00:00,4.75,96.76,2.7,5,II-III Bener Meriah,Pusat gempa berada di darat 11 km barat Kabupaten Bener Meriah,BMKG_JSON
+2026-06-18 12:17:00+00:00,5.56,125.32,3.7,10,III Marore,Pusat gempa berada di laut 214 km barat laut Pulau Karatung,BMKG_JSON
+2026-06-18 13:39:04+00:00,-1.14,120.22,4.7,5,"III Palu, III Sigi",Pusat gempa berada di darat 46 Km timur laut Sigi,BMKG_JSON
+2026-06-18 13:45:08+00:00,1.35,121.32,4.5,10,III-IV Tolitoli,Pusat gempa berada di laut 42 Km utara Buol,BMKG_JSON
+2026-06-18 16:50:34+00:00,4.77,125.37,4.5,10,III-IV Marore,Pusat gempa berada di laut 130 km utara Tahuna-Kep. Sangihe,BMKG_JSON
+2026-06-18 20:26:45+00:00,-1.03,120.07,4.4,10,"II-III Palu, II-III Sigi",Pusat gempa berada di darat 44 km timur laut Sigi,BMKG_JSON
+2026-06-18 20:29:27+00:00,-1.07,120.11,4,10,"III Palu, III Sigi",Pusat gempa berada di darat 43 km timur laut Sigi,BMKG_JSON
+2026-06-18 22:30:04+00:00,-4.08,121.87,2.6,2,II-III Kolaka Timur,Pusat gempa berada di darat 9 km Selatan Kolaka Timur,BMKG_JSON
+2026-06-19 01:16:34+00:00,-1.17,120.26,3.2,3,II Sigi,Pusat gempa berada di darat 49 km timur laut Sigi,BMKG_JSON
+2026-06-19 01:53:20+00:00,-1.17,120.01,3.3,4,II Sigi,Pusat gempa berada di darat 28 km timur laut Sigi,BMKG_JSON
+2026-06-19 11:48:28+00:00,4.74,125.53,3.4,10,III Mamore,Pusat gempa berada di laut 126 km utara Tahuna-Kep. Sangihe,BMKG_JSON
+2026-06-19 21:56:18+00:00,5.09,125.07,4,10,II Marore,Pusat gempa berada di laut 171 km Utara Tahuna Kep. Sangihe,BMKG_JSON
+2026-06-19 22:33:17+00:00,-1.15,120.02,4.6,5,"II-III Sigi, II-III Palu, II-III Parigi Moutong",Pusat gempa berada di darat 31 km Timur Laut Sigi,BMKG_JSON
+2026-06-20 01:40:08+00:00,-4.95,102.95,5,23,"III Kaur, III Bengkulu Selatan, III Seluma, II-III Argamakmur, II-III Kota Bengkulu, II Rejang Lebong, II Kepahiang",Pusat gempa berada di laut 47 km barat daya Kaur,BMKG_JSON
+2026-06-20 03:03:59+00:00,-1.13,120,2.7,5,II-III Sigi,Pusat gempa berada di darat 31 km timur laut Sigi,BMKG_JSON
+2026-06-20 03:25:59+00:00,-1.26,99.81,4.3,23,"II-III Padang, II-III Padang Pariaman",Pusat gempa berada di laut 79 km barat daya Pariaman,BMKG_JSON
+2026-06-20 09:10:46+00:00,-1.17,120.06,3.1,3,II-III Sigi,Pusat gempa berada di darat 32 km Timur Laut Sigi,BMKG_JSON
+2026-06-21 02:33:29+00:00,-1.25,99.8,4.7,24,"II Padang Panjang, II Bukittinggi, II Solok, II Muko-Muko, II Pasaman Barat, III Padang, III Pariaman, III Mentawai",Pusat gempa berada di laut 71 km barat daya Padang,BMKG_JSON
+2026-06-21 05:52:47+00:00,-1.18,120.15,3.8,2,II-III Sigi,Pusat gempa berada di darat 38 km timur laut Sigi,BMKG_JSON
+2026-06-21 07:41:00+00:00,-1.08,120.01,4.1,6,II-III Sigi,Pusat gempa berada di darat 37 km utara Sigi,BMKG_JSON
+2026-06-22 18:03:48+00:00,-4.68,102.74,4.9,38,"III - IV Bengkulu Selatan, III Seluma, III Kaur, III P. Enggano, II - III Kota Bengkulu, II - III Bengkulu Utara, II - III Kepahiang",Pusat gempa berada di laut 31 km barat daya Bengkulu Selatan,BMKG_JSON
+2026-06-23 16:15:10+00:00,-5.44,104.62,2.3,10,II-III Tanggamus,Pusat gempa berada di darat 8 km barat laut Tanggamus,BMKG_JSON
+2026-06-23 20:47:49+00:00,-6.84,107.08,3.2,12,"III Cilaku, III Cugenang",Pusat gempa berada di darat 7 km barat Kab. Cianjur,BMKG_JSON
+2026-06-23 21:08:50+00:00,-6.86,107.05,2.4,3,II Cugenang,Pusat gempa berada di darat 11 km barat daya Kab. Cianjur,BMKG_JSON
+2026-06-24 06:18:15+00:00,-5.02,123.03,3.4,6,"III Buton Utara, III Buton",Pusat gempa berada di laut 32 km barat daya Buton Utara,BMKG_JSON
+2026-06-24 09:00:32+00:00,-1.13,120.12,4.4,7,"II-III Sigi, II-III Palu",Pusat gempa berada di darat 39 km Timur Laut Sigi,BMKG_JSON
+2026-06-24 15:42:05+00:00,-9.63,119.42,4.3,10,"III Sumba Barat Daya, III Sumba Barat, III Sumba Tengah",Pusat gempa berada di darat 3 km timur laut Waikabubak,BMKG_JSON
+2026-06-24 15:55:05+00:00,-9.64,119.42,3,10,"II Sumba Barat, II Sumba Tengah",Pusat gempa berada di darat 3 km timur laut Waikabubak,BMKG_JSON
+2026-06-26 11:27:47+00:00,-2.74,134.49,3.6,14,II-III Teluk Wondama,Pusat gempa berada di laut 3 km barat daya Teluk Wondama,BMKG_JSON
+2026-06-26 11:34:39+00:00,5.33,125.08,6.8,10,"III Kab. Kep. Talaud, II-III Kab. Gorontalo, II-III Kab. Toli-Toli, II-III Buol, II Tondano",Pusat gempa berada di laut 196 km barat laut Tahuna-Kep.Sangihe,BMKG_JSON
+2026-06-26 13:47:15+00:00,-1.26,120.31,4,4,"II-III Palu, II-III Sigi",Pusat gempa berada di darat 49 km timur Sigi,BMKG_JSON
+2026-06-27 04:01:48+00:00,3.25,97.09,4.1,22,III-IV Kab. Aceh Selatan,Pusat gempa berada di laut 18 km barat Kab. Aceh Selatan,BMKG_JSON
+2026-06-27 04:08:45+00:00,3.3,97.1,3.6,23,III Kab. Aceh Selatan,Pusat gempa berada di laut 16 km barat Kab. Aceh Selatan,BMKG_JSON
+2026-06-27 07:47:21+00:00,-8.96,111.16,5.6,10,"III Pacitan, III Wonogiri, III Blitar, III Tulungagung, II Kulon Progo, II Bantul, II Sleman, II Yogyakarta, II Trenggalek, II Malang, II Nganjuk, II Magetan, II Klaten, II Ponorogo, II Jember",Pusat gempa berada di laut 86 km tenggara Pacitan,BMKG_JSON
+2026-06-27 15:13:01+00:00,-9.62,119.44,3,5,"II Sumba Tengah, II Sumba Barat",Pusat gempa berada di darat 6 km Timur Laut Waikabubak,BMKG_JSON
+2026-06-27 21:10:33+00:00,-6.24,104.74,4.9,25,"III Kota Agung , III Tanggamus, II Bandar Lampung",Pusat gempa berada di laut 82 km selatan Tanggamus,BMKG_JSON
+2026-06-30 04:46:45+00:00,1.05,128.01,3.5,4,II-III Kab. Halmahera Timur,Pusat gempa berada di darat 51 km Barat Laut Maba,BMKG_JSON
+2026-06-30 17:05:30+00:00,-1.14,120.08,4.4,2,III Sigi,Pusat gempa berada di darat 35 km timur laut Sigi,BMKG_JSON
+2026-06-30 18:25:40+00:00,-3.73,123.4,4.5,17,"II-III Kendari, II-III Konawe",Pusat gempa berada di laut 54 km Timur Laut Konawe Kepulauan,BMKG_JSON
+2026-06-30 19:53:22+00:00,-1.08,120.1,4,2,III Palu,Pusat gempa berada di darat 42 km Timur Laut Sigi,BMKG_JSON
+2026-06-30 20:57:52+00:00,-7.41,106.71,3.2,26,"II Simpenan, Sukabumi",Pusat gempa berada di darat 50 km selatan Kab. Sukabumi,BMKG_JSON
+2026-07-01 00:31:36+00:00,-3.93,122.43,2,5,II Kendari,Pusat gempa berada di darat 11 km barat laut Kendari,BMKG_JSON
+2026-07-02 01:21:12+00:00,-2.84,140.07,4.4,29,II Jayapura,Pusat gempa berada di darat 30 km Selatan Genyem Jayapura,BMKG_JSON
+2026-07-03 02:31:29+00:00,1.93,127.39,6.2,100,"III-IV Halmahera Utara, III Ternate, III Tidore, III Sanana, III Morotai, III Bolaang Mongondow Timur, II-III Gorontalo Utara, II-III Bone Bolango, II-III Kota Gorontalo",Pusat gempa berada di laut 58 km barat daya Pulau Doi,BMKG_JSON
+2026-07-03 04:05:35+00:00,-8.4,116.2,3.3,12,III Kab. Lombok Utara,Pusat gempa berada di darat 7 km tenggara Lombok Utara,BMKG_JSON
+2026-07-03 05:19:32+00:00,2.04,98.99,2.6,10,II Tarutung,Pusat gempa berada di darat 4 km Timur laut Tapanuli Utara,BMKG_JSON
+2026-07-03 13:38:08+00:00,-5.43,104.69,2.8,3,II Gisting,Pusat gempa berada di darat 5 km utara Tanggamus,BMKG_JSON
+2026-07-03 17:14:49+00:00,-9.61,119.45,4.5,9,"III Sumba Timur, III Tambolaka, III Sumba Tengah, III Sumba Barat",Pusat gempa berada di darat 8 km timur laut Waikabubak,BMKG_JSON
+2026-07-04 08:55:52+00:00,-2.33,138.28,4.9,14,II Sarmi,Pusat gempa berada di darat 25 km timur laut Burmeso,BMKG_JSON
+2026-07-04 20:54:52+00:00,-7.53,106.73,3.7,30,"II-III Kecamatan Cimanggu, II-III Simpenan, Sukabumi, II-III Jampang Barat, II-III Cigaru",Pusat gempa berada di laut 63 km tenggara Kabupaten Sukabumi,BMKG_JSON
+2026-07-06 00:23:37+00:00,1.08,120.92,3.4,3,II-III Toli-Toli,Pusat gempa berada di darat 29 km Timur Laut Toli-Toli,BMKG_JSON
+2026-07-06 10:32:55+00:00,-0.87,127.48,3.5,12,II Labuha,"Pusat gempa berada di laut, 25 km Selatan Labuha",BMKG_JSON
+2026-07-06 10:51:28+00:00,-0.66,131.57,3.8,8,II-III Sorong,Pusat gempa berada di laut 34 km Timur Laut Kota Sorong,BMKG_JSON
+2026-07-06 18:47:27+00:00,-2.16,120.61,4.3,4,III Poso,Pusat gempa berada di darat 52 km Timur Laut Luwu Utara,BMKG_JSON
+2026-07-07 01:23:53+00:00,-0.66,131.5,4.5,10,IV Kota Sorong,Pusat gempa berada di laut 34 km timur laut Kota Sorong,BMKG_JSON
+2026-07-07 07:16:27+00:00,3.14,127.44,5.6,10,II-III Naha,Pusat gempa berada di laut 101 km barat laut Pulau Doi,BMKG_JSON
+2026-07-07 15:36:08+00:00,2.86,97.66,4.4,44,"II - III Subulussalam, II-III Aceh Singkil",Pusat gempa berada di darat 47 Km barat laut Kota Subulussalam,BMKG_JSON
+2026-07-07 16:57:28+00:00,4.76,96.77,2.1,8,II Bener Meriah,Pusat gempa berada di darat 10 Km barat Kab. Bener Meriah,BMKG_JSON
+2026-07-07 19:44:53+00:00,-6.79,105.12,5.5,10,"II-III Kecamatan Simpenan , II-III Kabupaten Bogor",Pusat gempa berada di laut 52 km Baratdaya Sumur,BMKG_JSON
+2026-07-09 01:09:36+00:00,-3.76,119.02,4.7,13,"III-IV Majene, III-IV Polewali Mandar, III-IV Pare-pare, II-III Sidrap, II-III Mamuju, II-III Makassar, II-III Pangkep, II-III Gowa, III-IV Pinrang",Pusat gempa berada di laut 50 km Selatan Polewali Mandar,BMKG_JSON
+2026-07-09 03:26:42+00:00,-2.39,140.53,4.4,8,III-IV Jayapura,Pusat gempa berada di laut 25 km TimurLaut Jayapura,BMKG_JSON
+2026-07-09 05:10:59+00:00,-6.8,107.68,2.6,25,"II-III Lembang, II-III Parongpong",Pusat gempa berada di darat 16 km Timur Laut Kota Cimahi,BMKG_JSON
+2026-07-10 10:18:45+00:00,-4.07,121.82,1.7,5,II Kolaka Timur,Pusat gempa berada di darat 9 km Barat Daya Kolaka Timur,BMKG_JSON
+2026-07-10 17:48:33+00:00,-2.53,121.2,3.7,2,"III Malili, III Wasuponda",Pusat gempa berada di darat 13 km timur laut Luwu Timur,BMKG_JSON
+2026-07-11 12:47:31+00:00,-7.66,107,4.3,22,"III Kab. Sukabumi, III Kab. Cianjur, II-III Kab. Bandung, II-III Kab. Bandung Barat, II-III Kab. Garut, II-III Kab. Tasikmalaya",Pusat gempa berada di laut 82 km tenggara Kota Sukabumi,BMKG_JSON

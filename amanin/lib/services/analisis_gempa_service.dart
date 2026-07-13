@@ -7,7 +7,7 @@ class NetworkService {
   static Future<EarthquakeNetwork> fetchNetwork() async {
     final response = await http.get(
       Uri.parse(
-        "https://amanin.fastapicloud.dev/earthquakes/network?days=8",
+        "https://amanin.fastapicloud.dev/earthquakes/network?days=40",
       ),
     ).timeout(const Duration(seconds: 10));
 
