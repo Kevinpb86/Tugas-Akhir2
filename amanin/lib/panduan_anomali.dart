@@ -1,7 +1,30 @@
 import 'package:flutter/material.dart';
+import 'services/anomali_service.dart';
 
-class PanduanAnomaliPage extends StatelessWidget {
+class PanduanAnomaliPage extends StatefulWidget {
   const PanduanAnomaliPage({super.key});
+
+  @override
+  State<PanduanAnomaliPage> createState() => _PanduanAnomaliPageState();
+}
+
+class _PanduanAnomaliPageState extends State<PanduanAnomaliPage> {
+  @override
+  void initState() {
+    super.initState();
+    DemoState.selectedDemoGempa.addListener(_onDemoStateChanged);
+  }
+
+  @override
+  void dispose() {
+    DemoState.selectedDemoGempa.removeListener(_onDemoStateChanged);
+    super.dispose();
+  }
+
+  void _onDemoStateChanged() {
+    if (!mounted) return;
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,6 +45,38 @@ class PanduanAnomaliPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // ================= DATA NORMAL (ringkas) =================
+            _buildSectionLabel(
+              icon: Icons.check_circle_outline,
+              iconColor: const Color(0xFF2E7D32),
+              text: 'DATA NORMAL',
+              textColor: const Color(0xFF2E7D32),
+            ),
+            const SizedBox(height: 10),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE8F5E9),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFA5D6A7)),
+              ),
+              child: const Text(
+                'Gempa berstatus normal adalah kejadian yang kekuatan (magnitudo) dan kedalamannya masih sesuai dengan pola kebiasaan gempa di wilayah tersebut, sehingga tidak ditandai sebagai kejadian yang tidak biasa oleh sistem.',
+                style: TextStyle(fontSize: 13, color: Color(0xFF33691E), height: 1.5),
+              ),
+            ),
+
+            const SizedBox(height: 32),
+
+            // ================= DATA ANOMALI (lengkap) =================
+            _buildSectionLabel(
+              icon: Icons.warning_amber_rounded,
+              iconColor: const Color(0xFFE65100),
+              text: 'DATA ANOMALI',
+              textColor: const Color(0xFFE65100),
+            ),
+            const SizedBox(height: 10),
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),
@@ -56,56 +111,180 @@ class PanduanAnomaliPage extends StatelessWidget {
               'Sistem ini secara real-time membandingkan gempa yang baru terjadi dengan data historis di wilayah tersebut. Jika kombinasi kekuatan (magnitudo) dan kedalamannya jauh menyimpang dari kebiasaan normal, sistem akan menandainya sebagai anomali.',
               style: TextStyle(fontSize: 14, color: Color(0xFF424242), height: 1.6),
             ),
+
             const SizedBox(height: 24),
             const Text(
-              'Tindakan yang Disarankan',
+              'Bagaimana Cara Kerjanya?',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A)),
             ),
             const SizedBox(height: 12),
-            _buildActionItem(
-              '1',
-              'Tetap Tenang',
-              'Jangan panik. Status anomali bukan berarti pasti terjadi bencana susulan berskala besar, melainkan sekadar variasi data alam.',
+            const Text(
+              'Sistem menggunakan model machine learning bernama Isolation Forest yang telah dilatih dengan data gempa historis se-Indonesia. Model ini "mengisolasi" setiap kejadian gempa berdasarkan kombinasi magnitudo dan kedalamannya. Semakin mudah suatu kejadian dipisahkan (diisolasi) dari kejadian-kejadian lain, semakin tinggi skor anomalinya — artinya kombinasi kekuatan dan kedalaman gempa tersebut jarang terjadi dibanding pola historis di wilayah itu.',
+              style: TextStyle(fontSize: 14, color: Color(0xFF424242), height: 1.6),
             ),
-            _buildActionItem(
-              '2',
-              'Cek Informasi Resmi',
-              'Terus pantau informasi dari BMKG dan BPBD setempat terkait potensi bahaya lanjutan seperti tsunami atau longsor.',
+            const SizedBox(height: 12),
+            const Text(
+              'Setiap gempa yang diproses akan mendapatkan skor anomali dari model. Skor inilah yang menentukan apakah gempa tersebut ditandai sebagai "Anomali Terdeteksi" atau tidak pada fitur Riwayat Gempa dan Anomali Terkini.',
+              style: TextStyle(fontSize: 14, color: Color(0xFF424242), height: 1.6),
             ),
-            _buildActionItem(
-              '3',
-              'Siapkan Tas Siaga',
-              'Pastikan Tas Siaga Bencana (TSB) Anda mudah dijangkau jika sewaktu-waktu harus melakukan evakuasi mendadak.',
+
+            const SizedBox(height: 24),
+            const Text(
+              '4 Faktor yang Diperiksa Model',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A)),
             ),
+            const SizedBox(height: 8),
+            Text(
+              'Setiap gempa dinilai dari 4 faktor berikut ini. Model membandingkan tiap faktor dengan kebiasaan historis, lalu menentukan faktor mana yang paling "aneh" atau tidak biasa.',
+              style: TextStyle(fontSize: 13, color: Colors.grey.shade600, height: 1.5),
+            ),
+            const SizedBox(height: 14),
+            _buildFactorItem(
+              icon: Icons.speed,
+              label: 'Magnitudo (Kekuatan Gempa)',
+              description: 'Semakin besar magnitudo dibanding kebiasaan gempa di suatu wilayah, semakin besar pula kemungkinan gempa itu dianggap tidak biasa.',
+            ),
+            _buildFactorItem(
+              icon: Icons.vertical_align_bottom,
+              label: 'Kedalaman',
+              description: 'Gempa yang jauh lebih dangkal atau lebih dalam dari kebiasaan wilayahnya bisa menandakan proses geologis yang berbeda dari biasanya.',
+            ),
+            _buildFactorItem(
+              icon: Icons.explore_outlined,
+              label: 'Lintang & Bujur (Lokasi)',
+              description: 'Gempa yang terjadi di lokasi yang jarang mengalami gempa juga bisa dianggap tidak biasa, terlepas dari besar kekuatannya.',
+            ),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE3F2FD),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Text(
+                'Model tidak menilai satu faktor saja, melainkan kombinasi keempatnya sekaligus. Itu sebabnya gempa dengan magnitudo biasa saja bisa tetap ditandai anomali jika kedalaman atau lokasinya sangat tidak biasa, begitu pula sebaliknya.',
+                style: TextStyle(fontSize: 12.5, color: Color(0xFF0D47A1), height: 1.5),
+              ),
+            ),
+
+            const SizedBox(height: 24),
+            const Text(
+              'Studi Kasus: Gempa Terkini',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A)),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              DemoState.selectedDemoGempa.value != null
+                  ? 'Sedang menampilkan gempa demonstrasi yang kamu pilih, sebagai ilustrasi konkret dari penjelasan di atas.'
+                  : 'Ini adalah gempa terbaru yang sudah diproses oleh model, sebagai ilustrasi konkret dari penjelasan di atas — baik hasilnya normal maupun anomali.',
+              style: TextStyle(fontSize: 13, color: Colors.grey.shade600, height: 1.5),
+            ),
+            const SizedBox(height: 12),
+            _buildStudiKasus(),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildActionItem(String number, String title, String description) {
+  Widget _buildStudiKasus() {
+    final demoGempa = DemoState.selectedDemoGempa.value;
+
+    if (demoGempa != null) {
+      final title = 'M ${demoGempa.magnitude} - ${demoGempa.wilayah}';
+      return AnomaliOutputCard(
+        title: title,
+        isAnomaly: demoGempa.isAnomali,
+        score: demoGempa.anomalyScore,
+        time: '${demoGempa.tanggal} ${demoGempa.jam}',
+        shapExplanation: demoGempa.shapExplanation,
+        initiallyExpanded: true,
+      );
+    }
+
+    return FutureBuilder<List<AnomaliGempaModel>>(
+      future: AnomaliService.fetchAnomaliTerkini(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(20.0),
+              child: CircularProgressIndicator(),
+            ),
+          );
+        } else if (snapshot.hasError) {
+          return Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.red.shade50,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.red.shade200),
+            ),
+            child: Text(
+              'Gagal memuat data: ${snapshot.error}',
+              style: TextStyle(color: Colors.red.shade700),
+            ),
+          );
+        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const Center(
+            child: Text('Tidak ada data gempa saat ini.'),
+          );
+        }
+
+        final gempa = snapshot.data!.first;
+        final title = 'M ${gempa.magnitude} - ${gempa.wilayah}';
+        return AnomaliOutputCard(
+          title: title,
+          isAnomaly: gempa.isAnomali,
+          score: gempa.anomalyScore,
+          time: '${gempa.tanggal} ${gempa.jam}',
+          shapExplanation: gempa.shapExplanation,
+          initiallyExpanded: true,
+        );
+      },
+    );
+  }
+
+  Widget _buildSectionLabel({
+    required IconData icon,
+    required Color iconColor,
+    required String text,
+    required Color textColor,
+  }) {
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: iconColor),
+        const SizedBox(width: 6),
+        Text(
+          text,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: textColor,
+            letterSpacing: 0.5,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFactorItem({
+    required IconData icon,
+    required String label,
+    required String description,
+  }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.only(bottom: 14),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 28,
-            height: 28,
-            decoration: const BoxDecoration(
-              color: Color(0xFF0F172A),
-              shape: BoxShape.circle,
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFE3F2FD),
+              borderRadius: BorderRadius.circular(10),
             ),
-            child: Center(
-              child: Text(
-                number,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                ),
-              ),
-            ),
+            child: Icon(icon, size: 18, color: const Color(0xFF1565C0)),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -113,9 +292,9 @@ class PanduanAnomaliPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  title,
+                  label,
                   style: const TextStyle(
-                    fontSize: 15,
+                    fontSize: 14,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF1A1A1A),
                   ),
@@ -132,6 +311,270 @@ class PanduanAnomaliPage extends StatelessWidget {
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+}
+
+/// Kartu hasil deteksi anomali satu gempa, lengkap dengan ringkasan naratif
+/// dan breakdown SHAP per fitur (dari IF_SHAP_explainer.pkl), untuk ditampilkan
+/// sebagai contoh nyata di halaman Panduan Anomali Seismisitas.
+class AnomaliOutputCard extends StatefulWidget {
+  final String title;
+  final bool isAnomaly;
+  final double score;
+  final String time;
+  final ShapExplanation? shapExplanation;
+  final bool initiallyExpanded;
+
+  const AnomaliOutputCard({
+    super.key,
+    required this.title,
+    required this.isAnomaly,
+    required this.score,
+    required this.time,
+    this.shapExplanation,
+    this.initiallyExpanded = false,
+  });
+
+  @override
+  State<AnomaliOutputCard> createState() => _AnomaliOutputCardState();
+}
+
+class _AnomaliOutputCardState extends State<AnomaliOutputCard> {
+  late bool _expanded = widget.initiallyExpanded;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasPenjelasan = widget.shapExplanation != null;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: widget.isAnomaly ? Colors.red.shade300 : Colors.green.shade300,
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                margin: const EdgeInsets.only(top: 2),
+                decoration: BoxDecoration(
+                  color: widget.isAnomaly
+                      ? Colors.red.withValues(alpha: 0.1)
+                      : Colors.green.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  widget.isAnomaly
+                      ? Icons.warning_amber_rounded
+                      : Icons.check_circle_outline,
+                  color: widget.isAnomaly ? Colors.red : Colors.green,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.title,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      widget.time,
+                      style: TextStyle(color: Colors.grey.shade500, fontSize: 11),
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        Text(
+                          widget.isAnomaly
+                              ? 'Status: Anomali Terdeteksi'
+                              : 'Status: Normal',
+                          style: TextStyle(
+                            color: widget.isAnomaly ? Colors.red : Colors.green,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                        const Spacer(),
+                        Text(
+                          'Skor: ${widget.score.toStringAsFixed(2)}',
+                          style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontSize: 11,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          // Penjelasan awam (ringkasan bahasa manusia dari SHAP)
+          if (hasPenjelasan) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: widget.isAnomaly ? const Color(0xFFFFF8E1) : const Color(0xFFE3F2FD),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: widget.isAnomaly ? const Color(0xFFFFE0B2) : const Color(0xFFBBDEFB),
+                ),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.lightbulb_outline,
+                    size: 18,
+                    color: widget.isAnomaly ? const Color(0xFFF57C00) : const Color(0xFF1565C0),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      widget.shapExplanation!.summary,
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        color: widget.isAnomaly ? const Color(0xFF5D4037) : const Color(0xFF0D47A1),
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            InkWell(
+              onTap: () => setState(() => _expanded = !_expanded),
+              borderRadius: BorderRadius.circular(8),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _expanded ? 'Sembunyikan detail' : 'Lihat detail penjelasan',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF2196F3),
+                      ),
+                    ),
+                    Icon(
+                      _expanded ? Icons.expand_less : Icons.expand_more,
+                      size: 18,
+                      color: const Color(0xFF2196F3),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            if (_expanded) ...[
+              const SizedBox(height: 4),
+              ...widget.shapExplanation!.contributions.map(
+                (c) => _buildFeatureBar(c),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                widget.isAnomaly
+                    ? 'Semakin panjang bar merah, semakin besar pengaruh faktor tersebut dalam menandai gempa ini sebagai anomali.'
+                    : 'Semakin panjang bar hijau, semakin besar pengaruh faktor tersebut dalam menandai gempa ini sebagai normal. Bar merah (jika ada) berarti faktor itu justru sedikit tidak biasa, tapi belum cukup kuat untuk membuat keseluruhan gempa ditandai anomali.',
+                style: TextStyle(
+                  fontSize: 10.5,
+                  color: Colors.grey.shade500,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            ],
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFeatureBar(ShapContribution c) {
+    final isAnomaliArah = c.arah == 'anomali';
+    final barColor = isAnomaliArah ? Colors.red.shade400 : Colors.green.shade400;
+    final nilaiTeks = c.nilaiAktual != null
+        ? '${c.nilaiAktual} ${c.unit}'
+        : '-';
+    final rataRataTeks = c.rataRataHistoris != null
+        ? 'rata-rata historis: ${c.rataRataHistoris} ${c.unit}'
+        : null;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  '${c.label}: $nilaiTeks',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF1A1A1A),
+                  ),
+                ),
+              ),
+              Text(
+                '${c.kontribusiPersen.toStringAsFixed(0)}%',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: barColor,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: LinearProgressIndicator(
+              value: (c.kontribusiPersen / 100).clamp(0.0, 1.0),
+              minHeight: 8,
+              backgroundColor: const Color(0xFFF0F0F0),
+              valueColor: AlwaysStoppedAnimation<Color>(barColor),
+            ),
+          ),
+          if (c.keterangan != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              rataRataTeks != null
+                  ? '${c.keterangan} ($rataRataTeks)'
+                  : c.keterangan!,
+              style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+            ),
+          ],
         ],
       ),
     );

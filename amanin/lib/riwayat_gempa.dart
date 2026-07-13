@@ -1,9 +1,13 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
 import 'services/bmkg_service.dart';
 import 'services/usgs_service.dart';
 import 'services/anomali_service.dart';
 import 'package:geolocator/geolocator.dart';
 import 'fullscreen_map.dart';
+import 'login.dart';
+import 'main.dart'; // For isLoggedInNotifier
 
 class RiwayatGempaPage extends StatefulWidget {
   final List<GempaModel> quakes;
@@ -37,6 +41,82 @@ class _RiwayatGempaPageState extends State<RiwayatGempaPage> {
     if (_filteredQuakes.isEmpty) {
       _fetchAndFilterData();
     }
+  }
+
+  String _filterLabel(int index) {
+    switch (index) {
+      case 0:
+        return 'Terkini';
+      case 1:
+        return 'M_lebih_dari_5';
+      case 2:
+        return 'Jarak_Jauh';
+      case 3:
+        return 'Jarak_Dekat';
+      case 4:
+        return 'Anomali';
+      default:
+        return 'Riwayat';
+    }
+  }
+
+  void _onDownloadPressed() {
+    if (!isLoggedInNotifier.value) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Anda harus login terlebih dahulu sebelum bisa download data.'),
+        ),
+      );
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+      );
+      return;
+    }
+    _downloadFilteredData();
+  }
+
+  Future<void> _downloadFilteredData() async {
+    if (_filteredQuakes.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Tidak ada data untuk diunduh.')),
+      );
+      return;
+    }
+
+    final buffer = StringBuffer();
+    buffer.writeln(
+      'Tanggal,Jam,Lintang,Bujur,Magnitude,Kedalaman,Wilayah,Potensi,Dirasakan,Anomali',
+    );
+    for (final quake in _filteredQuakes) {
+      final fields = [
+        quake.tanggal,
+        quake.jam,
+        quake.lintang,
+        quake.bujur,
+        quake.magnitude,
+        quake.kedalaman,
+        quake.wilayah,
+        quake.potensi,
+        quake.dirasakan,
+        quake.isAnomali ? 'Ya' : 'Tidak',
+      ].map((field) {
+        final escaped = field.replaceAll('"', '""');
+        return '"$escaped"';
+      }).join(',');
+      buffer.writeln(fields);
+    }
+
+    final bytes = utf8.encode(buffer.toString());
+    final fileName =
+        'riwayat_gempa_${_filterLabel(_selectedFilterIndex)}.csv';
+
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [XFile.fromData(bytes, mimeType: 'text/csv', name: fileName)],
+        fileNameOverrides: [fileName],
+      ),
+    );
   }
 
   Future<void> _getCurrentLocation() async {
@@ -209,6 +289,12 @@ class _RiwayatGempaPageState extends State<RiwayatGempaPage> {
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: const IconThemeData(color: Color(0xFF1A1A1A)),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _onDownloadPressed,
+        backgroundColor: const Color(0xFF2196F3),
+        icon: const Icon(Icons.download, color: Colors.white),
+        label: const Text('Download', style: TextStyle(color: Colors.white)),
       ),
       body: Column(
         children: [
