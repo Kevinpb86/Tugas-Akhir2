@@ -260,7 +260,7 @@ class _EdukasiPageState extends State<EdukasiPage> {
               _buildTsbCard(),
               const SizedBox(height: 24),
               _buildInsuranceSection(context),
-              const SizedBox(height: 100), // padding for floating bottom nav
+              const SizedBox(height: 140), // padding for floating bottom nav
             ],
           ),
         ),

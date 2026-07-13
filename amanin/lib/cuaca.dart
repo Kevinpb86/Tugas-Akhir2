@@ -152,7 +152,7 @@ class _CuacaPageState extends State<CuacaPage> {
               _buildWeeklyForecast(),
               const SizedBox(height: 24),
               _buildInsuranceSection(context),
-              const SizedBox(height: 100), // Bottom padding for floating nav
+              const SizedBox(height: 140), // Bottom padding for floating nav
             ],
           ),
         ),

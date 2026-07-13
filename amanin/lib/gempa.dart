@@ -273,7 +273,7 @@ class _GempaPageState extends State<GempaPage> {
                 _buildRecentEarthquakes(context),
                 const SizedBox(height: 24),
                 _buildInsuranceSection(context),
-                const SizedBox(height: 100), // padding for floating bottom nav
+                const SizedBox(height: 140), // padding for floating bottom nav
               ],
             ),
           ),
