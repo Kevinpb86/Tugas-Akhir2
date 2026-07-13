@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
+import 'package:url_launcher/url_launcher.dart';
+import 'main.dart';
+import 'login.dart';
+import 'services/api_config.dart';
 import 'services/ml_service.dart';
 import 'services/bmkg_service.dart';
 import 'services/usgs_service.dart';
@@ -32,6 +36,7 @@ class _KlasifikasiSeismikPageState extends State<KlasifikasiSeismikPage> {
   String _classificationMode = 'otomatis'; // 'otomatis' atau 'manual'
   GempaModel? _latestQuake;
   bool _isLoadingLatestQuake = false;
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -53,6 +58,7 @@ class _KlasifikasiSeismikPageState extends State<KlasifikasiSeismikPage> {
       _isLoadingLatestQuake = true;
       _latestQuake = null;
       _hasilKlasifikasi = null;
+      _errorMessage = null;
     });
 
     try {
@@ -70,15 +76,14 @@ class _KlasifikasiSeismikPageState extends State<KlasifikasiSeismikPage> {
       if (!mounted) return;
       setState(() {
         _latestQuake = quake;
+        _errorMessage = null;
       });
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Gagal memuat data gempa terbaru: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      setState(() {
+        _errorMessage =
+            'Gagal memuat data gempa. Periksa koneksi internet dan coba lagi.';
+      });
     } finally {
       if (mounted) {
         setState(() {
@@ -179,8 +184,33 @@ class _KlasifikasiSeismikPageState extends State<KlasifikasiSeismikPage> {
       });
     } catch (e) {
       if (!mounted) return;
+      String errorMsg = e.toString().replaceAll('Exception: ', '').trim();
+      // Deteksi jika server backend tidak aktif, timeout, atau proxy bermasalah
+      if (errorMsg.contains('connection') ||
+          errorMsg.contains('refused') ||
+          errorMsg.contains('SocketException') ||
+          errorMsg.contains('10061') ||
+          errorMsg.contains('HttpException') ||
+          errorMsg.contains('Connection refused') ||
+          errorMsg.contains('timeout') ||
+          errorMsg.contains('504') ||
+          errorMsg.contains('502') ||
+          errorMsg.contains('503') ||
+          errorMsg.contains('Gateway') ||
+          errorMsg.contains('html') ||
+          errorMsg.contains('offline') ||
+          errorMsg.contains('sibuk') ||
+          errorMsg.contains('Batas waktu') ||
+          errorMsg.contains('koneksi')) {
+        errorMsg =
+            'Gagal terhubung ke server kecerdasan buatan (SVM). Pastikan backend Anda sudah aktif di port 8000.';
+      }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+        SnackBar(
+          content: Text(errorMsg),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 5),
+        ),
       );
     } finally {
       if (mounted) {
@@ -653,8 +683,342 @@ class _KlasifikasiSeismikPageState extends State<KlasifikasiSeismikPage> {
     );
   }
 
+  Future<void> _downloadDataset(String filename) async {
+    final String urlString = '${ApiConfig.baseUrl}/download-dataset?filename=$filename';
+    final Uri url = Uri.parse(urlString);
+    
+    try {
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      } else {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Tidak dapat mengunduh file $filename. Silakan coba beberapa saat lagi.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Terjadi kesalahan saat mengunduh: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Widget _buildDatasetSection() {
+    return ValueListenableBuilder<bool>(
+      valueListenable: isLoggedInNotifier,
+      builder: (context, isLoggedIn, _) {
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.85),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 15,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE0F7FA),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(
+                          Icons.folder_zip_rounded,
+                          color: Color(0xFF00ACC1),
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: const [
+                            Text(
+                              'Dataset Training SVM',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1A1A1A),
+                              ),
+                            ),
+                            SizedBox(height: 2),
+                            Text(
+                              'Unduh data riwayat gempa bumi pendukung BMKG & USGS.',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Color(0xFF757575),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  if (!isLoggedIn) ...[
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: const [
+                              Icon(Icons.lock_outline_rounded, color: Colors.amber, size: 20),
+                              SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  'Fitur Khusus Anggota',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF7F5F00),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Anda perlu masuk atau mendaftar terlebih dahulu untuk mengunduh dataset pelatihan SVM.',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFF7F5F00),
+                              height: 1.4,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => const LoginPage()),
+                                );
+                              },
+                              icon: const Icon(Icons.login_rounded, size: 16, color: Colors.white),
+                              label: const Text(
+                                'Masuk ke Akun',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF1E88E5),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                padding: const EdgeInsets.symmetric(vertical: 10),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ] else ...[
+                    _buildExpandableDatasetGroup(
+                      title: 'Dataset BMKG (Lokal)',
+                      icon: Icons.location_on_rounded,
+                      color: const Color(0xFF1E88E5),
+                      files: [
+                        {'name': '2008-2012.csv', 'size': '1.9 MB'},
+                        {'name': '2013-2017.csv', 'size': '2.5 MB'},
+                        {'name': '2018-2022.csv', 'size': '4.8 MB'},
+                        {'name': '2023-2025.csv', 'size': '3.4 MB'},
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    _buildExpandableDatasetGroup(
+                      title: 'Dataset USGS (Global)',
+                      icon: Icons.public_rounded,
+                      color: const Color(0xFF7E57C2),
+                      files: [
+                        {'name': '1990-1994.csv', 'size': '658 KB'},
+                        {'name': '1995-1999.csv', 'size': '1.1 MB'},
+                        {'name': '2000-2004.csv', 'size': '1.1 MB'},
+                        {'name': '2005-2009.csv', 'size': '2.2 MB'},
+                        {'name': '2010-2014.csv', 'size': '1.4 MB'},
+                        {'name': '2015-2019.csv', 'size': '1.8 MB'},
+                        {'name': '2020-2026.csv', 'size': '2.3 MB'},
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildExpandableDatasetGroup({
+    required String title,
+    required IconData icon,
+    required Color color,
+    required List<Map<String, String>> files,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.02),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.black.withValues(alpha: 0.04)),
+      ),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          leading: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, color: color, size: 20),
+          ),
+          title: Text(
+            title,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF212121),
+            ),
+          ),
+          childrenPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          children: files.map((file) {
+            return Card(
+              margin: const EdgeInsets.only(bottom: 8),
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+                side: BorderSide(color: Colors.black.withValues(alpha: 0.05)),
+              ),
+              color: Colors.white,
+              child: ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                dense: true,
+                leading: const Icon(Icons.insert_drive_file_outlined, color: Colors.grey, size: 20),
+                title: Text(
+                  file['name']!,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF333333),
+                  ),
+                ),
+                subtitle: Text(
+                  file['size']!,
+                  style: const TextStyle(
+                    fontSize: 10,
+                    color: Colors.grey,
+                  ),
+                ),
+                trailing: IconButton(
+                  icon: const Icon(Icons.download_rounded, color: Color(0xFF1E88E5), size: 20),
+                  onPressed: () => _downloadDataset(file['name']!),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Tampilkan tampilan error jika dalam mode otomatis dan data gagal dimuat
+    if (_classificationMode == 'otomatis' && _errorMessage != null && _latestQuake == null) {
+      return Scaffold(
+        backgroundColor: const Color(0xFFF8F9FA),
+        appBar: AppBar(
+          title: const Text('Klasifikasi Kerentanan Seismik'),
+          backgroundColor: Colors.white,
+          iconTheme: const IconThemeData(color: Color(0xFF1A1A1A)),
+          elevation: 0,
+          centerTitle: true,
+          titleTextStyle: const TextStyle(
+            color: Color(0xFF1A1A1A),
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.signal_wifi_off_rounded, size: 72, color: Colors.grey),
+                const SizedBox(height: 16),
+                Text(
+                  _errorMessage!,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    color: Color(0xFF424242),
+                    height: 1.4,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      _errorMessage = null;
+                      _isLoadingLatestQuake = true;
+                    });
+                    _fetchLatestQuake();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF00BCD4),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                  ),
+                  child: const Text(
+                    'Muat Ulang',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
@@ -1198,6 +1562,8 @@ class _KlasifikasiSeismikPageState extends State<KlasifikasiSeismikPage> {
                 ),
                 _buildMitigasiSection(),
               ],
+              const SizedBox(height: 20),
+              _buildDatasetSection(),
             ],
           ),
         ),
