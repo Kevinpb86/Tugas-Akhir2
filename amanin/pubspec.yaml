@@ -52,6 +52,7 @@ dependencies:
   youtube_player_flutter: 9.0.1
   flutter_map_cancellable_tile_provider: ^3.0.2
   shared_preferences: ^2.5.5
+  shapefile: ^1.0.1
 
 dev_dependencies:
   flutter_test:
@@ -77,6 +78,7 @@ flutter:
 
   assets:
     - assets/images/
+    - assets/Data_Sesar/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
