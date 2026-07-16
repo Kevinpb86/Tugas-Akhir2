@@ -545,19 +545,43 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _handleLogin() async {
-    // Mode demo: langsung login tanpa verifikasi ke backend
     final email = _emailController.text.trim();
-    userEmailNotifier.value = email.isNotEmpty ? email : 'demo@amanin.id';
-    userNameNotifier.value = email.isNotEmpty
-        ? email.split('@').first
-        : 'Pengguna Demo';
-    isLoggedInNotifier.value = true;
+    final password = _passwordController.text;
 
-    if (mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Login Berhasil!')));
-      Navigator.pop(context);
+    if (email.isEmpty || password.isEmpty) {
+      _showTopSnackBar('Email dan kata sandi tidak boleh kosong!');
+      return;
+    }
+
+    try {
+      final response = await http.post(
+        Uri.parse('${ApiConfig.baseUrl}/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email, 'password': password}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        userNameNotifier.value = data['full_name'] ?? '';
+        userEmailNotifier.value = data['email'] ?? email;
+        isLoggedInNotifier.value = true;
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Login Berhasil!')),
+          );
+          Navigator.pop(context);
+        }
+      } else {
+        final error = jsonDecode(response.body);
+        if (mounted) {
+          _showTopSnackBar(error['detail'] ?? 'Email atau kata sandi salah.');
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        _showTopSnackBar('Gagal menghubungi server: $e');
+      }
     }
   }
 

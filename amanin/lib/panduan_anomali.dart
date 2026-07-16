@@ -9,6 +9,8 @@ class PanduanAnomaliPage extends StatefulWidget {
 }
 
 class _PanduanAnomaliPageState extends State<PanduanAnomaliPage> {
+  bool _showPenjelasan = false;
+
   @override
   void initState() {
     super.initState();
@@ -45,145 +47,156 @@ class _PanduanAnomaliPageState extends State<PanduanAnomaliPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ================= DATA NORMAL (ringkas) =================
+            // ================= STUDI KASUS / SHAP (fokus utama) =================
             _buildSectionLabel(
-              icon: Icons.check_circle_outline,
-              iconColor: const Color(0xFF2E7D32),
-              text: 'DATA NORMAL',
-              textColor: const Color(0xFF2E7D32),
+              icon: Icons.insights,
+              iconColor: const Color(0xFF1565C0),
+              text: 'HASIL DETEKSI GEMPA',
+              textColor: const Color(0xFF1565C0),
             ),
-            const SizedBox(height: 10),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFFE8F5E9),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFA5D6A7)),
-              ),
-              child: const Text(
-                'Gempa berstatus normal adalah kejadian yang kekuatan (magnitudo) dan kedalamannya masih sesuai dengan pola kebiasaan gempa di wilayah tersebut, sehingga tidak ditandai sebagai kejadian yang tidak biasa oleh sistem.',
-                style: TextStyle(fontSize: 13, color: Color(0xFF33691E), height: 1.5),
-              ),
-            ),
-
-            const SizedBox(height: 32),
-
-            // ================= DATA ANOMALI (lengkap) =================
-            _buildSectionLabel(
-              icon: Icons.warning_amber_rounded,
-              iconColor: const Color(0xFFE65100),
-              text: 'DATA ANOMALI',
-              textColor: const Color(0xFFE65100),
-            ),
-            const SizedBox(height: 10),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFF3E0),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFFFCC80)),
-              ),
-              child: Column(
-                children: const [
-                  Icon(Icons.warning_amber_rounded, size: 48, color: Color(0xFFF57C00)),
-                  SizedBox(height: 12),
-                  Text(
-                    'Pentingnya Kewaspadaan Ekstra',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFFE65100),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-            const Text(
-              'Apa itu Deteksi Anomali?',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A)),
-            ),
-            const SizedBox(height: 12),
-            const Text(
-              'Sistem ini secara real-time membandingkan gempa yang baru terjadi dengan data historis di wilayah tersebut. Jika kombinasi kekuatan (magnitudo) dan kedalamannya jauh menyimpang dari kebiasaan normal, sistem akan menandainya sebagai anomali.',
-              style: TextStyle(fontSize: 14, color: Color(0xFF424242), height: 1.6),
-            ),
-
-            const SizedBox(height: 24),
-            const Text(
-              'Bagaimana Cara Kerjanya?',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A)),
-            ),
-            const SizedBox(height: 12),
-            const Text(
-              'Sistem menggunakan model machine learning bernama Isolation Forest yang telah dilatih dengan data gempa historis se-Indonesia. Model ini "mengisolasi" setiap kejadian gempa berdasarkan kombinasi magnitudo dan kedalamannya. Semakin mudah suatu kejadian dipisahkan (diisolasi) dari kejadian-kejadian lain, semakin tinggi skor anomalinya — artinya kombinasi kekuatan dan kedalaman gempa tersebut jarang terjadi dibanding pola historis di wilayah itu.',
-              style: TextStyle(fontSize: 14, color: Color(0xFF424242), height: 1.6),
-            ),
-            const SizedBox(height: 12),
-            const Text(
-              'Setiap gempa yang diproses akan mendapatkan skor anomali dari model. Skor inilah yang menentukan apakah gempa tersebut ditandai sebagai "Anomali Terdeteksi" atau tidak pada fitur Riwayat Gempa dan Anomali Terkini.',
-              style: TextStyle(fontSize: 14, color: Color(0xFF424242), height: 1.6),
-            ),
-
-            const SizedBox(height: 24),
-            const Text(
-              '4 Faktor yang Diperiksa Model',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A)),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Setiap gempa dinilai dari 4 faktor berikut ini. Model membandingkan tiap faktor dengan kebiasaan historis, lalu menentukan faktor mana yang paling "aneh" atau tidak biasa.',
-              style: TextStyle(fontSize: 13, color: Colors.grey.shade600, height: 1.5),
-            ),
-            const SizedBox(height: 14),
-            _buildFactorItem(
-              icon: Icons.speed,
-              label: 'Magnitudo (Kekuatan Gempa)',
-              description: 'Semakin besar magnitudo dibanding kebiasaan gempa di suatu wilayah, semakin besar pula kemungkinan gempa itu dianggap tidak biasa.',
-            ),
-            _buildFactorItem(
-              icon: Icons.vertical_align_bottom,
-              label: 'Kedalaman',
-              description: 'Gempa yang jauh lebih dangkal atau lebih dalam dari kebiasaan wilayahnya bisa menandakan proses geologis yang berbeda dari biasanya.',
-            ),
-            _buildFactorItem(
-              icon: Icons.explore_outlined,
-              label: 'Lintang & Bujur (Lokasi)',
-              description: 'Gempa yang terjadi di lokasi yang jarang mengalami gempa juga bisa dianggap tidak biasa, terlepas dari besar kekuatannya.',
-            ),
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFFE3F2FD),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Text(
-                'Model tidak menilai satu faktor saja, melainkan kombinasi keempatnya sekaligus. Itu sebabnya gempa dengan magnitudo biasa saja bisa tetap ditandai anomali jika kedalaman atau lokasinya sangat tidak biasa, begitu pula sebaliknya.',
-                style: TextStyle(fontSize: 12.5, color: Color(0xFF0D47A1), height: 1.5),
-              ),
-            ),
-
-            const SizedBox(height: 24),
-            const Text(
-              'Studi Kasus: Gempa Terkini',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A)),
-            ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 4),
             Text(
               DemoState.selectedDemoGempa.value != null
-                  ? 'Sedang menampilkan gempa demonstrasi yang kamu pilih, sebagai ilustrasi konkret dari penjelasan di atas.'
-                  : 'Ini adalah gempa terbaru yang sudah diproses oleh model, sebagai ilustrasi konkret dari penjelasan di atas — baik hasilnya normal maupun anomali.',
-              style: TextStyle(fontSize: 13, color: Colors.grey.shade600, height: 1.5),
+                  ? 'Gempa demonstrasi yang kamu pilih:'
+                  : 'Gempa terbaru yang sudah diproses oleh model:',
+              style: TextStyle(fontSize: 12.5, color: Colors.grey.shade600),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             _buildStudiKasus(),
+
+            const SizedBox(height: 20),
+
+            // ================= PENJELASAN KONSEP (ringkas, expandable) =================
+            _buildPenjelasanToggle(),
+            if (_showPenjelasan) ...[
+              const SizedBox(height: 16),
+              _buildPenjelasanKonsep(),
+            ],
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildPenjelasanToggle() {
+    return InkWell(
+      onTap: () => setState(() => _showPenjelasan = !_showPenjelasan),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFE0E0E0)),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.help_outline, size: 18, color: Color(0xFF1565C0)),
+            const SizedBox(width: 8),
+            const Expanded(
+              child: Text(
+                'Apa itu anomali & bagaimana cara kerjanya?',
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1A1A1A)),
+              ),
+            ),
+            Icon(
+              _showPenjelasan ? Icons.expand_less : Icons.expand_more,
+              color: Colors.grey.shade600,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPenjelasanKonsep() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Data Normal (ringkas)
+        _buildSectionLabel(
+          icon: Icons.check_circle_outline,
+          iconColor: const Color(0xFF2E7D32),
+          text: 'DATA NORMAL',
+          textColor: const Color(0xFF2E7D32),
+        ),
+        const SizedBox(height: 10),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: const Color(0xFFE8F5E9),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: const Color(0xFFA5D6A7)),
+          ),
+          child: const Text(
+            'Kekuatan dan kedalaman gempa masih sesuai kebiasaan wilayah tersebut.',
+            style: TextStyle(fontSize: 13, color: Color(0xFF33691E), height: 1.5),
+          ),
+        ),
+
+        const SizedBox(height: 20),
+
+        // Data Anomali (ringkas)
+        _buildSectionLabel(
+          icon: Icons.warning_amber_rounded,
+          iconColor: const Color(0xFFE65100),
+          text: 'DATA ANOMALI',
+          textColor: const Color(0xFFE65100),
+        ),
+        const SizedBox(height: 10),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFF3E0),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: const Color(0xFFFFCC80)),
+          ),
+          child: const Text(
+            'Kombinasi kekuatan (magnitudo) dan kedalaman gempa menyimpang jauh dari kebiasaan wilayah tersebut — perlu kewaspadaan ekstra.',
+            style: TextStyle(fontSize: 13, color: Color(0xFFE65100), height: 1.5),
+          ),
+        ),
+
+        const SizedBox(height: 20),
+
+        // Cara kerja (ringkas)
+        const Text(
+          'Cara Kerja Model',
+          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A)),
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'Model Isolation Forest membandingkan tiap gempa baru dengan data historis se-Indonesia. Semakin tidak biasa kombinasi datanya, semakin tinggi skor anomalinya.',
+          style: TextStyle(fontSize: 13, color: Color(0xFF424242), height: 1.5),
+        ),
+
+        const SizedBox(height: 20),
+
+        // 4 Faktor (ringkas)
+        const Text(
+          '4 Faktor yang Diperiksa',
+          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A)),
+        ),
+        const SizedBox(height: 12),
+        _buildFactorItem(
+          icon: Icons.speed,
+          label: 'Magnitudo',
+          description: 'Kekuatan gempa dibanding kebiasaan wilayah.',
+        ),
+        _buildFactorItem(
+          icon: Icons.vertical_align_bottom,
+          label: 'Kedalaman',
+          description: 'Seberapa dangkal/dalam dibanding kebiasaan wilayah.',
+        ),
+        _buildFactorItem(
+          icon: Icons.explore_outlined,
+          label: 'Lintang & Bujur',
+          description: 'Seberapa jarang lokasi tersebut mengalami gempa.',
+        ),
+      ],
     );
   }
 

@@ -23,10 +23,10 @@ class _DemonstrasiPageState extends State<DemonstrasiPage> {
     if (DemoState.cachedAnomaliHistory != null) {
       return DemoState.cachedAnomaliHistory!;
     }
-    
+
     // Ambil gempa anomali asli dari riwayat (deteksi Isolation Forest di backend)
-    final data = await AnomaliService.fetchAnomaliHistory(limit: 1);
-    
+    final data = await AnomaliService.fetchAnomaliHistory(limit: 5);
+
     // Simpan ke cache
     DemoState.cachedAnomaliHistory = data;
     return data;
@@ -145,9 +145,12 @@ class _DemonstrasiPageState extends State<DemonstrasiPage> {
                             const SizedBox(height: 10),
                         itemBuilder: (context, index) {
                           final gempa = anomaliList[index];
-                          final bool isCurrentlySelected = DemoState.selectedDemoGempa.value?.tanggal == gempa.tanggal && 
-                                                           DemoState.selectedDemoGempa.value?.jam == gempa.jam;
-                                                           
+                          final bool isCurrentlySelected =
+                              DemoState.selectedDemoGempa.value?.tanggal ==
+                                  gempa.tanggal &&
+                              DemoState.selectedDemoGempa.value?.jam ==
+                                  gempa.jam;
+
                           return _buildAnomaliCard(
                             gempa: gempa,
                             isSelected: isCurrentlySelected,
@@ -157,10 +160,14 @@ class _DemonstrasiPageState extends State<DemonstrasiPage> {
                                   DemoState.selectedDemoGempa.value = null;
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
-                                      content: const Text('Mode Demonstrasi dinonaktifkan'),
+                                      content: const Text(
+                                        'Mode Demonstrasi dinonaktifkan',
+                                      ),
                                       backgroundColor: const Color(0xFF2C3E50),
                                       behavior: SnackBarBehavior.floating,
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
                                       duration: const Duration(seconds: 2),
                                     ),
                                   );
@@ -168,10 +175,14 @@ class _DemonstrasiPageState extends State<DemonstrasiPage> {
                                   DemoState.selectedDemoGempa.value = gempa;
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
-                                      content: Text('Mode Demonstrasi aktif: M ${gempa.magnitude}'),
+                                      content: Text(
+                                        'Mode Demonstrasi aktif: M ${gempa.magnitude}',
+                                      ),
                                       backgroundColor: const Color(0xFF2C3E50),
                                       behavior: SnackBarBehavior.floating,
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
                                       duration: const Duration(seconds: 2),
                                     ),
                                   );
@@ -281,9 +292,7 @@ class _DemonstrasiPageState extends State<DemonstrasiPage> {
               ),
               const SizedBox(width: 8),
               Icon(
-                isSelected
-                    ? Icons.check_circle
-                    : Icons.radio_button_unchecked,
+                isSelected ? Icons.check_circle : Icons.radio_button_unchecked,
                 color: isSelected ? Colors.red : Colors.grey.shade300,
                 size: 24,
               ),
@@ -293,6 +302,4 @@ class _DemonstrasiPageState extends State<DemonstrasiPage> {
       ),
     );
   }
-
-
 }
