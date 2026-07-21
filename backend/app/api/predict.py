@@ -156,8 +156,9 @@ async def predict_risk(data: EarthquakeData):
             detail="Harus menyertakan koordinat (latitude & longitude) atau nama daerah (location_name)."
         )
         
-    # Bypassed so we can test real-time BMKG data anywhere:
-    # validate_study_area(lat, lon, data.location_name)
+    # Terapkan validasi geofencing HANYA jika bukan mode otomatis
+    if not data.is_automatic:
+        validate_study_area(lat, lon, data.location_name)
     
     try:
         features = np.array([[data.magnitude, data.depth, lat, lon]])

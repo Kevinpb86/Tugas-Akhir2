@@ -241,6 +241,7 @@ class _KlasifikasiSeismikPageState extends State<KlasifikasiSeismikPage> {
         latitude: latitude,
         longitude: longitude,
         source: _selectedSource,
+        isAutomatic: _classificationMode == 'otomatis',
       );
 
       setState(() {
@@ -288,11 +289,39 @@ class _KlasifikasiSeismikPageState extends State<KlasifikasiSeismikPage> {
         errorMsg =
             'Gagal terhubung ke server kecerdasan buatan (SVM). Pastikan backend Anda sudah aktif di port 8000.';
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(errorMsg),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 5),
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Row(
+            children: [
+              Icon(Icons.error_outline_rounded, color: Colors.red, size: 28),
+              SizedBox(width: 10),
+              Text(
+                'Peringatan',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.red,
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            errorMsg,
+            style: const TextStyle(fontSize: 15),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.red,
+                textStyle: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              child: const Text('Tutup'),
+            ),
+          ],
         ),
       );
     } finally {
