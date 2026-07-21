@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'package:url_launcher/url_launcher.dart';
 
-class TokoAmaninPage extends StatelessWidget {
-  const TokoAmaninPage({super.key});
+class TokoRiksaPage extends StatelessWidget {
+  const TokoRiksaPage({super.key});
 
   Future<void> _launchPrudentialUrl() async {
     final Uri url = Uri.parse('https://www.prudential.co.id/id/');

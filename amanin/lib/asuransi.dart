@@ -41,13 +41,13 @@ class AsuransiWebPage extends StatelessWidget {
                 Icon(Icons.security_rounded, size: 10, color: Color(0xFFED1C24)),
                 SizedBox(width: 4),
                 Text(
-                  'secure.amanin.id',
+                  'secure.riksa.id',
                   style: TextStyle(fontSize: 10, color: Color(0xFF757575), fontWeight: FontWeight.w500),
                 ),
               ],
             ),
             const Text(
-              'Amanin Pro-Siaga',
+              'Riksa Pro-Siaga',
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
@@ -395,7 +395,7 @@ class AsuransiWebPage extends StatelessWidget {
         ),
         _buildFAQTile(
           'Bagaimana cara mengajukan dokumen klaim?',
-          'Cukup unggah foto bukti kerusakan bangunan, surat keterangan bencana dari kelurahan/BMKG, dan KTP langsung melalui aplikasi AMANIN.',
+          'Cukup unggah foto bukti kerusakan bangunan, surat keterangan bencana dari kelurahan/BMKG, dan KTP langsung melalui aplikasi RIKSA.',
         ),
       ],
     );

@@ -41,7 +41,7 @@ class MyApp extends StatelessWidget {
       builder: (context, locale, child) {
         return MaterialApp(
           scrollBehavior: const ScrollBehavior().copyWith(overscroll: false),
-          title: 'Amanin - Earthquake Monitoring',
+          title: 'Riksa - Earthquake Monitoring',
           debugShowCheckedModeBanner: false,
           theme: ThemeData(
             colorScheme: ColorScheme.fromSeed(

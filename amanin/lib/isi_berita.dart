@@ -50,7 +50,7 @@ class IsiBeritaPage extends StatelessWidget {
             icon: const Icon(Icons.share_outlined, color: Color(0xFF1E293B)),
             onPressed: () {
               final String shareText =
-                  '${news.title}\n\nBaca selengkapnya di: ${news.link}\n\nBagikan melalui aplikasi AMANIN.';
+                  '${news.title}\n\nBaca selengkapnya di: ${news.link}\n\nBagikan melalui aplikasi RIKSA.';
               Share.share(shareText);
             },
           ),

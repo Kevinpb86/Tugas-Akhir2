@@ -21,9 +21,36 @@ class _RegisterPageState extends State<RegisterPage> {
   final _confirmPasswordController = TextEditingController();
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  OverlayEntry? _currentOverlayEntry;
+
+  void _showTopNotification(String message, {bool isSuccess = false}) {
+    if (_currentOverlayEntry != null) {
+      _currentOverlayEntry!.remove();
+      _currentOverlayEntry = null;
+    }
+
+    _currentOverlayEntry = OverlayEntry(
+      builder: (context) => TopNotification(
+        message: message,
+        isSuccess: isSuccess,
+        onDismiss: () {
+          if (_currentOverlayEntry != null) {
+            _currentOverlayEntry!.remove();
+            _currentOverlayEntry = null;
+          }
+        },
+      ),
+    );
+
+    Overlay.of(context).insert(_currentOverlayEntry!);
+  }
 
   @override
   void dispose() {
+    if (_currentOverlayEntry != null) {
+      _currentOverlayEntry!.remove();
+      _currentOverlayEntry = null;
+    }
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
@@ -51,9 +78,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
         if (response.statusCode == 200) {
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Registrasi Google Berhasil! Silakan masuk.')),
-            );
+            _showTopNotification('Registrasi Google Berhasil! Silakan masuk.', isSuccess: true);
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const LoginPage()),
@@ -62,17 +87,17 @@ class _RegisterPageState extends State<RegisterPage> {
         } else {
           final error = jsonDecode(response.body);
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Registrasi Google gagal: ${error['detail'] ?? 'Gagal menghubungi server'}')),
-            );
+            _showTopNotification('Registrasi Google gagal: ${error['detail'] ?? 'Gagal menghubungi server'}', isSuccess: false);
           }
+        }
+      } else {
+        if (mounted) {
+          _showTopNotification('Daftar Google gagal/dibatalkan', isSuccess: false);
         }
       }
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Daftar Google gagal: $error')));
+        _showTopNotification('Daftar Google gagal: $error', isSuccess: false);
       }
     }
   }
@@ -94,9 +119,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
         if (response.statusCode == 200) {
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Registrasi Facebook Berhasil! Silakan masuk.')),
-            );
+            _showTopNotification('Registrasi Facebook Berhasil! Silakan masuk.', isSuccess: true);
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const LoginPage()),
@@ -105,29 +128,21 @@ class _RegisterPageState extends State<RegisterPage> {
         } else {
           final error = jsonDecode(response.body);
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Registrasi Facebook gagal: ${error['detail'] ?? 'Gagal menghubungi server'}')),
-            );
+            _showTopNotification('Registrasi Facebook gagal: ${error['detail'] ?? 'Gagal menghubungi server'}', isSuccess: false);
           }
         }
       } else if (result.status == LoginStatus.cancelled) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Daftar Facebook dibatalkan')),
-          );
+          _showTopNotification('Daftar Facebook gagal/dibatalkan', isSuccess: false);
         }
       } else {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Daftar Facebook gagal: ${result.message}')),
-          );
+          _showTopNotification('Daftar Facebook gagal: ${result.message}', isSuccess: false);
         }
       }
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Daftar Facebook gagal: $error')),
-        );
+        _showTopNotification('Daftar Facebook gagal: $error', isSuccess: false);
       }
     }
   }
@@ -400,10 +415,45 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Future<void> _handleRegister() async {
-    if (_passwordController.text != _confirmPasswordController.text) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Kata sandi tidak cocok!')));
+    final name = _nameController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    final confirmPassword = _confirmPasswordController.text;
+
+    // 1. Register dengan seluruh data kosong
+    if (name.isEmpty && email.isEmpty && password.isEmpty && confirmPassword.isEmpty) {
+      _showTopNotification('Semua field tidak boleh kosong!', isSuccess: false);
+      return;
+    }
+
+    // 2. Register dengan nama kosong
+    if (name.isEmpty) {
+      _showTopNotification('Data nama tidak boleh kosong atau data tidak valid.', isSuccess: false);
+      return;
+    }
+
+    // 3. Register dengan email kosong
+    if (email.isEmpty) {
+      _showTopNotification('Email tidak boleh kosong atau data tidak valid.', isSuccess: false);
+      return;
+    }
+
+    // 4. Register dengan format email tidak valid
+    final emailRegExp = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    if (!emailRegExp.hasMatch(email)) {
+      _showTopNotification('Format email tidak valid.', isSuccess: false);
+      return;
+    }
+
+    // 5. Register dengan kata sandi kosong
+    if (password.isEmpty) {
+      _showTopNotification('Kata sandi tidak boleh kosong.', isSuccess: false);
+      return;
+    }
+
+    // 6. Register dengan kata sandi dan konfirmasi kata sandi tidak sama
+    if (password != confirmPassword) {
+      _showTopNotification('Kata sandi tidak cocok!', isSuccess: false);
       return;
     }
 
@@ -418,9 +468,9 @@ class _RegisterPageState extends State<RegisterPage> {
         Uri.parse('${ApiConfig.baseUrl}/register'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'full_name': _nameController.text,
-          'email': _emailController.text,
-          'password': _passwordController.text,
+          'full_name': name,
+          'email': email,
+          'password': password,
         }),
       );
 
@@ -428,11 +478,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Pendaftaran Berhasil! Silakan login.'),
-            ),
-          );
+          _showTopNotification('Pendaftaran Berhasil! Silakan login.', isSuccess: true);
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => const LoginPage()),
@@ -441,17 +487,13 @@ class _RegisterPageState extends State<RegisterPage> {
       } else {
         final error = jsonDecode(response.body);
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(error['detail'] ?? 'Pendaftaran Gagal')),
-          );
+          _showTopNotification(error['detail'] ?? 'Pendaftaran Gagal', isSuccess: false);
         }
       }
     } catch (e) {
       if (mounted) Navigator.pop(context);
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Terjadi kesalahan: ')));
+        _showTopNotification('Terjadi kesalahan: $e', isSuccess: false);
       }
     }
   }
@@ -553,6 +595,143 @@ class _RegisterPageState extends State<RegisterPage> {
           borderRadius: BorderRadius.circular(16),
           onTap: onTap,
           child: Center(child: iconWidget),
+        ),
+      ),
+    );
+  }
+}
+
+class TopNotification extends StatefulWidget {
+  final String message;
+  final bool isSuccess;
+  final VoidCallback onDismiss;
+
+  const TopNotification({
+    super.key,
+    required this.message,
+    required this.isSuccess,
+    required this.onDismiss,
+  });
+
+  @override
+  State<TopNotification> createState() => _TopNotificationState();
+}
+
+class _TopNotificationState extends State<TopNotification> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<Offset> _offsetAnimation;
+  late Animation<double> _opacityAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 350),
+      vsync: this,
+    );
+
+    _offsetAnimation = Tween<Offset>(
+      begin: const Offset(0.0, -1.2),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutCubic,
+    ));
+
+    _opacityAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeIn,
+    ));
+
+    _controller.forward();
+
+    // Auto dismiss after 3 seconds
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted) {
+        _dismiss();
+      }
+    });
+  }
+
+  void _dismiss() async {
+    if (_controller.isAnimating || _controller.status == AnimationStatus.dismissed) return;
+    await _controller.reverse();
+    widget.onDismiss();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Align(
+        alignment: Alignment.topCenter,
+        child: Padding(
+          padding: const EdgeInsets.only(top: 16.0, left: 16.0, right: 16.0),
+          child: SlideTransition(
+            position: _offsetAnimation,
+            child: FadeTransition(
+              opacity: _opacityAnimation,
+              child: Material(
+                color: Colors.transparent,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: widget.isSuccess ? const Color(0xFFE8F5E9) : const Color(0xFFFFEBEE),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: widget.isSuccess ? const Color(0xFF81C784) : const Color(0xFFE57373),
+                      width: 1.5,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.08),
+                        blurRadius: 16,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        widget.isSuccess ? Icons.check_circle_outline : Icons.error_outline,
+                        color: widget.isSuccess ? const Color(0xFF2E7D32) : const Color(0xFFC62828),
+                        size: 22,
+                      ),
+                      const SizedBox(width: 12),
+                      Flexible(
+                        child: Text(
+                          widget.message,
+                          style: TextStyle(
+                            color: widget.isSuccess ? const Color(0xFF1B5E20) : const Color(0xFFB71C1C),
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      GestureDetector(
+                        onTap: _dismiss,
+                        child: Icon(
+                          Icons.close,
+                          color: widget.isSuccess ? const Color(0xFF2E7D32) : const Color(0xFFC62828),
+                          size: 18,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );

@@ -298,7 +298,7 @@ class _BerandaPageState extends State<BerandaPage> {
                 const SizedBox(height: 12),
                 // Description
                 const Text(
-                  'Amanin memerlukan akses lokasi perangkat Anda untuk menampilkan informasi cuaca dan gempa bumi terdekat secara akurat.',
+                  'Riksa memerlukan akses lokasi perangkat Anda untuk menampilkan informasi cuaca dan gempa bumi terdekat secara akurat.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 14,
@@ -2529,7 +2529,7 @@ class _BerandaPageState extends State<BerandaPage> {
           );
           final response = await http.get(
             url,
-            headers: {'User-Agent': 'AmaninApp/1.0'},
+            headers: {'User-Agent': 'RiksaApp/1.0'},
           ).timeout(const Duration(seconds: 3));
           if (response.statusCode == 200) {
             final data = json.decode(response.body);
@@ -3660,7 +3660,7 @@ class _BerandaPageState extends State<BerandaPage> {
                         urlTemplate:
                             'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                         subdomains: const ['a', 'b', 'c'],
-                        userAgentPackageName: 'com.example.amanin',
+                        userAgentPackageName: 'com.example.riksa',
                         tileProvider: CancellableNetworkTileProvider(),
                       ),
                       MarkerLayer(
@@ -3728,7 +3728,7 @@ class _BerandaPageState extends State<BerandaPage> {
                     if (_latestQuake != null) {
                       final gempa = _latestQuake!;
                       final String shareText =
-                          'Info Gempa dirasakan Mag:${gempa.magnitude}, ${gempa.tanggal} ${gempa.jam.replaceAll(' WIB', '')} WIB, Lok:${gempa.lintang}, ${gempa.bujur} (${gempa.wilayah}), Kedlmn:${gempa.kedalaman} ::AMANIN\nInformasi selengkapnya lihat di\nhttps://amanin.app/';
+                          'Info Gempa dirasakan Mag:${gempa.magnitude}, ${gempa.tanggal} ${gempa.jam.replaceAll(' WIB', '')} WIB, Lok:${gempa.lintang}, ${gempa.bujur} (${gempa.wilayah}), Kedlmn:${gempa.kedalaman} ::RIKSA\nInformasi selengkapnya lihat di\nhttps://riksa.app/';
                       Share.share(shareText);
                     }
                   },
@@ -4210,7 +4210,7 @@ class _BerandaPageState extends State<BerandaPage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const TokoAmaninPage(),
+                              builder: (context) => const TokoRiksaPage(),
                             ),
                           );
                         },
@@ -5046,14 +5046,14 @@ class _BerandaPageState extends State<BerandaPage> {
               ),
               const SizedBox(height: 8),
               const Text(
-                'Berikut adalah pemberitahuan umum dan informasi pembaruan aplikasi Amanin Anda.',
+                'Berikut adalah pemberitahuan umum dan informasi pembaruan aplikasi Riksa Anda.',
                 style: TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
               ),
               const SizedBox(height: 20),
 
               // Notification List Items
               _buildNotificationItem(
-                title: 'Selamat Datang di Amanin',
+                title: 'Selamat Datang di Riksa',
                 desc:
                     'Terima kasih telah bergabung. Lengkapi profil Anda untuk mendapatkan pengalaman terbaik.',
                 time: 'Baru saja',

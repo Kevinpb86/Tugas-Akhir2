@@ -62,7 +62,7 @@ class NewsService {
       photoUrl: 'https://images.unsplash.com/photo-1532938911079-1b06ac7ceec7?auto=format&fit=crop&w=500&q=80',
       publishedDatetimeUtc: DateTime.now().subtract(const Duration(hours: 5)).toUtc().toIso8601String(),
       sourceUrl: 'https://www.bmkg.go.id/',
-      sourceName: 'Amanin Edukasi',
+      sourceName: 'Riksa Edukasi',
       sourceLogoUrl: '',
     ),
     NewsModel(
@@ -72,7 +72,7 @@ class NewsService {
       photoUrl: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=500&q=80',
       publishedDatetimeUtc: DateTime.now().subtract(const Duration(days: 1)).toUtc().toIso8601String(),
       sourceUrl: 'https://www.bmkg.go.id/',
-      sourceName: 'Amanin Siaga',
+      sourceName: 'Riksa Siaga',
       sourceLogoUrl: '',
     ),
     NewsModel(

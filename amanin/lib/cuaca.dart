@@ -128,7 +128,7 @@ class _CuacaPageState extends State<CuacaPage> {
             onPressed: () {
               if (_latestCuaca != null) {
                 final String shareText =
-                    'Cuaca saat ini di ${_latestCuaca!.kota}: ${_latestCuaca!.cuaca} dengan suhu ${_latestCuaca!.suhu}\u00B0C. ::AMANIN\nInformasi selengkapnya lihat di\nhttps://amanin.app/';
+                    'Cuaca saat ini di ${_latestCuaca!.kota}: ${_latestCuaca!.cuaca} dengan suhu ${_latestCuaca!.suhu}\u00B0C. ::RIKSA\nInformasi selengkapnya lihat di\nhttps://riksa.app/';
                 Share.share(shareText);
               }
             },
