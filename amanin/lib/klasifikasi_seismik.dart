@@ -1502,7 +1502,15 @@ class _KlasifikasiSeismikPageState extends State<KlasifikasiSeismikPage> {
                                 icon: Icons.waves,
                                 iconColor: const Color(0xFF42A5F5),
                               ),
-                              validator: (value) => (value == null || value.isEmpty) ? 'Harap masukkan magnitudo' : null,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Harap masukkan magnitudo';
+                                }
+                                if (double.tryParse(value.replaceAll(',', '.')) == null) {
+                                  return 'Format angka tidak valid';
+                                }
+                                return null;
+                              },
                             ),
                             const SizedBox(height: 16),
                             TextFormField(
@@ -1515,7 +1523,15 @@ class _KlasifikasiSeismikPageState extends State<KlasifikasiSeismikPage> {
                                 icon: Icons.arrow_downward,
                                 iconColor: const Color(0xFFEF5350),
                               ),
-                              validator: (value) => (value == null || value.isEmpty) ? 'Harap masukkan kedalaman' : null,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Harap masukkan kedalaman';
+                                }
+                                if (double.tryParse(value.replaceAll(',', '.')) == null) {
+                                  return 'Format angka tidak valid';
+                                }
+                                return null;
+                              },
                             ),
                             const SizedBox(height: 16),
                             TextFormField(
