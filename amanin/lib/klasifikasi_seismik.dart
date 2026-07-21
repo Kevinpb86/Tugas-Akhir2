@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'main.dart';
 import 'login.dart';
@@ -10,6 +12,7 @@ import 'services/usgs_service.dart';
 import 'edukasi_aman.dart';
 import 'edukasi_waspada.dart';
 import 'edukasi_bahaya.dart';
+import 'utils/earthquake_map.dart';
 
 class KlasifikasiSeismikPage extends StatefulWidget {
   const KlasifikasiSeismikPage({super.key});
@@ -26,6 +29,7 @@ class _KlasifikasiSeismikPageState extends State<KlasifikasiSeismikPage> {
 
   String? _hasilKlasifikasi;
   Color _warnaKlasifikasi = Colors.grey;
+  IconData _ikonKlasifikasi = Icons.analytics_rounded;
   String _deskripsiKlasifikasi = '';
   double? _hasilLatitude;
   double? _hasilLongitude;
@@ -37,6 +41,43 @@ class _KlasifikasiSeismikPageState extends State<KlasifikasiSeismikPage> {
   GempaModel? _latestQuake;
   bool _isLoadingLatestQuake = false;
   String? _errorMessage;
+
+  InputDecoration _premiumInputDecoration({
+    required String label,
+    required String hint,
+    required IconData icon,
+    required Color iconColor,
+  }) {
+    return InputDecoration(
+      labelText: label,
+      hintText: hint,
+      labelStyle: const TextStyle(fontWeight: FontWeight.w600, color: Colors.black54),
+      hintStyle: const TextStyle(color: Colors.black38, fontSize: 14),
+      filled: true,
+      fillColor: Colors.white.withValues(alpha: 0.85),
+      prefixIcon: Container(
+        margin: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: iconColor.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(icon, color: iconColor, size: 22),
+      ),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide.none,
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.15), width: 1.5),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: Color(0xFF1E88E5), width: 2),
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+    );
+  }
 
   @override
   void initState() {
@@ -50,6 +91,45 @@ class _KlasifikasiSeismikPageState extends State<KlasifikasiSeismikPage> {
     _kedalamanController.dispose();
     _lokasiController.dispose();
     super.dispose();
+  }
+
+  void _showMapDialog(double lat, double lng) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: SizedBox(
+              height: 400,
+              width: double.infinity,
+              child: Stack(
+                children: [
+                  EarthquakeMap(
+                    coordinates: '$lat,$lng',
+                    initialZoom: 7.0,
+                    interactive: true,
+                  ),
+                  Positioned(
+                    top: 10,
+                    right: 10,
+                    child: IconButton(
+                      icon: const Icon(Icons.close, color: Colors.black87),
+                      onPressed: () => Navigator.of(context).pop(),
+                      style: IconButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        elevation: 4,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   Future<void> _fetchLatestQuake() async {
@@ -169,15 +249,18 @@ class _KlasifikasiSeismikPageState extends State<KlasifikasiSeismikPage> {
         _hasilLongitude = hasil.longitude;
 
         if (hasil.riskLevel == 'Tinggi' || hasil.predictionCode == 2) {
-          _warnaKlasifikasi = const Color(0xFFEF5350); // Red
+          _warnaKlasifikasi = const Color(0xFFC62828); // Red
+          _ikonKlasifikasi = Icons.warning_rounded;
           _deskripsiKlasifikasi =
               'Kerentanan seismik tinggi. Sangat berpotensi menimbulkan kerusakan struktural bangunan dan membahayakan keselamatan.';
         } else if (hasil.riskLevel == 'Sedang' || hasil.predictionCode == 1) {
-          _warnaKlasifikasi = const Color(0xFFFFA726); // Orange
+          _warnaKlasifikasi = const Color(0xFFE65100); // Orange
+          _ikonKlasifikasi = Icons.info_rounded;
           _deskripsiKlasifikasi =
               'Kerentanan seismik sedang. Berpotensi menimbulkan kerusakan ringan hingga sedang pada bangunan.';
         } else {
-          _warnaKlasifikasi = const Color(0xFF66BB6A); // Green
+          _warnaKlasifikasi = const Color(0xFF2E7D32); // Green
+          _ikonKlasifikasi = Icons.check_circle_rounded;
           _deskripsiKlasifikasi =
               'Kerentanan seismik rendah. Guncangan umumnya tidak menimbulkan kerusakan yang signifikan.';
         }
@@ -1215,6 +1298,34 @@ class _KlasifikasiSeismikPageState extends State<KlasifikasiSeismikPage> {
               ),
               const SizedBox(height: 20),
 
+              // Disclaimer Container (Dipindah Ke Atas)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF8E1).withValues(alpha: 0.9),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFF8F6200).withValues(alpha: 0.25)),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.info_outline, color: Color(0xFF8F6200), size: 20),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Disclaimer: Sumber data dan hasil hitungan aplikasi ini menggunakan referensi dari ${_selectedSource.toUpperCase()}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF4D3800),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+
               // Source Selector (Always visible or inside specific sections, let's keep it clean)
               AnimatedCrossFade(
                 firstChild: Column(
@@ -1354,88 +1465,68 @@ class _KlasifikasiSeismikPageState extends State<KlasifikasiSeismikPage> {
                             const SizedBox(height: 16),
                             TextFormField(
                               controller: _magnitudoController,
-                              keyboardType: const TextInputType.numberWithOptions(
-                                decimal: true,
-                              ),
+                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
                               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                              decoration: InputDecoration(
-                                labelText: 'Magnitudo',
-                                labelStyle: const TextStyle(fontWeight: FontWeight.w500),
-                                hintText: 'Contoh: 5.6',
-                                prefixIcon: const Icon(
-                                  Icons.waves,
-                                  color: Color(0xFF42A5F5),
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
+                              decoration: _premiumInputDecoration(
+                                label: 'Magnitudo',
+                                hint: 'Contoh: 5.6',
+                                icon: Icons.waves,
+                                iconColor: const Color(0xFF42A5F5),
                               ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Harap masukkan magnitudo';
-                                }
-                                return null;
-                              },
+                              validator: (value) => (value == null || value.isEmpty) ? 'Harap masukkan magnitudo' : null,
                             ),
                             const SizedBox(height: 16),
                             TextFormField(
                               controller: _kedalamanController,
-                              keyboardType: const TextInputType.numberWithOptions(
-                                decimal: true,
-                              ),
+                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
                               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                              decoration: InputDecoration(
-                                labelText: 'Kedalaman (km)',
-                                labelStyle: const TextStyle(fontWeight: FontWeight.w500),
-                                hintText: 'Contoh: 30',
-                                prefixIcon: const Icon(
-                                  Icons.arrow_downward,
-                                  color: Color(0xFFEF5350),
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
+                              decoration: _premiumInputDecoration(
+                                label: 'Kedalaman (km)',
+                                hint: 'Contoh: 30',
+                                icon: Icons.arrow_downward,
+                                iconColor: const Color(0xFFEF5350),
                               ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Harap masukkan kedalaman';
-                                }
-                                return null;
-                              },
+                              validator: (value) => (value == null || value.isEmpty) ? 'Harap masukkan kedalaman' : null,
                             ),
                             const SizedBox(height: 16),
                             TextFormField(
                               controller: _lokasiController,
                               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                              decoration: InputDecoration(
-                                labelText: 'Nama Daerah / Lokasi',
-                                labelStyle: const TextStyle(fontWeight: FontWeight.w500),
-                                hintText: 'Contoh: Lembang, Bandung, Cianjur',
-                                prefixIcon: const Icon(
-                                  Icons.location_on,
-                                  color: Color(0xFF66BB6A),
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                              decoration: _premiumInputDecoration(
+                                label: 'Nama Daerah / Lokasi',
+                                hint: 'Contoh: Lembang, Bandung, Cianjur',
+                                icon: Icons.location_on,
+                                iconColor: const Color(0xFF66BB6A),
+                              ),
+                              validator: (value) => (value == null || value.isEmpty) ? 'Harap masukkan nama daerah atau lokasi' : null,
+                            ),
+                            const SizedBox(height: 28),
+                            Container(
+                              width: double.infinity,
+                              height: 56,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF1E88E5).withValues(alpha: 0.3),
+                                    blurRadius: 20,
+                                    spreadRadius: 2,
+                                    offset: const Offset(0, 8),
+                                  ),
+                                ],
+                                gradient: const LinearGradient(
+                                  colors: [Color(0xFF42A5F5), Color(0xFF1E88E5)],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
                                 ),
                               ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Harap masukkan nama daerah atau lokasi';
-                                }
-                                return null;
-                              },
-                            ),
-                            const SizedBox(height: 24),
-                            SizedBox(
-                              width: double.infinity,
-                              height: 52,
                               child: ElevatedButton(
                                 onPressed: _isLoading ? null : _hitungKlasifikasi,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF1E88E5),
+                                  backgroundColor: Colors.transparent,
+                                  shadowColor: Colors.transparent,
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(16),
                                   ),
                                 ),
                                 child: _isLoading
@@ -1444,14 +1535,15 @@ class _KlasifikasiSeismikPageState extends State<KlasifikasiSeismikPage> {
                                         width: 24,
                                         child: CircularProgressIndicator(
                                           color: Colors.white,
-                                          strokeWidth: 2.5,
+                                          strokeWidth: 3,
                                         ),
                                       )
                                     : const Text(
                                         'Klasifikasikan (SVM)',
                                         style: TextStyle(
-                                          fontSize: 16,
+                                          fontSize: 17,
                                           fontWeight: FontWeight.bold,
+                                          letterSpacing: 0.5,
                                           color: Colors.white,
                                         ),
                                       ),
@@ -1475,87 +1567,172 @@ class _KlasifikasiSeismikPageState extends State<KlasifikasiSeismikPage> {
 
               // Hasil Klasifikasi & Panduan Mitigasi Bencana
               if (_hasilKlasifikasi != null) ...[
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-                    child: Container(
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: _warnaKlasifikasi.withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: _warnaKlasifikasi.withValues(alpha: 0.45), width: 2.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: _warnaKlasifikasi.withValues(alpha: 0.15),
-                            blurRadius: 25,
-                            spreadRadius: 2,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
+                TweenAnimationBuilder<double>(
+                  tween: Tween<double>(begin: 0.8, end: 1.0),
+                  duration: const Duration(milliseconds: 600),
+                  curve: Curves.elasticOut,
+                  builder: (context, scale, child) {
+                    return Transform.scale(
+                      scale: scale,
+                      child: Opacity(
+                        opacity: ((scale - 0.8) / 0.2).clamp(0.0, 1.0), // Fade in perlahan
+                        child: child,
                       ),
-                      child: Column(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: _warnaKlasifikasi.withValues(alpha: 0.12),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(Icons.analytics_rounded, color: _warnaKlasifikasi, size: 56),
+                    );
+                  },
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(28),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
+                      child: Container(
+                        padding: const EdgeInsets.all(28),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.65),
+                          borderRadius: BorderRadius.circular(28),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.9),
+                            width: 1.5,
                           ),
-                          const SizedBox(height: 16),
-                          const Text(
-                            'Hasil Prediksi Kerentanan Seismik',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 0.5,
-                              color: Color(0xFF666666),
+                          boxShadow: [
+                            BoxShadow(
+                              color: _warnaKlasifikasi.withValues(alpha: 0.15),
+                              blurRadius: 35,
+                              spreadRadius: 8,
+                              offset: const Offset(0, 12),
                             ),
+                          ],
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              _warnaKlasifikasi.withValues(alpha: 0.1),
+                              Colors.white.withValues(alpha: 0.5),
+                            ],
                           ),
-                          const SizedBox(height: 6),
-                          Text(
-                            _hasilKlasifikasi!,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 32,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 1.0,
-                              color: _warnaKlasifikasi,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          if (_hasilLatitude != null && _hasilLongitude != null) ...[
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withValues(alpha: 0.04),
-                                borderRadius: BorderRadius.circular(30),
+                        ),
+                        child: Column(
+                          children: [
+                            // Ikon yang ikut teranimasi secara terpisah
+                            TweenAnimationBuilder<double>(
+                              tween: Tween<double>(begin: 0.0, end: 1.0),
+                              duration: const Duration(milliseconds: 900),
+                              curve: Curves.elasticOut,
+                              builder: (context, value, child) {
+                                return Transform.scale(
+                                  scale: value,
+                                  child: child,
+                                );
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(18),
+                                decoration: BoxDecoration(
+                                  color: _warnaKlasifikasi.withValues(alpha: 0.15),
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: _warnaKlasifikasi.withValues(alpha: 0.4),
+                                      blurRadius: 25,
+                                      spreadRadius: 2,
+                                    ),
+                                  ],
+                                ),
+                                child: Icon(_ikonKlasifikasi, color: _warnaKlasifikasi, size: 60),
                               ),
-                              child: Text(
-                                'Episentrum: ${_hasilLatitude!.toStringAsFixed(4)} LU/LS, ${_hasilLongitude!.toStringAsFixed(4)} BT/BB',
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF444444),
+                            ),
+                            const SizedBox(height: 20),
+                            
+                            const Text(
+                              'Hasil Klasifikasi Kerentanan Seismik',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0.5,
+                                color: Colors.black54,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              _hasilKlasifikasi!,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 34,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 1.2,
+                                color: _warnaKlasifikasi,
+                                shadows: [
+                                  Shadow(
+                                    color: _warnaKlasifikasi.withValues(alpha: 0.3),
+                                    blurRadius: 15,
+                                    offset: const Offset(0, 5),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            
+                            if (_hasilLatitude != null && _hasilLongitude != null) ...[
+                              InkWell(
+                                onTap: () => _showMapDialog(_hasilLatitude!, _hasilLongitude!),
+                                borderRadius: BorderRadius.circular(30),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.9),
+                                    borderRadius: BorderRadius.circular(30),
+                                    border: Border.all(color: const Color(0xFF1E88E5).withValues(alpha: 0.3)),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(alpha: 0.05),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(Icons.location_on, size: 16, color: Colors.black54),
+                                      const SizedBox(width: 6),
+                                      Flexible(
+                                        child: Text(
+                                          'Episentrum: ${_hasilLatitude!.abs().toStringAsFixed(4)} ${_hasilLatitude! < 0 ? 'LS' : 'LU'}, ${_hasilLongitude!.abs().toStringAsFixed(4)} ${_hasilLongitude! < 0 ? 'BB' : 'BT'}',
+                                          style: const TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Container(
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFF1E88E5).withValues(alpha: 0.1),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(Icons.map_rounded, size: 14, color: Color(0xFF1E88E5)),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
+                              const SizedBox(height: 16),
+                            ],
+                            
+                            Text(
+                              _deskripsiKlasifikasi,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.black87,
+                                height: 1.6,
+                              ),
                             ),
-                            const SizedBox(height: 12),
                           ],
-                          Text(
-                            _deskripsiKlasifikasi,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w500,
-                              color: Color(0xFF333333),
-                              height: 1.5,
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
                   ),
