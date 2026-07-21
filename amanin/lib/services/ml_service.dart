@@ -78,6 +78,7 @@ class MlService {
     double? latitude,
     double? longitude,
     String source = 'bmkg',
+    bool isAutomatic = false,
   }) async {
     try {
       final response = await http.post(
@@ -93,6 +94,7 @@ class MlService {
           'latitude': latitude,
           'longitude': longitude,
           'source': source,
+          'is_automatic': isAutomatic,
         }),
       ).timeout(const Duration(seconds: 6));
 
@@ -108,19 +110,34 @@ class MlService {
           throw Exception(
               'Server sedang offline atau sibuk (status ${response.statusCode}).');
         }
+        String errMsg = bodyText;
         try {
           final errData = json.decode(bodyText);
-          final errMsg = errData['detail'] ?? bodyText;
-          throw Exception(errMsg);
+          if (errData is Map && errData.containsKey('detail')) {
+            errMsg = errData['detail'].toString();
+          }
         } catch (_) {
-          throw Exception('Gagal melakukan prediksi: $bodyText');
+          errMsg = 'Gagal melakukan prediksi: $bodyText';
         }
+        throw Exception(errMsg);
       }
     } on TimeoutException {
       throw Exception(
-          'Batas waktu koneksi habis. Pastikan backend Anda sudah aktif.');
+          'Batas waktu koneksi habis. Pastikan perangkat Anda terhubung ke internet atau server aktif.');
     } catch (e) {
-      throw Exception('Gagal terhubung ke server backend ML: $e');
+      // Jika errornya sudah berupa Exception dari block di atas (berisi pesan dari backend), lempar ulang apa adanya
+      if (e.toString().contains('Gagal melakukan prediksi') || e.toString().contains('Server sedang offline')) {
+        rethrow;
+      }
+      
+      String errorString = e.toString().replaceAll('Exception: ', '');
+      
+      // Jika error berasal dari backend (berisi pesan informatif)
+      if (!errorString.contains('SocketException') && !errorString.contains('Connection refused')) {
+        throw Exception(errorString);
+      }
+      
+      throw Exception('Gagal terhubung ke server backend ML: $errorString');
     }
   }
 
