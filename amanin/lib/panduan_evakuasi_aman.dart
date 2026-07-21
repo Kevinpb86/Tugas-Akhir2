@@ -282,7 +282,7 @@ class PanduanEvakuasiAmanPage extends StatelessWidget {
           ),
           _buildStandardStepCard(
             number: '2', action: 'CEK NOTIFIKASI BMKG',
-            desc: 'Sekadar konfirmasi, Anda bisa mengecek aplikasi BMKG atau Amanin untuk memastikan pusat dan kekuatan gempa.',
+            desc: 'Sekadar konfirmasi, Anda bisa mengecek aplikasi BMKG atau Riksa untuk memastikan pusat dan kekuatan gempa.',
             icon: Icons.verified_rounded,
             primaryColor: const Color(0xFF0F766E), lightBgColor: const Color(0xFFCCFBF1), borderColor: const Color(0xFF99F6E4), iconBgColor: const Color(0xFFF0FDFA),
           ),

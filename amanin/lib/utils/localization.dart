@@ -13,7 +13,7 @@ class Localization {
   static const Map<String, Map<String, String>> _localizedValues = {
     'id': {
       // General
-      'app_title': 'Amanin - Bencana',
+      'app_title': 'Riksa - Bencana',
       'loading': 'Memuat...',
 
       // Bottom Nav
@@ -24,7 +24,7 @@ class Localization {
       'nav_education': 'Panduan',
 
       // Home Page
-      'home_header_title': 'Amanin',
+      'home_header_title': 'Riksa',
       'home_location': 'Jakarta Pusat',
       'home_quake_status_safe': 'Tidak ada gempa signifikan',
       'home_quake_status_danger': 'Gempabumi Terkini',
@@ -41,7 +41,7 @@ class Localization {
       'account_title': 'Profil Pengguna',
       'account_not_logged_in': 'Belum Login',
       'account_login_desc':
-          'Silakan login atau daftar untuk mengakses fitur lengkap Amanin.',
+          'Silakan login atau daftar untuk mengakses fitur lengkap Riksa.',
       'account_btn_login': 'Masuk',
       'account_btn_register': 'Daftar Akun',
       'account_section_general': 'PENGATURAN UMUM',
@@ -55,7 +55,7 @@ class Localization {
       // Auth
       'login_title': 'Masuk',
       'login_welcome': 'Selamat Datang Kembali! 👋',
-      'login_subtitle': 'Masuk untuk mengakses semua fitur Amanin.',
+      'login_subtitle': 'Masuk untuk mengakses semua fitur Riksa.',
       'login_label_email': 'Email',
       'login_hint_email': 'Masukkan email Anda',
       'login_label_pass': 'Kata Sandi',
@@ -79,7 +79,7 @@ class Localization {
     },
     'en': {
       // General
-      'app_title': 'Amanin - Disaster',
+      'app_title': 'Riksa - Disaster',
       'loading': 'Loading...',
 
       // Bottom Nav
@@ -90,7 +90,7 @@ class Localization {
       'nav_education': 'Guides',
 
       // Home Page
-      'home_header_title': 'Amanin',
+      'home_header_title': 'Riksa',
       'home_location': 'Central Jakarta',
       'home_quake_status_safe': 'No significant quake',
       'home_quake_status_danger': 'Latest Earthquake',
@@ -107,7 +107,7 @@ class Localization {
       'account_title': 'User Profile',
       'account_not_logged_in': 'Not Logged In',
       'account_login_desc':
-          'Please login or register to access full features of Amanin.',
+          'Please login or register to access full features of Riksa.',
       'account_btn_login': 'Login',
       'account_btn_register': 'Register',
       'account_section_general': 'GENERAL SETTINGS',
@@ -121,7 +121,7 @@ class Localization {
       // Auth
       'login_title': 'Login',
       'login_welcome': 'Welcome Back! 👋',
-      'login_subtitle': 'Login to access all Amanin features.',
+      'login_subtitle': 'Login to access all Riksa features.',
       'login_label_email': 'Email',
       'login_hint_email': 'Enter your email',
       'login_label_pass': 'Password',

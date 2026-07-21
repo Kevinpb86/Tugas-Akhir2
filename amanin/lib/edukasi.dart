@@ -351,7 +351,7 @@ class _EdukasiPageState extends State<EdukasiPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Amanin',
+              'Riksa',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,

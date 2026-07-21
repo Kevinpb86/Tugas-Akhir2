@@ -19,9 +19,14 @@ class _LoginPageState extends State<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  OverlayEntry? _currentOverlayEntry;
 
   @override
   void dispose() {
+    if (_currentOverlayEntry != null) {
+      _currentOverlayEntry!.remove();
+      _currentOverlayEntry = null;
+    }
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -52,9 +57,7 @@ class _LoginPageState extends State<LoginPage> {
           isLoggedInNotifier.value = true;
 
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Login Google Berhasil!')),
-            );
+            _showTopSnackBar('Login Google Berhasil!', isError: false);
             Navigator.pop(context);
           }
         } else {
@@ -62,6 +65,10 @@ class _LoginPageState extends State<LoginPage> {
           if (mounted) {
             _showTopSnackBar('Login Google gagal: ${error['detail'] ?? 'Gagal menghubungi server'}');
           }
+        }
+      } else {
+        if (mounted) {
+          _showTopSnackBar('Login Google gagal/dibatalkan');
         }
       }
     } catch (error) {
@@ -94,9 +101,7 @@ class _LoginPageState extends State<LoginPage> {
           isLoggedInNotifier.value = true;
 
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Login Facebook Berhasil!')),
-            );
+            _showTopSnackBar('Login Facebook Berhasil!', isError: false);
             Navigator.pop(context);
           }
         } else {
@@ -107,15 +112,11 @@ class _LoginPageState extends State<LoginPage> {
         }
       } else if (result.status == LoginStatus.cancelled) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Login Facebook dibatalkan')),
-          );
+          _showTopSnackBar('Login Facebook gagal/dibatalkan');
         }
       } else {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Login Facebook gagal: ${result.message}')),
-          );
+          _showTopSnackBar('Login Facebook gagal: ${result.message}');
         }
       }
     } catch (error) {
@@ -222,7 +223,7 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Masuk ke akun Amanin Anda',
+                              'Masuk ke akun Riksa Anda',
                               style: const TextStyle(
                                 fontSize: 15,
                                 color: Color(0xFF757575),
@@ -459,9 +460,7 @@ class _LoginPageState extends State<LoginPage> {
             ElevatedButton(
               onPressed: () {
                 if (resetEmailController.text.isEmpty) {
-                  ScaffoldMessenger.of(scaffoldContext).showSnackBar(
-                    const SnackBar(content: Text('Email tidak boleh kosong!')),
-                  );
+                  _showTopSnackBar('Email tidak boleh kosong!');
                   return;
                 }
                 Navigator.pop(dialogContext); // close dialog
@@ -482,45 +481,34 @@ class _LoginPageState extends State<LoginPage> {
                     )
                     .then((response) {
                       if (mounted) {
-                        Navigator.pop(scaffoldContext); // close loading
+                        Navigator.pop(context); // close loading
                       }
 
                       if (response.statusCode == 200) {
                         final data = jsonDecode(response.body);
                         if (mounted) {
-                          ScaffoldMessenger.of(scaffoldContext).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                data['message'] ??
-                                    'Link reset kata sandi telah dikirim ke ${resetEmailController.text}',
-                              ),
-                            ),
+                          _showTopSnackBar(
+                            data['message'] ??
+                                'Link reset kata sandi telah dikirim ke ${resetEmailController.text}',
+                            isError: false,
                           );
                         }
                       } else {
                         final error = jsonDecode(response.body);
                         if (mounted) {
-                          ScaffoldMessenger.of(scaffoldContext).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                error['detail'] ??
-                                    'Gagal mengirim email reset kata sandi.',
-                              ),
-                            ),
+                          _showTopSnackBar(
+                            error['detail'] ??
+                                'Gagal mengirim email reset kata sandi.',
                           );
                         }
                       }
                     })
                     .catchError((error) {
                       if (mounted) {
-                        Navigator.pop(scaffoldContext); // close loading
+                        Navigator.pop(context); // close loading
                       }
                       if (mounted) {
-                        ScaffoldMessenger.of(scaffoldContext).showSnackBar(
-                          const SnackBar(
-                            content: Text('Terjadi kesalahan jaringan.'),
-                          ),
-                        );
+                        _showTopSnackBar('Terjadi kesalahan jaringan.');
                       }
                     });
               },
@@ -548,8 +536,21 @@ class _LoginPageState extends State<LoginPage> {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
 
-    if (email.isEmpty || password.isEmpty) {
+    // 1. Email dan kata sandi kosong
+    if (email.isEmpty && password.isEmpty) {
       _showTopSnackBar('Email dan kata sandi tidak boleh kosong!');
+      return;
+    }
+
+    // 2. Email kosong
+    if (email.isEmpty) {
+      _showTopSnackBar('Email tidak boleh kosong!');
+      return;
+    }
+
+    // 3. Kata sandi kosong
+    if (password.isEmpty) {
+      _showTopSnackBar('Kata sandi tidak boleh kosong!');
       return;
     }
 
@@ -567,9 +568,7 @@ class _LoginPageState extends State<LoginPage> {
         isLoggedInNotifier.value = true;
 
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Login Berhasil!')),
-          );
+          _showTopSnackBar('Login Berhasil!', isError: false);
           Navigator.pop(context);
         }
       } else {
@@ -680,74 +679,161 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _showTopSnackBar(String message, {bool isError = true}) {
-    final overlay = Overlay.of(context);
-    late OverlayEntry overlayEntry;
+    if (_currentOverlayEntry != null) {
+      _currentOverlayEntry!.remove();
+      _currentOverlayEntry = null;
+    }
 
-    overlayEntry = OverlayEntry(
-      builder: (context) => Positioned(
-        top: MediaQuery.of(context).padding.top + 16,
-        left: 16,
-        right: 16,
-        child: Material(
-          color: Colors.transparent,
-          child: TweenAnimationBuilder<double>(
-            duration: const Duration(milliseconds: 400),
-            tween: Tween(begin: -80.0, end: 0.0),
-            curve: Curves.easeOutBack,
-            builder: (context, value, child) {
-              return Transform.translate(
-                offset: Offset(0, value),
-                child: Opacity(
-                  opacity: ((value + 80.0) / 80.0).clamp(0.0, 1.0),
-                  child: child,
-                ),
-              );
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              decoration: BoxDecoration(
-                color: isError ? const Color(0xFFEF4444) : const Color(0xFF10B981),
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.15),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    isError ? Icons.error_outline_rounded : Icons.check_circle_outline_rounded,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      message,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                      ),
+    _currentOverlayEntry = OverlayEntry(
+      builder: (context) => TopNotification(
+        message: message,
+        isSuccess: !isError,
+        onDismiss: () {
+          if (_currentOverlayEntry != null) {
+            _currentOverlayEntry!.remove();
+            _currentOverlayEntry = null;
+          }
+        },
+      ),
+    );
+
+    Overlay.of(context).insert(_currentOverlayEntry!);
+  }
+}
+
+class TopNotification extends StatefulWidget {
+  final String message;
+  final bool isSuccess;
+  final VoidCallback onDismiss;
+
+  const TopNotification({
+    super.key,
+    required this.message,
+    required this.isSuccess,
+    required this.onDismiss,
+  });
+
+  @override
+  State<TopNotification> createState() => _TopNotificationState();
+}
+
+class _TopNotificationState extends State<TopNotification> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<Offset> _offsetAnimation;
+  late Animation<double> _opacityAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 350),
+      vsync: this,
+    );
+
+    _offsetAnimation = Tween<Offset>(
+      begin: const Offset(0.0, -1.2),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutCubic,
+    ));
+
+    _opacityAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeIn,
+    ));
+
+    _controller.forward();
+
+    // Auto dismiss after 3 seconds
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted) {
+        _dismiss();
+      }
+    });
+  }
+
+  void _dismiss() async {
+    if (_controller.isAnimating || _controller.status == AnimationStatus.dismissed) return;
+    await _controller.reverse();
+    widget.onDismiss();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Align(
+        alignment: Alignment.topCenter,
+        child: Padding(
+          padding: const EdgeInsets.only(top: 16.0, left: 16.0, right: 16.0),
+          child: SlideTransition(
+            position: _offsetAnimation,
+            child: FadeTransition(
+              opacity: _opacityAnimation,
+              child: Material(
+                color: Colors.transparent,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: widget.isSuccess ? const Color(0xFFE8F5E9) : const Color(0xFFFFEBEE),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: widget.isSuccess ? const Color(0xFF81C784) : const Color(0xFFE57373),
+                      width: 1.5,
                     ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.08),
+                        blurRadius: 16,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
                   ),
-                ],
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        widget.isSuccess ? Icons.check_circle_outline : Icons.error_outline,
+                        color: widget.isSuccess ? const Color(0xFF2E7D32) : const Color(0xFFC62828),
+                        size: 22,
+                      ),
+                      const SizedBox(width: 12),
+                      Flexible(
+                        child: Text(
+                          widget.message,
+                          style: TextStyle(
+                            color: widget.isSuccess ? const Color(0xFF1B5E20) : const Color(0xFFB71C1C),
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      GestureDetector(
+                        onTap: _dismiss,
+                        child: Icon(
+                          Icons.close,
+                          color: widget.isSuccess ? const Color(0xFF2E7D32) : const Color(0xFFC62828),
+                          size: 18,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
         ),
       ),
     );
-
-    overlay.insert(overlayEntry);
-
-    Future.delayed(const Duration(seconds: 3), () {
-      if (overlayEntry.mounted) {
-        overlayEntry.remove();
-      }
-    });
   }
 }
