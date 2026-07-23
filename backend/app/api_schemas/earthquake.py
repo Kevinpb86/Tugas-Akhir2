@@ -8,6 +8,7 @@ class EarthquakeData(BaseModel):
     longitude: Optional[float] = None
     location_name: Optional[str] = None
     source: str = "bmkg" # Bisa 'bmkg' atau 'usgs'
+    is_automatic: Optional[bool] = False
 
 class AnomaliData(BaseModel):
     magnitude: float
