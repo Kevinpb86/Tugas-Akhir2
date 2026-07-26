@@ -1,11 +1,9 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import func , and_
-from app.db_models.earthquake import Earthquake
-
-from sqlalchemy.orm import joinedload
+from sqlalchemy import func 
 
 from app.db_models.earthquake import Earthquake
 from app.db_models.seismic_analysis import SeismicAnalysis
+
 class EarthquakeRepository:
 
     def __init__(self, db: Session):

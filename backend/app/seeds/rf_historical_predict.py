@@ -8,16 +8,13 @@ from app.db_models.seismic_analysis import SeismicAnalysis
 
 from app.services.extarct_features import NNDService
 from app.services.rf_service import MLService
-from app.services.influence_zones_service import (
-    InfluenceZoneService
-)
 
-from app.utils.time_utils import (
-    datetime_to_datenum
-)
+from app.utils.time_utils import datetime_to_datenum
 
-CSV_PATH = "data/prediction_data_bmkg.csv"
+from pathlib import Path
 
+BASE_DIR = Path(__file__).resolve().parents[2]
+CSV_PATH = BASE_DIR / "data" / "data_prediksi_RF_2026.csv"
 MC = 4.7
 
 
@@ -27,7 +24,6 @@ def run_prediction_seed():
 
     nnd_service = NNDService(db)
     ml_service = MLService()
-    influence_service = InfluenceZoneService(db)
 
     try:
 
@@ -40,7 +36,7 @@ def run_prediction_seed():
         df["datetime"] = (
             pd.to_datetime(
                 df["datetime"],
-                utc=True
+                utc=True,
             )
             .dt.tz_localize(None)
         )
@@ -81,18 +77,15 @@ def run_prediction_seed():
                     if pd.notna(row["dirasakan"])
                     else None
                 ),
-                source=row["source"],
+                source="BMKG",
                 status="pending",
                 fingerprint=fingerprint,
             )
 
             db.add(earthquake)
 
-            # supaya event sekarang bisa
-            # dipakai sebagai parent event
+            # supaya earthquake.id tersedia
             db.flush()
-
-            nnd_result = None
 
             # ======================================
             # NND FEATURE EXTRACTION
@@ -102,64 +95,51 @@ def run_prediction_seed():
 
                 nnd_result = nnd_service.compute(
                     earthquake,
-                    mc=MC
+                    mc=MC,
                 )
 
-            # ======================================
-            # RF PREDICTION
-            # ======================================
+                if nnd_result is not None:
 
-            if nnd_result:
+                    # ==============================
+                    # RANDOM FOREST PREDICTION
+                    # ==============================
 
-                prediction_result = (
-                    ml_service.predict(
+                    prediction_result = (
+                        ml_service.predict(
+                            log_n=nnd_result["log_N+"],
+                            log_t=nnd_result["log_T+"],
+                            log_r=nnd_result["log_R+"],
+                            dm=nnd_result["dm+"],
+                        )
+                    )
+
+                    analysis = SeismicAnalysis(
+                        earthquake_id=earthquake.id,
+
+                        parent_earthquake_id=(
+                            nnd_result[
+                                "parent_earthquake_id"
+                            ]
+                        ),
+
+                        n_value=nnd_result["N+"],
+
                         log_n=nnd_result["log_N+"],
                         log_t=nnd_result["log_T+"],
                         log_r=nnd_result["log_R+"],
+
                         dm=nnd_result["dm+"],
+
+                        prediction=prediction_result[
+                            "prediction"
+                        ],
+
+                        probability=prediction_result[
+                            "probability"
+                        ],
                     )
-                )
 
-                analysis = SeismicAnalysis(
-                    earthquake_id=earthquake.id,
-
-                    parent_earthquake_id=
-                    nnd_result[
-                        "parent_earthquake_id"
-                    ],
-
-                    n_value=nnd_result["N+"],
-
-                    log_n=nnd_result["log_N+"],
-                    log_t=nnd_result["log_T+"],
-                    log_r=nnd_result["log_R+"],
-
-                    dm=nnd_result["dm+"],
-
-                    prediction=
-                    prediction_result[
-                        "prediction"
-                    ],
-
-                    probability=
-                    prediction_result[
-                        "probability"
-                    ],
-                )
-
-                db.add(analysis)
-
-                # analysis.id tersedia
-                db.flush()
-
-                # ==========================
-                # CREATE INFLUENCE ZONE
-                # ==========================
-
-                influence_service.create_if_background(
-                    earthquake=earthquake,
-                    analysis=analysis,
-                )
+                    db.add(analysis)
 
                 earthquake.status = "processed"
 
@@ -170,6 +150,7 @@ def run_prediction_seed():
             processed += 1
 
             if processed % 100 == 0:
+
                 print(
                     f"Processed "
                     f"{processed}/{len(df)}"
@@ -182,22 +163,23 @@ def run_prediction_seed():
         db.commit()
 
         print(
-            f"\nPrediction seed success:"
-            f" {processed} records"
+            f"\nPrediction seed success: "
+            f"{processed} records"
         )
 
-    except Exception as e:
+    except Exception as exc:
 
         db.rollback()
 
         print(
-            f"\nPrediction failed:"
-            f" {e}"
+            f"\nPrediction failed: "
+            f"{exc}"
         )
 
-        raise e
+        raise
 
     finally:
+
         db.close()
 
 

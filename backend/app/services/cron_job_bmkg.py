@@ -12,9 +12,6 @@ from app.repositories.earthquake_repo import (
 from app.services.fetch_bmkg_service import BMKGService
 from app.services.extarct_features import NNDService
 from app.services.rf_service import MLService
-from app.services.influence_zones_service import (
-    InfluenceZoneService
-)
 
 MC = 4.7
 
@@ -28,7 +25,7 @@ def run_job():
     bmkg_service = BMKGService()
     nnd_service = NNDService(db)
     ml_service = MLService()
-    influence_service = InfluenceZoneService(db)
+
 
     try:
         logger.info("Fetching BMKG data...")
@@ -130,14 +127,6 @@ def run_job():
                     # supaya analysis bisa dipakai
                     db.flush()
 
-                    # ==================================
-                    # CREATE INFLUENCE ZONE
-                    # ==================================
-
-                    influence_service.create_if_background(
-                        earthquake=quake,
-                        analysis=analysis,
-                    )
 
                     quake.status = "processed"
 
