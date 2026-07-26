@@ -7,13 +7,12 @@ from app.config.database import get_db
 
 from app.db_models.earthquake import Earthquake
 from app.db_models.seismic_analysis import SeismicAnalysis
-from app.db_models.influence_zones import InfluenceZone
 
 from app.api_schemas.analysis_schema import (
     MapResponse,
     EarthquakeMapNode,
-    InfluenceZoneNode,
 )
+
 
 router = APIRouter(
     prefix="/earthquakes",
@@ -31,13 +30,10 @@ def get_map(
 ):
 
     cutoff = (
-        datetime.utcnow() -
-        timedelta(days=days)
+        datetime.utcnow()
+        - timedelta(days=days)
     )
 
-    # ==================================================
-    # EARTHQUAKE MARKERS
-    # ==================================================
 
     rows = (
         db.query(
@@ -46,8 +42,8 @@ def get_map(
         )
         .outerjoin(
             SeismicAnalysis,
-            SeismicAnalysis.earthquake_id ==
-            Earthquake.id
+            SeismicAnalysis.earthquake_id
+            == Earthquake.id
         )
         .filter(
             Earthquake.event_time >= cutoff
@@ -57,6 +53,7 @@ def get_map(
         )
         .all()
     )
+
 
     earthquakes = []
 
@@ -69,6 +66,7 @@ def get_map(
 
                 latitude=eq.latitude,
                 longitude=eq.longitude,
+
                 depth=eq.depth,
                 magnitude=eq.magnitude,
 
@@ -89,48 +87,7 @@ def get_map(
             )
         )
 
-    # ==================================================
-    # ACTIVE INFLUENCE ZONES
-    # ==================================================
-
-    zone_rows = (
-        db.query(
-            InfluenceZone,
-            Earthquake
-        )
-        .join(
-            Earthquake,
-            InfluenceZone.earthquake_id ==
-            Earthquake.id
-        )
-        .filter(
-            InfluenceZone.end_time >=
-            datetime.utcnow()
-        )
-        .all()
-    )
-
-    influence_zones = []
-
-    for zone, eq in zone_rows:
-
-        influence_zones.append(
-            InfluenceZoneNode(
-                earthquake_id=eq.id,
-
-                latitude=eq.latitude,
-                longitude=eq.longitude,
-                magnitude=eq.magnitude,
-
-                radius_km=zone.radius_km,
-                window_days=zone.window_days,
-
-                start_time=zone.start_time,
-                end_time=zone.end_time,
-            )
-        )
 
     return MapResponse(
         earthquakes=earthquakes,
-        influence_zones=influence_zones,
     )

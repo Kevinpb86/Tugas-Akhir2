@@ -40,8 +40,8 @@ class MLService:
         )[0][prediction]
 
         label_map = {
-            0: "Background Event",
-            1: "Triggered Event",
+            0: "Mainshock",
+            1: "Dependent Event",
         }
 
         logger.info(

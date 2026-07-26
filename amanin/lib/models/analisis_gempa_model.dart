@@ -130,57 +130,18 @@ class EarthquakeEvent {
   }
 }
 
-class InfluenceZone {
-  final int earthquakeId;
-  final double latitude;
-  final double longitude;
-  final double magnitude;
-  final double radiusKm;
-  final int windowDays;
-  final DateTime startTime;
-  final DateTime endTime;
-
-  InfluenceZone({
-    required this.earthquakeId,
-    required this.latitude,
-    required this.longitude,
-    required this.magnitude,
-    required this.radiusKm,
-    required this.windowDays,
-    required this.startTime,
-    required this.endTime,
-  });
-
-  factory InfluenceZone.fromJson(Map<String, dynamic> json) {
-    return InfluenceZone(
-      earthquakeId: json['earthquake_id'],
-      latitude: (json['latitude'] as num).toDouble(),
-      longitude: (json['longitude'] as num).toDouble(),
-      magnitude: (json['magnitude'] as num).toDouble(),
-      radiusKm: (json['radius_km'] as num).toDouble(),
-      windowDays: json['window_days'] as int,
-      startTime: DateTime.parse(json['start_time']),
-      endTime: DateTime.parse(json['end_time']),
-    );
-  }
-}
 
 class EarthquakeMapData {
   final List<EarthquakeEvent> earthquakes;
-  final List<InfluenceZone> influenceZones;
 
   EarthquakeMapData({
     required this.earthquakes,
-    required this.influenceZones,
   });
 
   factory EarthquakeMapData.fromJson(Map<String, dynamic> json) {
     return EarthquakeMapData(
       earthquakes: (json['earthquakes'] as List)
           .map((e) => EarthquakeEvent.fromJson(e))
-          .toList(),
-      influenceZones: (json['influence_zones'] as List)
-          .map((e) => InfluenceZone.fromJson(e))
           .toList(),
     );
   }

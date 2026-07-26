@@ -8,17 +8,22 @@ from app.repositories.earthquake_repo import EarthquakeRepository
 from app.services.extarct_features import NNDService
 from app.utils.time_utils import datetime_to_datenum
 
+from pathlib import Path
 
-CSV_PATH = "data/historical_data_bmkg_2021-2026.csv"
+BASE_DIR = Path(__file__).resolve().parents[2]
+CSV_PATH = BASE_DIR / "data" / "historical_data_bmkg_2021-2026.csv"
 MC = 4.7
 
 
 def run_seed():
+
     db = SessionLocal()
+
     repo = EarthquakeRepository(db)
     nnd_service = NNDService(db)
 
     try:
+
         if repo.count() > 0:
             print("Seed already executed. Skipping...")
             return
@@ -26,11 +31,17 @@ def run_seed():
         df = pd.read_csv(CSV_PATH)
 
         df["datetime"] = (
-            pd.to_datetime(df["datetime"], utc=True)
+            pd.to_datetime(
+                df["datetime"],
+                utc=True,
+            )
             .dt.tz_localize(None)
         )
 
-        df = df.sort_values("datetime").reset_index(drop=True)
+        df = (
+            df.sort_values("datetime")
+            .reset_index(drop=True)
+        )
 
         processed = 0
 
@@ -46,7 +57,9 @@ def run_seed():
 
             earthquake = Earthquake(
                 event_time=row["datetime"],
-                time=datetime_to_datenum(row["datetime"]),
+                time=datetime_to_datenum(
+                    row["datetime"]
+                ),
                 latitude=float(row["latitude"]),
                 longitude=float(row["longitude"]),
                 depth=float(row["depth"]),
@@ -57,7 +70,7 @@ def run_seed():
                     if pd.notna(row["dirasakan"])
                     else None
                 ),
-                source=row["source"],
+                source="BMKG",
                 status="pending",
                 fingerprint=fingerprint,
             )
@@ -67,45 +80,68 @@ def run_seed():
             # supaya earthquake.id tersedia
             db.flush()
 
-            # hitung NND terhadap event historis sebelumnya
-            nnd_result = None
+            # ==========================================
+            # COMPUTE NND FEATURES
+            # ==========================================
 
             if earthquake.magnitude >= MC:
-                nnd_result = nnd_service.compute(earthquake, mc=MC)
 
-            if nnd_result is not None:
-
-                analysis = SeismicAnalysis(
-                    earthquake_id=earthquake.id,
-                    parent_earthquake_id=nnd_result["parent_earthquake_id"],
-                    n_value=nnd_result["N+"],
-                    log_n=nnd_result["log_N+"],
-                    log_t=nnd_result["log_T+"],
-                    log_r=nnd_result["log_R+"],
-                    dm=nnd_result["dm+"],
+                nnd_result = nnd_service.compute(
+                    earthquake,
+                    mc=MC,
                 )
 
-                db.add(analysis)
+                if nnd_result is not None:
 
-            if earthquake.magnitude < MC:
-                earthquake.status = "below_mc"
-            else:
+                    analysis = SeismicAnalysis(
+                        earthquake_id=earthquake.id,
+
+                        # nearest-neighbor reference
+                        parent_earthquake_id=(
+                            nnd_result[
+                                "parent_earthquake_id"
+                            ]
+                        ),
+
+                        n_value=nnd_result["N+"],
+
+                        log_n=nnd_result["log_N+"],
+                        log_t=nnd_result["log_T+"],
+                        log_r=nnd_result["log_R+"],
+
+                        dm=nnd_result["dm+"],
+                    )
+
+                    db.add(analysis)
+
                 earthquake.status = "processed"
+
+            else:
+
+                earthquake.status = "below_mc"
 
             processed += 1
 
             if processed % 100 == 0:
-                print(f"Processed {processed}/{len(df)}")
+
+                print(
+                    f"Processed {processed}/{len(df)}"
+                )
 
         db.commit()
 
-        print(f"Seed success: {processed} records")
+        print(
+            f"Seed success: {processed} records"
+        )
 
-    except Exception as e:
+    except Exception as exc:
+
         db.rollback()
-        print(f"Seed failed: {e}")
+
+        print(f"Seed failed: {exc}")
 
     finally:
+
         db.close()
 
 

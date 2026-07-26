@@ -20,20 +20,5 @@ class EarthquakeMapNode(BaseModel):
     probability: Optional[float]
 
 
-class InfluenceZoneNode(BaseModel):
-    earthquake_id: int
-
-    latitude: float
-    longitude: float
-    magnitude: float
-
-    radius_km: float
-    window_days: int
-
-    start_time: datetime
-    end_time: datetime
-
-
 class MapResponse(BaseModel):
     earthquakes: List[EarthquakeMapNode]
-    influence_zones: List[InfluenceZoneNode]
