@@ -1,8 +1,8 @@
-"""init
+"""initial schema
 
-Revision ID: 788b98aa658a
+Revision ID: 99b6aa89188d
 Revises: 
-Create Date: 2026-07-13 01:28:44.434204
+Create Date: 2026-07-26 16:19:11.597485
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '788b98aa658a'
+revision: str = '99b6aa89188d'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -41,6 +41,15 @@ def upgrade() -> None:
     op.create_index(op.f('ix_earthquakes_fingerprint'), 'earthquakes', ['fingerprint'], unique=True)
     op.create_index(op.f('ix_earthquakes_id'), 'earthquakes', ['id'], unique=False)
     op.create_index(op.f('ix_earthquakes_time'), 'earthquakes', ['time'], unique=False)
+    op.create_table('risk_sources',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('name', sa.String(length=100), nullable=False),
+    sa.Column('description', sa.String(length=200), nullable=False),
+    sa.Column('latitude', sa.Float(), nullable=False),
+    sa.Column('longitude', sa.Float(), nullable=False),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_risk_sources_id'), 'risk_sources', ['id'], unique=False)
     op.create_table('users',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('full_name', sa.String(length=100), nullable=False),
@@ -89,6 +98,8 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_users_id'), table_name='users')
     op.drop_index(op.f('ix_users_email'), table_name='users')
     op.drop_table('users')
+    op.drop_index(op.f('ix_risk_sources_id'), table_name='risk_sources')
+    op.drop_table('risk_sources')
     op.drop_index(op.f('ix_earthquakes_time'), table_name='earthquakes')
     op.drop_index(op.f('ix_earthquakes_id'), table_name='earthquakes')
     op.drop_index(op.f('ix_earthquakes_fingerprint'), table_name='earthquakes')
