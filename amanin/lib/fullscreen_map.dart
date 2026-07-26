@@ -235,7 +235,7 @@ class _FullscreenMapPageState extends State<FullscreenMapPage> with SingleTicker
                 onTap: () {
                   final gempa = widget.gempa;
                   final String shareText =
-                      'Info Gempa dirasakan Mag:${gempa.magnitude}, ${gempa.tanggal} ${gempa.jam.replaceAll(' WIB', '')} WIB, Lok:${gempa.lintang}, ${gempa.bujur} (${gempa.wilayah}), Kedlmn:${gempa.kedalaman} ::AMANIN\nInformasi selengkapnya lihat di\nhttps://amanin.app/';
+                      'Info Gempa dirasakan Mag:${gempa.magnitude}, ${gempa.tanggal} ${gempa.jam.replaceAll(' WIB', '')} WIB, Lok:${gempa.lintang}, ${gempa.bujur} (${gempa.wilayah}), Kedlmn:${gempa.kedalaman} ::RIKSA\nInformasi selengkapnya lihat di\nhttps://riksa.app/';
                   Share.share(shareText);
                 },
                 child: Container(

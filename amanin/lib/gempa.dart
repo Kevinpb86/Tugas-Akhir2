@@ -273,7 +273,7 @@ class _GempaPageState extends State<GempaPage> {
                 _buildRecentEarthquakes(context),
                 const SizedBox(height: 24),
                 _buildInsuranceSection(context),
-                const SizedBox(height: 100), // padding for floating bottom nav
+                const SizedBox(height: 140), // padding for floating bottom nav
               ],
             ),
           ),
@@ -291,7 +291,7 @@ class _GempaPageState extends State<GempaPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Amanin',
+                'Riksa',
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -571,8 +571,8 @@ class _GempaPageState extends State<GempaPage> {
                       onTap: () {
                         if (_latestQuake != null) {
                           final gempa = _latestQuake!;
-                          final String shareText =
-                              'Info Gempa dirasakan Mag:${gempa.magnitude}, ${gempa.tanggal} ${gempa.jam.replaceAll(' WIB', '')} WIB, Lok:${gempa.lintang}, ${gempa.bujur} (${gempa.wilayah}), Kedlmn:${gempa.kedalaman} ::AMANIN\nInformasi selengkapnya lihat di\nhttps://amanin.app/';
+                           final String shareText =
+                              'Info Gempa dirasakan Mag:${gempa.magnitude}, ${gempa.tanggal} ${gempa.jam.replaceAll(' WIB', '')} WIB, Lok:${gempa.lintang}, ${gempa.bujur} (${gempa.wilayah}), Kedlmn:${gempa.kedalaman} ::RIKSA\nInformasi selengkapnya lihat di\nhttps://riksa.app/';
                           Share.share(shareText);
                         }
                       },

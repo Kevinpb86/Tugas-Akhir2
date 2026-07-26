@@ -219,28 +219,35 @@ LON_MIN, LON_MAX = 106.00, 109.00
 
 def geocode_online(query: str) -> Optional[tuple[float, float]]:
     try:
-        full_query = f"{query}, Jawa Barat, Indonesia"
         url = "https://nominatim.openstreetmap.org/search"
         headers = {
             "User-Agent": "AmaninApp/1.0 (contact: dava@amanin.com)"
         }
-        params = {
-            "q": full_query,
-            "format": "json",
-            "limit": 10
-        }
+        excluded = {'amenity', 'shop', 'office', 'highway', 'building', 'craft', 'leisure', 'tourism'}
+        
+        # Pertama, coba cari spesifik di Jawa Barat
+        full_query = f"{query}, Jawa Barat, Indonesia"
+        params = {"q": full_query, "format": "json", "limit": 10}
         res = requests.get(url, headers=headers, params=params, timeout=5)
+        
         if res.status_code == 200:
             data = res.json()
-            if data:
-                excluded = {'amenity', 'shop', 'office', 'highway', 'building', 'craft', 'leisure', 'tourism'}
-                for item in data:
-                    item_class = item.get("class", "")
-                    if item_class in excluded:
-                        continue
-                    lat = float(item["lat"])
-                    lon = float(item["lon"])
-                    return lat, lon
+            for item in data:
+                if item.get("class", "") not in excluded:
+                    return float(item["lat"]), float(item["lon"])
+            
+        # Jika gagal di Jawa Barat (kosong atau semua hasil di-exclude), coba cari secara umum di Indonesia 
+        # (agar validasi geofencing bisa memblokir lokasi luar Jabar dengan pesan yang tepat)
+        full_query_indonesia = f"{query}, Indonesia"
+        params = {"q": full_query_indonesia, "format": "json", "limit": 10}
+        res = requests.get(url, headers=headers, params=params, timeout=5)
+        
+        if res.status_code == 200:
+            data = res.json()
+            for item in data:
+                if item.get("class", "") not in excluded:
+                    return float(item["lat"]), float(item["lon"])
+
     except Exception as e:
         print(f"Error geocoding online: {e}")
     return None
@@ -285,14 +292,14 @@ def resolve_coordinates(location_name: str) -> tuple[float, float]:
         
     raise HTTPException(
         status_code=400, 
-        detail=f"Lokasi '{location_name}' tidak dapat ditemukan atau tidak dikenali."
+        detail=f"Mohon maaf, lokasi '{location_name}' tidak dapat kami temukan di peta. Pastikan penulisan nama daerah sudah benar."
     )
 
 
 def validate_study_area(lat: float, lon: float, location_name: str = None):
     if not (LAT_MIN <= lat <= LAT_MAX) or not (LON_MIN <= lon <= LON_MAX):
-        loc_str = f" ({location_name})" if location_name else ""
+        loc_str = f" '{location_name}'" if location_name else ""
         raise HTTPException(
             status_code=400,
-            detail=f"Koordinat ({lat}, {lon}){loc_str} berada di luar wilayah studi Jawa Barat (Lintang: -8.00 s/d -5.50, Bujur: 106.00 s/d 109.00)."
+            detail=f"Mohon maaf, lokasi{loc_str} berada di luar area cakupan penelitian kami. Sistem saat ini hanya melayani wilayah Jawa Barat."
         )

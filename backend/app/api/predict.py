@@ -4,6 +4,7 @@ import pandas as pd
 import requests
 from datetime import timedelta
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import FileResponse
 from app.api_schemas.earthquake import EarthquakeData, AnomaliData
 from app.config.database import SessionLocal
 from app.db_models.earthquake import Earthquake
@@ -146,7 +147,7 @@ async def predict_risk(data: EarthquakeData):
     lat = data.latitude
     lon = data.longitude
     
-    if data.location_name:
+    if data.location_name and (lat is None or lon is None):
         lat, lon = resolve_coordinates(data.location_name)
         
     if lat is None or lon is None:
@@ -155,8 +156,9 @@ async def predict_risk(data: EarthquakeData):
             detail="Harus menyertakan koordinat (latitude & longitude) atau nama daerah (location_name)."
         )
         
-    # Bypassed so we can test real-time BMKG data anywhere:
-    # validate_study_area(lat, lon, data.location_name)
+    # Terapkan validasi geofencing HANYA jika bukan mode otomatis
+    if not data.is_automatic:
+        validate_study_area(lat, lon, data.location_name)
     
     try:
         features = np.array([[data.magnitude, data.depth, lat, lon]])
@@ -338,4 +340,48 @@ async def reverse_geocode(lat: float, lon: float):
             raise HTTPException(status_code=res.status_code, detail="Gagal menghubungi server geocoding")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/download-dataset")
+async def download_dataset(filename: str):
+    """
+    Download training dataset files from backend/data/.
+    Only allow filenames that match our expected training datasets to prevent path traversal.
+    """
+    allowed_files = [
+        "2008-2012.csv",
+        "2013-2017.csv",
+        "2018-2022.csv",
+        "2023-2025.csv",
+        "1990-1994.csv",
+        "1995-1999.csv",
+        "2000-2004.csv",
+        "2005-2009.csv",
+        "2010-2014.csv",
+        "2015-2019.csv",
+        "2020-2026.csv"
+    ]
+    
+    if filename not in allowed_files:
+        raise HTTPException(
+            status_code=400,
+            detail="File tidak diperbolehkan untuk diunduh atau tidak ditemukan."
+        )
+        
+    file_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+        "data", filename
+    )
+    
+    if not os.path.exists(file_path):
+        raise HTTPException(
+            status_code=404,
+            detail="File tidak ditemukan di server."
+        )
+        
+    return FileResponse(
+        path=file_path,
+        media_type="text/csv",
+        filename=filename
+    )
 

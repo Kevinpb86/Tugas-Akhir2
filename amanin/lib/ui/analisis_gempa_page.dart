@@ -500,7 +500,7 @@ class _AnalisisGempaPageState extends State<AnalisisGempaPage>
                   const SizedBox(width: 8),
                   Flexible(
                     child: const Text(
-                      'Amanin',
+                      'Riksa',
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontSize: 22,
@@ -1223,7 +1223,7 @@ class _AnalisisGempaPageState extends State<AnalisisGempaPage>
                       ),
                       SizedBox(height: 4),
                       Text(
-                        'Hubungi tim Amanin melalui fitur bantuan di aplikasi.',
+                        'Hubungi tim Riksa melalui fitur bantuan di aplikasi.',
                         style: TextStyle(fontSize: 12, color: Colors.black54),
                       ),
                     ],
@@ -1774,6 +1774,20 @@ class _AnalisisGempaPageState extends State<AnalisisGempaPage>
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF1A1A1A),
                       ),
+                      children: [
+                        TileLayer(
+                          urlTemplate:
+                              'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                          userAgentPackageName: 'com.riksa.app',
+                        ),
+                        if (faultSegments.isNotEmpty)
+                          PolylineLayer(polylines: _buildFaultPolylines()),
+                        if (mapData?.influenceZones.isNotEmpty ?? false)
+                          CircleLayer(circles: _buildInfluenceZoneCircles()),
+                        if (mapData?.influenceZones.isNotEmpty ?? false)
+                          MarkerLayer(markers: _buildZoneTapMarkers()),
+                        MarkerLayer(markers: _buildMarkers()),
+                      ],
                     ),
                     Text(
                       'Pantau aktivitas gempa terkini di Indonesia',

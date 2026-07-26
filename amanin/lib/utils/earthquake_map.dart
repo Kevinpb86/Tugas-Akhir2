@@ -144,7 +144,7 @@ class EarthquakeMap extends StatelessWidget {
         TileLayer(
           urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
           subdomains: const ['a', 'b', 'c'],
-          userAgentPackageName: 'com.example.amanin',
+          userAgentPackageName: 'com.example.riksa',
           maxZoom: 19,
           maxNativeZoom: 19,
           tileProvider: CancellableNetworkTileProvider(),

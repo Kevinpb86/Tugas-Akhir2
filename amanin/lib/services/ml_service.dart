@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'api_config.dart';
 
@@ -59,7 +60,7 @@ class MlService {
       final response = await http.get(
         Uri.parse('$_baseUrl/health'),
         headers: {'Bypass-Tunnel-Reminder': 'true'},
-      );
+      ).timeout(const Duration(seconds: 4));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         return data['status'] == 'ok' && data['model_loaded'] == true;
@@ -74,7 +75,10 @@ class MlService {
     required double magnitude,
     required double depth,
     required String locationName,
+    double? latitude,
+    double? longitude,
     String source = 'bmkg',
+    bool isAutomatic = false,
   }) async {
     try {
       final response = await http.post(
@@ -87,24 +91,53 @@ class MlService {
           'magnitude': magnitude,
           'depth': depth,
           'location_name': locationName,
+          'latitude': latitude,
+          'longitude': longitude,
           'source': source,
+          'is_automatic': isAutomatic,
         }),
-      );
+      ).timeout(const Duration(seconds: 6));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         return MLPredictionModel.fromJson(data);
       } else {
-        try {
-          final errData = json.decode(response.body);
-          final errMsg = errData['detail'] ?? response.body;
-          throw Exception(errMsg);
-        } catch (_) {
-          throw Exception('Gagal melakukan prediksi: ${response.body}');
+        final String bodyText = response.body;
+        if (bodyText.contains('<html>') ||
+            response.statusCode == 504 ||
+            response.statusCode == 502 ||
+            response.statusCode == 503) {
+          throw Exception(
+              'Server sedang offline atau sibuk (status ${response.statusCode}).');
         }
+        String errMsg = bodyText;
+        try {
+          final errData = json.decode(bodyText);
+          if (errData is Map && errData.containsKey('detail')) {
+            errMsg = errData['detail'].toString();
+          }
+        } catch (_) {
+          errMsg = 'Gagal melakukan prediksi: $bodyText';
+        }
+        throw Exception(errMsg);
       }
+    } on TimeoutException {
+      throw Exception(
+          'Batas waktu koneksi habis. Pastikan perangkat Anda terhubung ke internet atau server aktif.');
     } catch (e) {
-      throw Exception('Terjadi kesalahan koneksi ke backend ML: $e');
+      // Jika errornya sudah berupa Exception dari block di atas (berisi pesan dari backend), lempar ulang apa adanya
+      if (e.toString().contains('Gagal melakukan prediksi') || e.toString().contains('Server sedang offline')) {
+        rethrow;
+      }
+      
+      String errorString = e.toString().replaceAll('Exception: ', '');
+      
+      // Jika error berasal dari backend (berisi pesan informatif)
+      if (!errorString.contains('SocketException') && !errorString.contains('Connection refused')) {
+        throw Exception(errorString);
+      }
+      
+      throw Exception('Gagal terhubung ke server backend ML: $errorString');
     }
   }
 
@@ -135,16 +168,27 @@ class MlService {
           'bulan': bulan,
           'jam': jam,
         }),
-      );
+      ).timeout(const Duration(seconds: 6));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         return AnomalyPredictionModel.fromJson(data);
       } else {
-        throw Exception('Gagal melakukan deteksi anomali: ${response.body}');
+        final String bodyText = response.body;
+        if (bodyText.contains('<html>') ||
+            response.statusCode == 504 ||
+            response.statusCode == 502 ||
+            response.statusCode == 503) {
+          throw Exception(
+              'Server sedang offline atau sibuk (status ${response.statusCode}).');
+        }
+        throw Exception('Gagal melakukan deteksi anomali: $bodyText');
       }
+    } on TimeoutException {
+      throw Exception(
+          'Batas waktu koneksi habis. Pastikan backend Anda sudah aktif.');
     } catch (e) {
-      throw Exception('Terjadi kesalahan koneksi ke backend ML: $e');
+      throw Exception('Gagal terhubung ke server backend ML: $e');
     }
   }
 }
