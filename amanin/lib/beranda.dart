@@ -466,6 +466,16 @@ class _BerandaPageState extends State<BerandaPage> {
         String status = data['status'] ?? '';
         String explanation = data['message'] ?? '';
 
+        if (data['data'] != null && data['data']['city_name'] != null) {
+          final String serverCity = data['data']['city_name'].toString();
+          if (serverCity.isNotEmpty) {
+            setState(() {
+              _currentCityName = serverCity;
+            });
+            userCityNameNotifier.value = serverCity;
+          }
+        }
+
         setState(() {
           _edukasiExplanation = explanation;
         });
@@ -4910,7 +4920,7 @@ class _BerandaPageState extends State<BerandaPage> {
                         topRight: Radius.circular(16),
                       ),
                       child: Hero(
-                        tag: news.link, // For hero animation
+                        tag: 'news_hero_${news.link.isNotEmpty ? news.link : news.title}',
                         child: Image.network(
                           news.photoUrl.isNotEmpty
                               ? news.photoUrl

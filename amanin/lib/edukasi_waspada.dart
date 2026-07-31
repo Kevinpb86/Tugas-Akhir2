@@ -32,22 +32,22 @@ class _EdukasiWaspadaPageState extends State<EdukasiWaspadaPage> {
     String pascaGempaDesc = '';
 
     if (_currentCategory == 'Pegunungan') {
-      siagaDesc = 'Waspadai jalur longsor. Kenali titik kumpul dan perhatikan informasi cuaca sebelum mendaki.';
-      saatGempaDesc = 'Menjauh dari tebing. Hentikan aktivitas, cari perlindungan dari benda jatuh, dan jangan panik.';
-      pascaGempaDesc = 'Tetap waspada longsor susulan. Cari area datar yang aman dan pantau arahan petugas.';
+      siagaDesc = 'Kenali kondisi lereng, jalur aman, dan titik berhenti sementara agar Anda siap berpindah dengan terarah bila terjadi guncangan.';
+      saatGempaDesc = 'Tetap tenang, perhatikan arah bahaya di sekitar, lalu bergerak hati-hati menjauhi area yang berisiko seperti tebing, batu longgar, dan lereng curam.';
+      pascaGempaDesc = 'Bertahan di lokasi yang lebih aman sementara, periksa jalur yang akan dilalui, dan waspadai longsor atau gempa susulan sebelum melanjutkan aktivitas.';
     } else if (_currentCategory == 'Pesisir Pantai') {
       siagaDesc = 'Kenali jalur evakuasi dan titik kumpul. Pahami tanda bahaya tsunami di area pesisir.';
       saatGempaDesc = 'Segera jauhi bibir pantai. Cari area tinggi dan perhatikan kondisi air laut secara waspada.';
       pascaGempaDesc = 'Tetap bertahan di tempat tinggi. Jangan kembali ke pantai sebelum ada arahan resmi.';
     } else if (_currentCategory == 'Luar Ruangan') {
-      siagaDesc = 'Ketahui area lapang yang aman. Hindari tempat dengan banyak pohon besar atau papan reklame.';
-      saatGempaDesc = 'Jauhi bangunan tinggi, tiang, dan pohon. Cari tanah lapang dan lindungi kepala Anda.';
-      pascaGempaDesc = 'Periksa keadaan sekitar dari benda yang berisiko jatuh. Tetap tenang di titik kumpul.';
+      siagaDesc = 'Amati potensi bahaya di sekitar, tentukan area terbuka terdekat, dan siapkan arah perpindahan yang tidak melewati bangunan atau instalasi berisiko.';
+      saatGempaDesc = 'Hentikan aktivitas, stabilkan posisi tubuh, kemudian bergerak secara terkendali menuju area yang lebih aman setelah memperhatikan kondisi sekitar.';
+      pascaGempaDesc = 'Tetap berada di area terbuka, periksa jalur yang akan dilewati, dan hindari benda atau fasilitas yang mengalami kerusakan setelah guncangan.';
     } else {
       // Dalam Ruangan
-      siagaDesc = 'Kenali titik aman, perhatikan jalur keluar, dan rapikan benda yang mudah jatuh.';
-      saatGempaDesc = 'Berhenti beraktivitas dan berlindung di tempat aman. Lindungi kepala, jauhi kaca, dan jangan gunakan lift.';
-      pascaGempaDesc = 'Tunggu guncangan reda, lalu evakuasi perlahan menuju titik kumpul yang aman di luar gedung.';
+      siagaDesc = 'Periksa potensi bahaya di dalam ruangan, tentukan tempat berlindung terdekat, dan siapkan perlengkapan penting agar mudah dijangkau.';
+      saatGempaDesc = 'Hentikan aktivitas, berlindung di posisi terdekat, dan lindungi kepala tanpa memaksakan diri berlari keluar selama guncangan berlangsung.';
+      pascaGempaDesc = 'Periksa kondisi diri dan ruangan, kemudian lakukan evakuasi secara tertib apabila terdapat kerusakan atau kondisi yang berisiko.';
     }
 
     final categoryIcons = {

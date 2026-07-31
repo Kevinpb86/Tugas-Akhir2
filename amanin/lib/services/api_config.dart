@@ -14,5 +14,12 @@ class ApiConfig {
   // Pilihan 2: Menggunakan Tunnelmole (untuk koneksi beda jaringan Wi-Fi/Internet seluler)
   // static final String _androidUrl = 'https://qmowb1-ip-180-247-241-88.tunnelmole.net'; // Tunnelmole URL
   
-  static String get baseUrl => kIsWeb ? _webUrl : _androidUrl;
+  static String get baseUrl {
+    if (kIsWeb) {
+      // Menggunakan hostname dari URL browser secara dinamis agar bisa diakses dari HP
+      final host = Uri.base.host.isNotEmpty ? Uri.base.host : '127.0.0.1';
+      return 'http://$host:8000';
+    }
+    return _androidUrl;
+  }
 }

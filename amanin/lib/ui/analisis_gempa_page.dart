@@ -1774,20 +1774,6 @@ class _AnalisisGempaPageState extends State<AnalisisGempaPage>
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF1A1A1A),
                       ),
-                      children: [
-                        TileLayer(
-                          urlTemplate:
-                              'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                          userAgentPackageName: 'com.riksa.app',
-                        ),
-                        if (faultSegments.isNotEmpty)
-                          PolylineLayer(polylines: _buildFaultPolylines()),
-                        if (mapData?.influenceZones.isNotEmpty ?? false)
-                          CircleLayer(circles: _buildInfluenceZoneCircles()),
-                        if (mapData?.influenceZones.isNotEmpty ?? false)
-                          MarkerLayer(markers: _buildZoneTapMarkers()),
-                        MarkerLayer(markers: _buildMarkers()),
-                      ],
                     ),
                     Text(
                       'Pantau aktivitas gempa terkini di Indonesia',

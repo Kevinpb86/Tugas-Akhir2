@@ -11,9 +11,19 @@ void main() async {
       includeLoopback: false,
       type: InternetAddressType.IPv4,
     );
-    
-    // Urutkan prioritas pencarian: Wi-Fi/WLAN terlebih dahulu, kemudian Ethernet/LAN
-    final nameKeywords = ['wi-fi', 'wlan', 'ethernet', 'local area connection', 'en0', 'en1'];
+    // Tampilkan semua IP aktif untuk membantu debugging
+    print('ℹ️ Alamat IP yang terdeteksi di perangkat ini:');
+    for (var interface in interfaces) {
+      for (var addr in interface.addresses) {
+        if (!addr.address.startsWith('169.254')) {
+          print('  - ${interface.name}: ${addr.address}');
+        }
+      }
+    }
+    print('');
+
+    // Urutkan prioritas pencarian: Wi-Fi/WLAN/Hotspot terlebih dahulu, kemudian Ethernet/LAN
+    final nameKeywords = ['wi-fi', 'wlan', 'local area connection', 'ethernet', 'en0', 'en1'];
     
     for (var keyword in nameKeywords) {
       for (var interface in interfaces) {

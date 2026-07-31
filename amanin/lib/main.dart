@@ -1,26 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'main_screen.dart';
 import 'utils/localization.dart';
 
-void main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  if (kIsWeb) {
-    try {
-      // Inisialisasi Facebook JS SDK khusus untuk Web
-      await FacebookAuth.i.webAndDesktopInitialize(
-        appId: "2085866942301238",
-        cookie: true,
-        xfbml: true,
-        version: "v18.0",
-      );
-    } catch (e) {
-      print("Facebook SDK Init Error: $e");
-    }
-  }
   runApp(const MyApp());
 }
 

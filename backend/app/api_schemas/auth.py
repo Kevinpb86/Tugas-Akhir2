@@ -14,8 +14,5 @@ class GoogleAuthRequest(BaseModel):
     full_name: str
     google_id: str
 
-class FacebookAuthRequest(BaseModel):
-    access_token: str
-
 class ForgotPasswordRequest(BaseModel):
     email: EmailStr
