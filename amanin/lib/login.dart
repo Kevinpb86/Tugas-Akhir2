@@ -6,7 +6,6 @@ import 'register.dart'; // For navigation to register
 import 'main.dart'; // For isLoggedInNotifier
 import 'services/api_config.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -78,53 +77,6 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  Future<void> _signInWithFacebook() async {
-    try {
-      final LoginResult result = await FacebookAuth.instance.login();
-
-      if (result.status == LoginStatus.success) {
-        final accessToken = result.accessToken!.tokenString;
-
-        final response = await http.post(
-          Uri.parse('${ApiConfig.baseUrl}/auth/facebook'),
-          headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({
-            'access_token': accessToken,
-          }),
-        );
-
-        if (response.statusCode == 200) {
-          final data = jsonDecode(response.body);
-          userNameNotifier.value = data['full_name'] ?? 'Pengguna Facebook';
-          userEmailNotifier.value = data['email'] ?? '';
-          userPhotoUrlNotifier.value = data['facebook_picture'] ?? '';
-          isLoggedInNotifier.value = true;
-
-          if (mounted) {
-            _showTopSnackBar('Login Facebook Berhasil!', isError: false);
-            Navigator.pop(context);
-          }
-        } else {
-          final error = jsonDecode(response.body);
-          if (mounted) {
-            _showTopSnackBar('Login Facebook gagal: ${error['detail'] ?? 'Gagal menghubungi server'}');
-          }
-        }
-      } else if (result.status == LoginStatus.cancelled) {
-        if (mounted) {
-          _showTopSnackBar('Login Facebook gagal/dibatalkan');
-        }
-      } else {
-        if (mounted) {
-          _showTopSnackBar('Login Facebook gagal: ${result.message}');
-        }
-      }
-    } catch (error) {
-      if (mounted) {
-        _showTopSnackBar('Login Facebook gagal: $error');
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -161,7 +113,7 @@ class _LoginPageState extends State<LoginPage> {
                   const SizedBox(height: 24),
                   Center(
                     child: Hero(
-                      tag: 'app_logo',
+                      tag: 'login_app_logo',
                       child: Container(
                         height: 110,
                         width: 110,
@@ -331,16 +283,6 @@ class _LoginPageState extends State<LoginPage> {
                                   ),
                                   'Google',
                                   _signInWithGoogle,
-                                ),
-                                const SizedBox(width: 16),
-                                _buildSocialButton(
-                                  const Icon(
-                                    Icons.facebook,
-                                    size: 28,
-                                    color: Color(0xFF1877F2),
-                                  ),
-                                  'Facebook',
-                                  _signInWithFacebook,
                                 ),
                               ],
                             ),

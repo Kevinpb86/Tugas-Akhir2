@@ -65,7 +65,7 @@ class IsiBeritaPage extends StatelessWidget {
               const SizedBox(height: 8),
               // Main Image
               Hero(
-                tag: news.link, // using link as unique tag
+                tag: 'news_hero_${news.link.isNotEmpty ? news.link : news.title}',
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(16),
                   child: Image.network(
