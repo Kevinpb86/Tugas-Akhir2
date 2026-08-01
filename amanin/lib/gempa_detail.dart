@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'utils/earthquake_map.dart';
+import 'utils/localization.dart';
 import 'fullscreen_map.dart';
 import 'services/bmkg_service.dart';
 
@@ -204,7 +205,7 @@ class _GempaDetailPageState extends State<GempaDetailPage> {
                               child: _buildInfoTile(
                                 icon: Icons.access_time_rounded,
                                 iconColor: const Color(0xFF7C3AED),
-                                label: 'Waktu',
+                                label: Localization.of(context).get('quake_time'),
                                 value: gempa?.jam.split(' ').first ?? '--:--',
                                 unit: gempa?.jam.split(' ').last ?? 'WIB',
                                 bgColor: const Color(0xFFF5F3FF),
@@ -215,7 +216,7 @@ class _GempaDetailPageState extends State<GempaDetailPage> {
                               child: _buildInfoTile(
                                 icon: Icons.straighten_rounded,
                                 iconColor: const Color(0xFF00ACC1),
-                                label: 'Kedalaman',
+                                label: Localization.of(context).get('quake_depth'),
                                 value: (gempa?.kedalaman ?? '0 km')
                                     .split(' ')
                                     .first,
@@ -231,7 +232,7 @@ class _GempaDetailPageState extends State<GempaDetailPage> {
                         _buildDetailCard(
                           icon: Icons.calendar_today_rounded,
                           iconColor: const Color(0xFFFF9800),
-                          title: 'Tanggal',
+                          title: Localization.of(context).get('quake_date'),
                           content: gempa?.tanggal ?? '-',
                         ),
                         const SizedBox(height: 12),
@@ -240,7 +241,7 @@ class _GempaDetailPageState extends State<GempaDetailPage> {
                         _buildDetailCard(
                           icon: Icons.location_on_rounded,
                           iconColor: const Color(0xFF00BCD4),
-                          title: 'Pusat Gempa',
+                          title: Localization.of(context).get('quake_epicenter'),
                           content: gempa?.wilayah ?? 'Lokasi tidak diketahui',
                         ),
                         const SizedBox(height: 12),

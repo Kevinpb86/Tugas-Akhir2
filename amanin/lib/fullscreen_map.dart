@@ -11,6 +11,7 @@ import 'package:http/http.dart' as http;
 import 'services/bmkg_service.dart';
 import 'services/api_config.dart';
 import 'utils/earthquake_map.dart';
+import 'utils/localization.dart';
 
 class FullscreenMapPage extends StatefulWidget {
   final GempaModel gempa;
@@ -416,17 +417,21 @@ class _FullscreenMapPageState extends State<FullscreenMapPage> with SingleTicker
                                 children: [
                                   _buildDetailRow(
                                     Icons.access_time,
-                                    'Waktu :',
-                                    '${widget.gempa.tanggal}, ${widget.gempa.jam} WIB',
+                                    '${Localization.of(context).get('quake_time')} :',
+                                    '${widget.gempa.tanggal}, ${widget.gempa.jam.replaceAll(' WIB', '')} WIB',
                                   ),
                                   const SizedBox(height: 16),
                                   _buildDetailRow(
                                     Icons.my_location,
-                                    'Lokasi Gempa',
+                                    Localization.of(context).get('quake_location'),
                                     widget.gempa.wilayah,
                                   ),
                                   const SizedBox(height: 16),
-                                  _buildDetailRow(Icons.route, 'Jarak', _distanceText),
+                                  _buildDetailRow(
+                                    Icons.route,
+                                    Localization.of(context).get('quake_distance'),
+                                    _distanceText,
+                                  ),
 
                                   const SizedBox(height: 24),
 
@@ -449,7 +454,7 @@ class _FullscreenMapPageState extends State<FullscreenMapPage> with SingleTicker
                                         elevation: 0,
                                       ),
                                       child: Text(
-                                        'Saya juga merasakannya',
+                                        Localization.of(context).get('quake_felt_button'),
                                         style: GoogleFonts.poppins(
                                           fontSize: 16,
                                           fontWeight: FontWeight.w600,

@@ -14,3 +14,6 @@ settings = Settings()
 
 SENDER_EMAIL = os.getenv("SENDER_EMAIL", "email.anda@gmail.com")
 APP_PASSWORD = os.getenv("APP_PASSWORD", "")
+
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "fallback_secret_key_change_me")
+JWT_EXPIRY_MINUTES = int(os.getenv("JWT_EXPIRY_MINUTES", "1440"))

@@ -16,7 +16,7 @@ SCALER_USGS_PATH = os.path.join(MODEL_DIR, "scaler_usgs.pkl")
 MODEL_ANOMALI_PATH = os.path.join(MODEL_DIR, "isolation_forest_bmkg.pkl")
 SCALER_ANOMALI_PATH = os.path.join(MODEL_DIR, "scaler_isolation_forest_bmkg.pkl")
 SHAP_EXPLAINER_ANOMALI_PATH = os.path.join(MODEL_DIR, "IF_SHAP_explainer.pkl")
-REKOMENDASI_EDUKASI_PATH = os.path.join(MODEL_DIR, "rekomendasi_edukasi.pkl")
+REKOMENDASI_EDUKASI_PATH = os.path.join(MODEL_DIR, "rekomendasi_edukasi_RIKSA.pkl")
 
 ANOMALI_FEATURE_NAMES = ["mag", "depth", "latitude", "longitude"]
 

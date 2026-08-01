@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'login.dart'; // For navigation to login
 import 'services/api_config.dart';
+import 'services/auth_service.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -76,6 +77,13 @@ class _RegisterPageState extends State<RegisterPage> {
         );
 
         if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          
+          // Simpan JWT token dari registrasi Google
+          if (data['access_token'] != null) {
+            await AuthService.saveToken(data['access_token']);
+          }
+          
           if (mounted) {
             _showTopNotification('Registrasi Google Berhasil! Silakan masuk.', isSuccess: true);
             Navigator.pushReplacement(
@@ -422,6 +430,13 @@ class _RegisterPageState extends State<RegisterPage> {
       if (mounted) Navigator.pop(context);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        
+        // Simpan JWT token dari registrasi
+        if (data['access_token'] != null) {
+          await AuthService.saveToken(data['access_token']);
+        }
+        
         if (mounted) {
           _showTopNotification('Pendaftaran Berhasil! Silakan login.', isSuccess: true);
           Navigator.pushReplacement(

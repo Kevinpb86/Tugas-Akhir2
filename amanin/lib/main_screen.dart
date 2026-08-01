@@ -6,6 +6,8 @@ import 'utils/localization.dart';
 import 'fitur.dart';
 import 'ui/analisis_gempa_page.dart';
 
+import 'main.dart';
+
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
@@ -17,33 +19,6 @@ class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
   final GlobalKey _bottomNavKey = GlobalKey();
-
-  late final List<Widget> _pages;
-
-  @override
-  void initState() {
-    super.initState();
-    _pages = [
-      BerandaPage(
-        bottomNavKey: _bottomNavKey,
-        onNavigateToCuaca: () {
-          _onItemTapped(1);
-        },
-      ),
-      CuacaPage(
-        onBack: () {
-          setState(() {
-            _selectedIndex = 0;
-          });
-        },
-      ),
-      const Scaffold(
-        body: Center(child: Text('Map Placeholder')),
-      ), // Index 2 is the floating map button
-      const AnalisisGempaPage(),
-      const EdukasiPage(),
-    ];
-  }
 
   void _onItemTapped(int index) {
     if (index == 2) {
@@ -60,10 +35,36 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBody: true,
-      body: IndexedStack(index: _selectedIndex, children: _pages),
-      bottomNavigationBar: _buildFloatingBottomNavigationBar(),
+    return ValueListenableBuilder<Locale>(
+      valueListenable: localeNotifier,
+      builder: (context, locale, child) {
+        final List<Widget> pages = [
+          BerandaPage(
+            bottomNavKey: _bottomNavKey,
+            onNavigateToCuaca: () {
+              _onItemTapped(1);
+            },
+          ),
+          CuacaPage(
+            onBack: () {
+              setState(() {
+                _selectedIndex = 0;
+              });
+            },
+          ),
+          const Scaffold(
+            body: Center(child: Text('Map Placeholder')),
+          ), // Index 2 is the floating map button
+          const AnalisisGempaPage(),
+          const EdukasiPage(),
+        ];
+
+        return Scaffold(
+          extendBody: true,
+          body: IndexedStack(index: _selectedIndex, children: pages),
+          bottomNavigationBar: _buildFloatingBottomNavigationBar(),
+        );
+      },
     );
   }
 
