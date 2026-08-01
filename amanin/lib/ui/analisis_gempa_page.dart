@@ -657,212 +657,64 @@ class _AnalisisGempaPageState extends State<AnalisisGempaPage>
     );
   }
 
-  Widget _buildHeader(BuildContext context, bool isNarrow) {
+  Widget _buildHeader(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: isNarrow
-          ? CrossAxisAlignment.start
-          : CrossAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: const Text(
-                      'Riksa',
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1A1A1A),
-                      ),
-                    ),
-                  ),
-                  Container(
-                    margin: const EdgeInsets.only(left: 8),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.red.shade50,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      'BETA',
-                      style: TextStyle(
-                        fontSize: 8,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.red.shade700,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 2),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE0F7FA),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: ValueListenableBuilder<String>(
-                  valueListenable: userCityNameNotifier,
-                  builder: (context, cityName, _) {
-                    final displayCity = cityName.isNotEmpty
-                        ? cityName
-                        : _currentCityName;
-                    return Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.location_on,
-                          color: Color(0xFF00BCD4),
-                          size: 12,
-                        ),
-                        const SizedBox(width: 2),
-                        Text(
-                          displayCity,
-                          style: const TextStyle(
-                            fontSize: 11,
-                            color: Color(0xFF00BCD4),
-                            fontWeight: FontWeight.w600,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    );
-                  },
+              const Text(
+                'Riksa',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1A1A1A),
                 ),
               ),
-            ],
-          ),
-        ),
-        Flexible(
-          child: Wrap(
-            alignment: WrapAlignment.end,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withAlphaPercent(0.05),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Stack(
-                  children: [
-                    IconButton(
-                      icon: const Icon(
-                        Icons.notifications_none,
-                        color: Color(0xFF1A1A1A),
-                        size: 22,
-                      ),
-                      onPressed: () {},
-                    ),
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: Container(
-                        width: 6,
-                        height: 6,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFFF5252),
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              ValueListenableBuilder<bool>(
-                valueListenable: isLoggedInNotifier,
-                builder: (context, isLoggedIn, _) {
-                  if (isLoggedIn) {
-                    return Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withAlphaPercent(0.05),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: InkWell(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const AkunPage(),
-                            ),
-                          );
-                        },
-                        borderRadius: BorderRadius.circular(10),
-                        child: const Center(
-                          child: Icon(
-                            Icons.person_outline,
-                            color: Color(0xFF1A1A1A),
-                            size: 22,
-                          ),
-                        ),
-                      ),
-                    );
-                  }
-                  return InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const LoginPage(),
-                        ),
-                      );
-                    },
-                    borderRadius: BorderRadius.circular(10),
+              const SizedBox(height: 4),
+              ValueListenableBuilder<String>(
+                valueListenable: userCityNameNotifier,
+                builder: (context, cityName, _) {
+                  final displayCity = cityName.isNotEmpty
+                      ? cityName
+                      : 'Lokasi tidak tersedia';
+
+                  return Align(
+                    alignment: Alignment.centerLeft,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 8,
+                        horizontal: 10,
+                        vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF00BCD4), Color(0xFF26C6DA)],
-                        ),
-                        borderRadius: BorderRadius.circular(10),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(
-                              0xFF00BCD4,
-                            ).withAlphaPercent(0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
+                        color: const Color(0xFFE0F7FA),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.location_on,
+                            color: Color(0xFF00BCD4),
+                            size: 14,
+                          ),
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              displayCity,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: Color(0xFF00BCD4),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                           ),
                         ],
-                      ),
-                      child: const Text(
-                        'Masuk',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                        ),
                       ),
                     ),
                   );
@@ -870,6 +722,133 @@ class _AnalisisGempaPageState extends State<AnalisisGempaPage>
               ),
             ],
           ),
+        ),
+
+        const SizedBox(width: 12),
+
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Stack(
+                children: [
+                  const Center(
+                    child: Icon(
+                      Icons.notifications_outlined,
+                      color: Color(0xFF1A1A1A),
+                      size: 24,
+                    ),
+                  ),
+                  Positioned(
+                    top: 10,
+                    right: 12,
+                    child: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFF44336),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(width: 12),
+
+            ValueListenableBuilder<bool>(
+              valueListenable: isLoggedInNotifier,
+              builder: (context, isLoggedIn, _) {
+                if (isLoggedIn) {
+                  return InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AkunPage(),
+                        ),
+                      );
+                    },
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: const Center(
+                        child: Icon(
+                          Icons.person_outline,
+                          color: Color(0xFF1A1A1A),
+                          size: 24,
+                        ),
+                      ),
+                    ),
+                  );
+                }
+
+                return InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const LoginPage(),
+                      ),
+                    );
+                  },
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF00BCD4),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF00BCD4).withValues(alpha: 0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Center(
+                      child: Text(
+                        'Masuk',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
         ),
       ],
     );
@@ -2008,7 +1987,7 @@ class _AnalisisGempaPageState extends State<AnalisisGempaPage>
           // Header
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: _buildHeader(context, isNarrow),
+            child: _buildHeader(context),
           ),
           // Judul
           Padding(
@@ -2038,20 +2017,6 @@ class _AnalisisGempaPageState extends State<AnalisisGempaPage>
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF1A1A1A),
                       ),
-                      children: [
-                        TileLayer(
-                          urlTemplate:
-                              'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                          userAgentPackageName: 'com.riksa.app',
-                        ),
-                        if (faultSegments.isNotEmpty)
-                          PolylineLayer(polylines: _buildFaultPolylines()),
-                        if (mapData?.influenceZones.isNotEmpty ?? false)
-                          CircleLayer(circles: _buildInfluenceZoneCircles()),
-                        if (mapData?.influenceZones.isNotEmpty ?? false)
-                          MarkerLayer(markers: _buildZoneTapMarkers()),
-                        MarkerLayer(markers: _buildMarkers()),
-                      ],
                     ),
                     Text(
                       'Pantau aktivitas gempa terkini di Indonesia',
