@@ -17,6 +17,7 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
+  bool _hideBottomNavigation = false;
 
   final GlobalKey _bottomNavKey = GlobalKey();
 
@@ -53,16 +54,31 @@ class _MainScreenState extends State<MainScreen> {
             },
           ),
           const Scaffold(
-            body: Center(child: Text('Map Placeholder')),
-          ), // Index 2 is the floating map button
-          const AnalisisGempaPage(),
+            body: Center(
+              child: Text('Map Placeholder'),
+            ),
+          ),
+          AnalisisGempaPage(
+            onFullscreenChanged: (isFullscreen) {
+              if (!mounted) return;
+
+              setState(() {
+                _hideBottomNavigation = isFullscreen;
+              });
+            },
+          ),
           const EdukasiPage(),
         ];
 
         return Scaffold(
-          extendBody: true,
-          body: IndexedStack(index: _selectedIndex, children: pages),
-          bottomNavigationBar: _buildFloatingBottomNavigationBar(),
+          extendBody: !_hideBottomNavigation,
+          body: IndexedStack(
+            index: _selectedIndex,
+            children: pages,
+          ),
+          bottomNavigationBar: _hideBottomNavigation
+              ? null
+              : _buildFloatingBottomNavigationBar(),
         );
       },
     );
