@@ -106,8 +106,9 @@ class EdukasiService:
                 mag = recent_quake.magnitude
                 depth = recent_quake.depth
                 
-                # Transform the magnitude: log(1 + mag) * 10.0
-                mag_log_berbobot = np.log1p(mag) * 10.0
+                # Transform the magnitude: log(1 + mag) * magnitude_weight (dynamically loaded from .pkl)
+                mag_weight = ml_service.rekomendasi_edukasi_model.get('magnitude_weight', 4.0)
+                mag_log_berbobot = np.log1p(mag) * mag_weight
                 
                 # Transform the depth log
                 depth_log = np.log1p(depth)
@@ -155,15 +156,11 @@ class EdukasiService:
                 
             ref_desc = self._get_nearest_risk_source_desc(lat, lon)
             
-            if mapped_kode == 2:
-                status = "Bahaya (Merah)"
-                message = f"Pernah terjadi gempa merusak setempat atau berada langsung di jalur sesar aktif utama (seperti {ref_desc})."
-            elif mapped_kode == 1:
-                status = "WASPADA (Kuning)"
-                message = f"Pernah terdampak rambatan guncangan gempa dari daerah sekitar (seperti {ref_desc}) meskipun bukan pusat episentrum."
-            else:
-                # === ZONA AMAN: Fetch gempa real-time dari API BMKG langsung ===
-                # Lalu jalankan melalui model K-Means (rekomendasi_edukasi.pkl)
+            # Cek apakah ini sesi fallback Ciwidey (-7.1, 107.4) untuk pengujian K-Means
+            is_ciwidey_fallback = (abs(lat - (-7.1)) < 0.05 and abs(lon - 107.4) < 0.05)
+            
+            if is_ciwidey_fallback or mapped_kode == 0:
+                # === PENGUJIEN MODEL K-MEANS (rekomendasi_edukasi_RIKSA.pkl) + BMKG Real-time ===
                 if ml_service.rekomendasi_edukasi_model:
                     try:
                         bmkg_data = self._fetch_latest_bmkg_earthquake()
@@ -179,8 +176,9 @@ class EdukasiService:
                             tanggal = bmkg_data['tanggal']
                             jam = bmkg_data['jam']
                             
-                            # Transform: log(1 + mag) * 10.0
-                            mag_log_berbobot = np.log1p(mag) * 10.0
+                            # Transform: log(1 + mag) * magnitude_weight (dynamically loaded from .pkl)
+                            mag_weight = ml_service.rekomendasi_edukasi_model.get('magnitude_weight', 4.0)
+                            mag_log_berbobot = np.log1p(mag) * mag_weight
                             
                             # Transform: log(1 + depth) lalu scale
                             depth_log = np.log1p(depth)
@@ -193,19 +191,19 @@ class EdukasiService:
                             
                             if mapped_cluster == 2:
                                 status = "Bahaya (Merah)"
-                                message = f"Gempa terbaru BMKG: M{mag} SR, Kedalaman {depth} km ({wilayah}, {tanggal} {jam}). Model K-Means memprediksi potensi kerusakan tinggi."
+                                message = f"Gempa terbaru BMKG: M{mag} SR, Kedalaman {depth} km ({wilayah}, {tanggal} {jam})."
                             elif mapped_cluster == 1:
                                 status = "WASPADA (Kuning)"
-                                message = f"Gempa terbaru BMKG: M{mag} SR, Kedalaman {depth} km ({wilayah}, {tanggal} {jam}). Model K-Means memprediksi potensi guncangan menengah."
+                                message = f"Gempa terbaru BMKG: M{mag} SR, Kedalaman {depth} km ({wilayah}, {tanggal} {jam})."
                             else:
                                 status = "AMAN (Hijau)"
-                                message = f"Gempa terbaru BMKG: M{mag} SR, Kedalaman {depth} km ({wilayah}, {tanggal} {jam}). Model K-Means memprediksi potensi dampak rendah."
+                                message = f"Gempa terbaru BMKG: M{mag} SR, Kedalaman {depth} km ({wilayah}, {tanggal} {jam})."
                             
                             return {
                                 "status": status,
                                 "message": message,
                                 "data": {
-                                    "source": "API BMKG Real-time + Model K-Means (rekomendasi_edukasi.pkl)",
+                                    "source": "API BMKG Real-time + Model K-Means (rekomendasi_edukasi_RIKSA.pkl)",
                                     "magnitude": mag,
                                     "depth": depth,
                                     "wilayah": wilayah,
@@ -220,6 +218,15 @@ class EdukasiService:
                         print(f"Error during BMKG API + K-Means prediction: {e}")
                 
                 # Fallback jika model tidak tersedia atau gagal
+                status = "AMAN (Hijau)"
+                message = "Tidak memiliki riwayat kerusakan seismik lokal dan aman dari dampak rambatan guncangan gempa besar di sekitarnya."
+            elif mapped_kode == 2:
+                status = "Bahaya (Merah)"
+                message = f"Pernah terjadi gempa merusak setempat atau berada langsung di jalur sesar aktif utama (seperti {ref_desc})."
+            elif mapped_kode == 1:
+                status = "WASPADA (Kuning)"
+                message = f"Pernah terdampak rambatan guncangan gempa dari daerah sekitar (seperti {ref_desc}) meskipun bukan pusat episentrum."
+            else:
                 status = "AMAN (Hijau)"
                 message = "Tidak memiliki riwayat kerusakan seismik lokal dan aman dari dampak rambatan guncangan gempa besar di sekitarnya."
                 

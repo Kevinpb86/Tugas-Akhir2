@@ -5,6 +5,7 @@ import 'main.dart'; // For userCityNameNotifier
 
 import 'services/bmkg_service.dart';
 import 'package:share_plus/share_plus.dart';
+import 'utils/localization.dart';
 
 class CuacaPage extends StatefulWidget {
   final VoidCallback? onBack;
@@ -80,9 +81,9 @@ class _CuacaPageState extends State<CuacaPage> {
       appBar: AppBar(
         title: Column(
           children: [
-            const Text(
-              'Cuaca Mingguan',
-              style: TextStyle(
+            Text(
+              Localization.of(context).get('nav_weather'),
+              style: const TextStyle(
                 color: Color(0xFF1A1A1A),
                 fontWeight: FontWeight.bold,
                 fontSize: 16,

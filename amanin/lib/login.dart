@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'register.dart'; // For navigation to register
 import 'main.dart'; // For isLoggedInNotifier
 import 'services/api_config.dart';
+import 'services/auth_service.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class LoginPage extends StatefulWidget {
@@ -50,6 +51,15 @@ class _LoginPageState extends State<LoginPage> {
 
         if (response.statusCode == 200) {
           final data = jsonDecode(response.body);
+          
+          // Simpan JWT token
+          if (data['access_token'] != null) {
+            await AuthService.saveToken(data['access_token']);
+          }
+          if (data['user_id'] != null) {
+            await AuthService.saveUserId(data['user_id']);
+          }
+          
           userNameNotifier.value = data['full_name'] ?? googleUser.displayName ?? 'Pengguna Google';
           userEmailNotifier.value = data['email'] ?? googleUser.email;
           userPhotoUrlNotifier.value = googleUser.photoUrl ?? '';
@@ -505,6 +515,15 @@ class _LoginPageState extends State<LoginPage> {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        
+        // Simpan JWT token
+        if (data['access_token'] != null) {
+          await AuthService.saveToken(data['access_token']);
+        }
+        if (data['user_id'] != null) {
+          await AuthService.saveUserId(data['user_id']);
+        }
+        
         userNameNotifier.value = data['full_name'] ?? '';
         userEmailNotifier.value = data['email'] ?? email;
         isLoggedInNotifier.value = true;

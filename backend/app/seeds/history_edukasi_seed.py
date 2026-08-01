@@ -5,7 +5,7 @@ from app.config.database import SessionLocal
 from app.db_models.edukasi import ZonaGPS
 
 BACKEND_DIR = Path(__file__).resolve().parents[2]
-CSV_PATH = BACKEND_DIR / "data" / "Database_Zona_GPS.csv"
+CSV_PATH = BACKEND_DIR / "data" / "Database_Zona_GPS_RIKSA.csv"
 
 def run_seed():
     db = SessionLocal()
