@@ -4,6 +4,7 @@ import 'klasifikasi_seismik.dart';
 
 import 'ui/analisis_gempa_page.dart';
 import 'riwayat_gempa.dart';
+import 'utils/localization.dart';
 
 class FiturPage extends StatelessWidget {
   const FiturPage({super.key});
@@ -13,9 +14,9 @@ class FiturPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
-        title: const Text(
-          'Fitur Aplikasi',
-          style: TextStyle(
+        title: Text(
+          Localization.of(context).get('nav_features'),
+          style: const TextStyle(
             color: Color(0xFF1A1A1A),
             fontWeight: FontWeight.bold,
           ),

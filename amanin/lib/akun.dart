@@ -4,6 +4,7 @@ import 'utils/localization.dart';
 import 'main.dart'; // Import main.dart to access localeNotifier
 import 'ubah_profil.dart';
 import 'demonstrasi.dart';
+import 'services/auth_service.dart';
 
 class AkunPage extends StatefulWidget {
   const AkunPage({super.key});
@@ -227,7 +228,7 @@ class _AkunPageState extends State<AkunPage> {
             children: [
               _buildSettingsItem(
                 Icons.person_outline,
-                'Ubah Profil', // "Ubah Profil" might not be in localization keys
+                Localization.of(context).get('account_menu_edit_profile'),
                 isFirst: true,
                 onTap: () {
                   Navigator.push(
@@ -264,11 +265,11 @@ class _AkunPageState extends State<AkunPage> {
           ),
         ),
         const SizedBox(height: 24),
-        const Padding(
-          padding: EdgeInsets.only(left: 8, bottom: 12),
+        Padding(
+          padding: const EdgeInsets.only(left: 8, bottom: 12),
           child: Text(
-            'DEMONSTRASI',
-            style: TextStyle(
+            Localization.of(context).get('account_section_demo'),
+            style: const TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.bold,
               color: Color(0xFF757575),
@@ -290,7 +291,7 @@ class _AkunPageState extends State<AkunPage> {
           ),
           child: _buildSettingsItem(
             Icons.play_circle_outline,
-            'Demonstrasi',
+            Localization.of(context).get('account_menu_demo'),
             isFirst: true,
             isLast: true,
             onTap: () {
@@ -318,11 +319,12 @@ class _AkunPageState extends State<AkunPage> {
           ),
           child: _buildSettingsItem(
             Icons.logout,
-            'Keluar', // "Keluar" might not be in localization keys
+            Localization.of(context).get('account_menu_logout'),
             isDestructive: true,
             isFirst: true,
             isLast: true,
-            onTap: () {
+            onTap: () async {
+              await AuthService.removeToken();
               isLoggedInNotifier.value = false;
               userNameNotifier.value = '';
               userEmailNotifier.value = '';

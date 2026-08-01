@@ -4,8 +4,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'login.dart'; // For navigation to login
 import 'services/api_config.dart';
+import 'services/auth_service.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -77,6 +77,13 @@ class _RegisterPageState extends State<RegisterPage> {
         );
 
         if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          
+          // Simpan JWT token dari registrasi Google
+          if (data['access_token'] != null) {
+            await AuthService.saveToken(data['access_token']);
+          }
+          
           if (mounted) {
             _showTopNotification('Registrasi Google Berhasil! Silakan masuk.', isSuccess: true);
             Navigator.pushReplacement(
@@ -102,50 +109,6 @@ class _RegisterPageState extends State<RegisterPage> {
     }
   }
 
-  Future<void> _signInWithFacebook() async {
-    try {
-      final LoginResult result = await FacebookAuth.instance.login();
-
-      if (result.status == LoginStatus.success) {
-        final accessToken = result.accessToken!.tokenString;
-        
-        final response = await http.post(
-          Uri.parse('${ApiConfig.baseUrl}/auth/facebook'),
-          headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({
-            'access_token': accessToken,
-          }),
-        );
-
-        if (response.statusCode == 200) {
-          if (mounted) {
-            _showTopNotification('Registrasi Facebook Berhasil! Silakan masuk.', isSuccess: true);
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const LoginPage()),
-            );
-          }
-        } else {
-          final error = jsonDecode(response.body);
-          if (mounted) {
-            _showTopNotification('Registrasi Facebook gagal: ${error['detail'] ?? 'Gagal menghubungi server'}', isSuccess: false);
-          }
-        }
-      } else if (result.status == LoginStatus.cancelled) {
-        if (mounted) {
-          _showTopNotification('Daftar Facebook gagal/dibatalkan', isSuccess: false);
-        }
-      } else {
-        if (mounted) {
-          _showTopNotification('Daftar Facebook gagal: ${result.message}', isSuccess: false);
-        }
-      }
-    } catch (error) {
-      if (mounted) {
-        _showTopNotification('Daftar Facebook gagal: $error', isSuccess: false);
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -182,7 +145,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   const SizedBox(height: 24),
                   Center(
                     child: Hero(
-                      tag: 'app_logo',
+                      tag: 'register_app_logo',
                       child: Container(
                         height: 110,
                         width: 110,
@@ -356,16 +319,6 @@ class _RegisterPageState extends State<RegisterPage> {
                                   'Google',
                                   _signInWithGoogle,
                                 ),
-                                const SizedBox(width: 16),
-                                _buildSocialButton(
-                                  const Icon(
-                                    Icons.facebook,
-                                    size: 28,
-                                    color: Color(0xFF1877F2),
-                                  ),
-                                  'Facebook',
-                                  _signInWithFacebook,
-                                ),
                               ],
                             ),
                           ],
@@ -477,6 +430,13 @@ class _RegisterPageState extends State<RegisterPage> {
       if (mounted) Navigator.pop(context);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        
+        // Simpan JWT token dari registrasi
+        if (data['access_token'] != null) {
+          await AuthService.saveToken(data['access_token']);
+        }
+        
         if (mounted) {
           _showTopNotification('Pendaftaran Berhasil! Silakan login.', isSuccess: true);
           Navigator.pushReplacement(

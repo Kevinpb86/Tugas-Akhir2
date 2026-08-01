@@ -8,7 +8,8 @@ from sqlalchemy.orm import Session
 
 from app.config.database import get_db
 from app.auth.security import hash_password, verify_password
-from app.api_schemas.auth import UserRegister, UserLogin, GoogleAuthRequest, FacebookAuthRequest, ForgotPasswordRequest
+from app.auth.jwt_handler import create_access_token
+from app.api_schemas.auth import UserRegister, UserLogin, GoogleAuthRequest, ForgotPasswordRequest
 from app.config.config import SENDER_EMAIL, APP_PASSWORD
 from app.db_models.user import User
 
@@ -38,11 +39,25 @@ async def register(user: UserRegister, db: Session = Depends(get_db)):
         )
         db.add(new_user)
         db.commit()
+        db.refresh(new_user)
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
     
-    return {"message": "Registrasi berhasil!", "user": user.email}
+    access_token = create_access_token({
+        "user_id": new_user.id,
+        "email": new_user.email,
+        "full_name": new_user.full_name
+    })
+    
+    return {
+        "message": "Registrasi berhasil!",
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user_id": new_user.id,
+        "full_name": new_user.full_name,
+        "email": new_user.email
+    }
 
 @router.post("/login")
 async def login(user: UserLogin, db: Session = Depends(get_db)):
@@ -63,8 +78,16 @@ async def login(user: UserLogin, db: Session = Depends(get_db)):
     if not is_password_valid:
         raise HTTPException(status_code=401, detail="Email atau password salah!")
     
+    access_token = create_access_token({
+        "user_id": db_user.id,
+        "email": db_user.email,
+        "full_name": db_user.full_name
+    })
+    
     return {
         "message": "Login berhasil!",
+        "access_token": access_token,
+        "token_type": "bearer",
         "user_id": db_user.id,
         "full_name": db_user.full_name,
         "email": db_user.email
@@ -83,8 +106,15 @@ async def auth_google(req: GoogleAuthRequest, db: Session = Depends(get_db)):
         db_user = db.query(User).filter(User.email == email).first()
         
         if db_user:
+            access_token = create_access_token({
+                "user_id": db_user.id,
+                "email": db_user.email,
+                "full_name": db_user.full_name
+            })
             return {
                 "message": "Login berhasil!",
+                "access_token": access_token,
+                "token_type": "bearer",
                 "user_id": db_user.id,
                 "full_name": db_user.full_name,
                 "email": db_user.email
@@ -107,8 +137,15 @@ async def auth_google(req: GoogleAuthRequest, db: Session = Depends(get_db)):
                 db.rollback()
                 raise HTTPException(status_code=500, detail=str(e))
                 
+            access_token = create_access_token({
+                "user_id": new_user_id,
+                "email": email,
+                "full_name": full_name
+            })
             return {
                 "message": "Registrasi dan Login berhasil!",
+                "access_token": access_token,
+                "token_type": "bearer",
                 "user_id": new_user_id,
                 "full_name": full_name,
                 "email": email
@@ -119,64 +156,6 @@ async def auth_google(req: GoogleAuthRequest, db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
 
-@router.post("/auth/facebook")
-async def auth_facebook(req: FacebookAuthRequest, db: Session = Depends(get_db)):
-    try:
-        url = f"https://graph.facebook.com/me?fields=id,name,email,picture&access_token={req.access_token}"
-        response = requests.get(url)
-        
-        if response.status_code != 200:
-            raise HTTPException(status_code=401, detail="Token Facebook tidak valid")
-            
-        fb_user_info = response.json()
-        email = fb_user_info.get('email')
-        name = fb_user_info.get('name')
-        picture = fb_user_info.get('picture', {}).get('data', {}).get('url', '')
-        
-        if not email:
-            raise HTTPException(status_code=400, detail="Akun Facebook tidak memiliki email yang bisa diakses")
-            
-        # Cek apakah user sudah terdaftar
-        db_user = db.query(User).filter(User.email == email).first()
-        
-        if db_user:
-            return {
-                "message": "Login berhasil!",
-                "user_id": db_user.id,
-                "full_name": db_user.full_name,
-                "email": db_user.email,
-                "facebook_picture": picture
-            }
-        else:
-            random_password = secrets.token_urlsafe(16)
-            hashed_password = hash_password(random_password)
-            
-            try:
-                new_user = User(
-                    full_name=name,
-                    email=email,
-                    password=hashed_password
-                )
-                db.add(new_user)
-                db.commit()
-                db.refresh(new_user)
-                new_user_id = new_user.id
-            except Exception as e:
-                db.rollback()
-                raise HTTPException(status_code=500, detail=str(e))
-                
-            return {
-                "message": "Registrasi dan Login berhasil!",
-                "user_id": new_user_id,
-                "full_name": name,
-                "email": email,
-                "facebook_picture": picture
-            }
-            
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
 
 @router.post("/forgot-password")
 def forgot_password(req: ForgotPasswordRequest, db: Session = Depends(get_db)):

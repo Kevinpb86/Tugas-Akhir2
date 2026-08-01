@@ -1,11 +1,14 @@
 from datetime import datetime
 import numpy as np
+import requests
 from sqlalchemy.orm import Session
 
 from app.db_models.earthquake import Earthquake
 from app.db_models.edukasi import RiskSource
 from app.repositories.edukasi_repo import EdukasiRepository
-from app.services.ml_service import rekomendasi_edukasi_model
+from app.services import ml_service
+
+BMKG_API_URL = "https://data.bmkg.go.id/DataMKG/TEWS/gempadirasakan.json"
 
 class EdukasiService:
     def __init__(self, db: Session):
@@ -32,6 +35,48 @@ class EdukasiService:
             print(f"Error querying RiskSource: {e}")
             return "gempa merusak Cianjur M5.6"
 
+    def _extract_city_name(self, wilayah: str) -> str:
+        """Ekstrak nama kota/wilayah bersih dari deskripsi BMKG."""
+        import re
+        if not wilayah:
+            return "Ciwidey"
+        # Hapus awalan seperti "Pusat gempa berada di darat 4 km utara Tanggamus" -> "Tanggamus"
+        cleaned = re.sub(r"^.*?\d+\s*km\s*(utara|selatan|barat|timur|tenggara|barat daya|barat laut|timur laut)?\s*", "", wilayah, flags=re.IGNORECASE)
+        cleaned = re.sub(r"^(Kabupaten|Kota|Kab\.|Kecamatan|Desa|Kelurahan)\s+", "", cleaned, flags=re.IGNORECASE)
+        return cleaned.strip() or wilayah
+
+    def _fetch_latest_bmkg_earthquake(self):
+        """Ambil gempa terbaru langsung dari API BMKG (real-time)."""
+        try:
+            response = requests.get(BMKG_API_URL, timeout=10)
+            response.raise_for_status()
+            data = response.json()
+            
+            gempa_list = data.get("Infogempa", {}).get("gempa", [])
+            if not gempa_list:
+                return None
+            
+            # Ambil gempa pertama (terbaru)
+            latest = gempa_list[0]
+            magnitude = round(float(latest.get("Magnitude", 0)), 1)
+            depth = round(float(latest.get("Kedalaman", "0 km").replace(" km", "")), 1)
+            wilayah = latest.get("Wilayah", "Tidak diketahui")
+            tanggal = latest.get("Tanggal", "")
+            jam = latest.get("Jam", "")
+            city_name = self._extract_city_name(wilayah)
+            
+            return {
+                "magnitude": magnitude,
+                "depth": depth,
+                "wilayah": wilayah,
+                "city_name": city_name,
+                "tanggal": tanggal,
+                "jam": jam
+            }
+        except Exception as e:
+            print(f"Error fetching from BMKG API: {e}")
+            return None
+
     def get_edukasi_status(self, lat: float, lon: float):
         # 1. Check if there's an earthquake today near the location (approx 1 degree = ~111km)
         today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
@@ -51,22 +96,26 @@ class EdukasiService:
             Earthquake.longitude <= lon_max
         ).order_by(Earthquake.event_time.desc()).first()
         
-        if recent_quake and rekomendasi_edukasi_model:
+        if recent_quake and ml_service.rekomendasi_edukasi_model:
             # Menggunakan Model ML (rekomendasi_edukasi.pkl)
             try:
-                model = rekomendasi_edukasi_model['model']
-                scaler = rekomendasi_edukasi_model['scaler']
-                mapping = rekomendasi_edukasi_model['mapping']
+                model = ml_service.rekomendasi_edukasi_model['model']
+                scaler = ml_service.rekomendasi_edukasi_model['scaler']
+                mapping = ml_service.rekomendasi_edukasi_model['mapping']
                 
                 mag = recent_quake.magnitude
                 depth = recent_quake.depth
+                
+                # Transform the magnitude: log(1 + mag) * magnitude_weight (dynamically loaded from .pkl)
+                mag_weight = ml_service.rekomendasi_edukasi_model.get('magnitude_weight', 4.0)
+                mag_log_berbobot = np.log1p(mag) * mag_weight
                 
                 # Transform the depth log
                 depth_log = np.log1p(depth)
                 depth_scaled = scaler.transform([[depth_log]])[0][0]
                 
-                # Model predicts based on mag and depth_scaled
-                features = [[mag, depth_scaled]]
+                # Model predicts based on mag_log_berbobot and depth_scaled
+                features = [[mag_log_berbobot, depth_scaled]]
                 cluster = model.predict(features)[0]
                 
                 mapped_cluster = mapping.get(cluster, cluster)
@@ -107,7 +156,71 @@ class EdukasiService:
                 
             ref_desc = self._get_nearest_risk_source_desc(lat, lon)
             
-            if mapped_kode == 2:
+            # Cek apakah ini sesi fallback Ciwidey (-7.1, 107.4) untuk pengujian K-Means
+            is_ciwidey_fallback = (abs(lat - (-7.1)) < 0.05 and abs(lon - 107.4) < 0.05)
+            
+            if is_ciwidey_fallback or mapped_kode == 0:
+                # === PENGUJIEN MODEL K-MEANS (rekomendasi_edukasi_RIKSA.pkl) + BMKG Real-time ===
+                if ml_service.rekomendasi_edukasi_model:
+                    try:
+                        bmkg_data = self._fetch_latest_bmkg_earthquake()
+                        
+                        if bmkg_data:
+                            model = ml_service.rekomendasi_edukasi_model['model']
+                            scaler = ml_service.rekomendasi_edukasi_model['scaler']
+                            mapping = ml_service.rekomendasi_edukasi_model['mapping']
+                            
+                            mag = bmkg_data['magnitude']
+                            depth = bmkg_data['depth']
+                            wilayah = bmkg_data['wilayah']
+                            tanggal = bmkg_data['tanggal']
+                            jam = bmkg_data['jam']
+                            
+                            # Transform: log(1 + mag) * magnitude_weight (dynamically loaded from .pkl)
+                            mag_weight = ml_service.rekomendasi_edukasi_model.get('magnitude_weight', 4.0)
+                            mag_log_berbobot = np.log1p(mag) * mag_weight
+                            
+                            # Transform: log(1 + depth) lalu scale
+                            depth_log = np.log1p(depth)
+                            depth_scaled = scaler.transform([[depth_log]])[0][0]
+                            
+                            # Prediksi cluster
+                            features = [[mag_log_berbobot, depth_scaled]]
+                            cluster = model.predict(features)[0]
+                            mapped_cluster = mapping.get(cluster, cluster)
+                            
+                            if mapped_cluster == 2:
+                                status = "Bahaya (Merah)"
+                                message = f"Gempa terbaru BMKG: M{mag} SR, Kedalaman {depth} km ({wilayah}, {tanggal} {jam})."
+                            elif mapped_cluster == 1:
+                                status = "WASPADA (Kuning)"
+                                message = f"Gempa terbaru BMKG: M{mag} SR, Kedalaman {depth} km ({wilayah}, {tanggal} {jam})."
+                            else:
+                                status = "AMAN (Hijau)"
+                                message = f"Gempa terbaru BMKG: M{mag} SR, Kedalaman {depth} km ({wilayah}, {tanggal} {jam})."
+                            
+                            return {
+                                "status": status,
+                                "message": message,
+                                "data": {
+                                    "source": "API BMKG Real-time + Model K-Means (rekomendasi_edukasi_RIKSA.pkl)",
+                                    "magnitude": mag,
+                                    "depth": depth,
+                                    "wilayah": wilayah,
+                                    "city_name": bmkg_data.get("city_name", "Tanggamus"),
+                                    "tanggal": tanggal,
+                                    "jam": jam,
+                                    "cluster": int(cluster),
+                                    "mapped_cluster": int(mapped_cluster)
+                                }
+                            }
+                    except Exception as e:
+                        print(f"Error during BMKG API + K-Means prediction: {e}")
+                
+                # Fallback jika model tidak tersedia atau gagal
+                status = "AMAN (Hijau)"
+                message = "Tidak memiliki riwayat kerusakan seismik lokal dan aman dari dampak rambatan guncangan gempa besar di sekitarnya."
+            elif mapped_kode == 2:
                 status = "Bahaya (Merah)"
                 message = f"Pernah terjadi gempa merusak setempat atau berada langsung di jalur sesar aktif utama (seperti {ref_desc})."
             elif mapped_kode == 1:
@@ -132,3 +245,5 @@ class EdukasiService:
             "message": "Lokasi tidak ditemukan di database zona.",
             "data": None
         }
+
+
