@@ -15,6 +15,7 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
+  bool _hideBottomNavigation = false;
 
   final GlobalKey _bottomNavKey = GlobalKey();
 
@@ -40,7 +41,15 @@ class _MainScreenState extends State<MainScreen> {
       const Scaffold(
         body: Center(child: Text('Map Placeholder')),
       ), // Index 2 is the floating map button
-      const AnalisisGempaPage(),
+      AnalisisGempaPage(
+        onFullscreenChanged: (isFullscreen) {
+          if (!mounted) return;
+
+          setState(() {
+            _hideBottomNavigation = isFullscreen;
+          });
+        },
+      ),
       const EdukasiPage(),
     ];
   }
@@ -61,9 +70,11 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBody: true,
+      extendBody: !_hideBottomNavigation,
       body: IndexedStack(index: _selectedIndex, children: _pages),
-      bottomNavigationBar: _buildFloatingBottomNavigationBar(),
+      bottomNavigationBar: _hideBottomNavigation
+          ? null
+          : _buildFloatingBottomNavigationBar(),
     );
   }
 
