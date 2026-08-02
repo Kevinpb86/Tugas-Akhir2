@@ -137,7 +137,7 @@ def run_job():
         if inserted:
 
             logger.info(
-                f"Ingestion success → "
+                f"Ingestion success -> "
                 f"inserted={inserted} "
                 f"skipped={skipped}"
             )
@@ -145,7 +145,7 @@ def run_job():
         else:
 
             logger.info(
-                f"No new data → "
+                f"No new data -> "
                 f"skipped={skipped}"
             )
 
