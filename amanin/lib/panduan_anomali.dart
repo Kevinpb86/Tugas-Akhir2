@@ -9,8 +9,6 @@ class PanduanAnomaliPage extends StatefulWidget {
 }
 
 class _PanduanAnomaliPageState extends State<PanduanAnomaliPage> {
-  bool _showPenjelasan = false;
-
   @override
   void initState() {
     super.initState();
@@ -66,44 +64,8 @@ class _PanduanAnomaliPageState extends State<PanduanAnomaliPage> {
 
             const SizedBox(height: 20),
 
-            // ================= PENJELASAN KONSEP (ringkas, expandable) =================
-            _buildPenjelasanToggle(),
-            if (_showPenjelasan) ...[
-              const SizedBox(height: 16),
-              _buildPenjelasanKonsep(),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPenjelasanToggle() {
-    return InkWell(
-      onTap: () => setState(() => _showPenjelasan = !_showPenjelasan),
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFE0E0E0)),
-        ),
-        child: Row(
-          children: [
-            const Icon(Icons.help_outline, size: 18, color: Color(0xFF1565C0)),
-            const SizedBox(width: 8),
-            const Expanded(
-              child: Text(
-                'Apa itu anomali & bagaimana cara kerjanya?',
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1A1A1A)),
-              ),
-            ),
-            Icon(
-              _showPenjelasan ? Icons.expand_less : Icons.expand_more,
-              color: Colors.grey.shade600,
-            ),
+            // ================= PENJELASAN KONSEP (selalu terbuka) =================
+            _buildPenjelasanKonsep(),
           ],
         ),
       ),
@@ -111,90 +73,309 @@ class _PanduanAnomaliPageState extends State<PanduanAnomaliPage> {
   }
 
   Widget _buildPenjelasanKonsep() {
-    return Column(
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE8EAED)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ---------- Judul section ----------
+          Padding(
+            padding: const EdgeInsets.fromLTRB(18, 18, 18, 0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(7),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE3F2FD),
+                    borderRadius: BorderRadius.circular(9),
+                  ),
+                  child: const Icon(Icons.help_outline,
+                      size: 16, color: Color(0xFF1565C0)),
+                ),
+                const SizedBox(width: 10),
+                const Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(top: 3),
+                    child: Text(
+                      'Apa itu anomali & bagaimana cara kerjanya?',
+                      style: TextStyle(
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1A1A1A),
+                        height: 1.3,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // ---------- Perbandingan Normal vs Anomali ----------
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 18),
+            child: Column(
+              children: [
+                _buildKondisiTile(
+                  icon: Icons.check_circle,
+                  iconColor: const Color(0xFF2E7D32),
+                  bgColor: const Color(0xFFF1F8F2),
+                  borderColor: const Color(0xFFC8E6C9),
+                  title: 'Data Normal',
+                  titleColor: const Color(0xFF2E7D32),
+                  description:
+                      'Kekuatan dan kedalaman gempa masih sesuai kebiasaan wilayah tersebut.',
+                  descColor: const Color(0xFF41603F),
+                ),
+                const SizedBox(height: 10),
+                _buildKondisiTile(
+                  icon: Icons.warning_rounded,
+                  iconColor: const Color(0xFFE65100),
+                  bgColor: const Color(0xFFFFF8F0),
+                  borderColor: const Color(0xFFFFD9B0),
+                  title: 'Data Anomali',
+                  titleColor: const Color(0xFFE65100),
+                  description:
+                      'Kombinasi kekuatan (magnitudo) dan kedalaman gempa menyimpang jauh dari kebiasaan wilayah — perlu kewaspadaan ekstra.',
+                  descColor: const Color(0xFF8A5023),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 20),
+          const Divider(height: 1, thickness: 1, color: Color(0xFFF0F1F3)),
+          const SizedBox(height: 18),
+
+          // ---------- Cara kerja model ----------
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Cara Kerja Model',
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1A1A1A),
+                  ),
+                ),
+                SizedBox(height: 6),
+                Text(
+                  'Model Isolation Forest membandingkan tiap gempa baru dengan data historis se-Indonesia. Semakin tidak biasa kombinasi datanya, semakin tinggi skor anomalinya.',
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    color: Color(0xFF5F6368),
+                    height: 1.55,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 20),
+          const Divider(height: 1, thickness: 1, color: Color(0xFFF0F1F3)),
+          const SizedBox(height: 18),
+
+          // ---------- Arti persentase pada hasil deteksi ----------
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Arti Angka Persentase',
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1A1A1A),
+                  ),
+                ),
+                SizedBox(height: 6),
+                Text(
+                  'Persentase pada hasil deteksi di atas menunjukkan seberapa besar andil tiap faktor dalam menentukan hasil gempa tersebut — bukan tingkat bahayanya. Totalnya selalu 100% dari keempat faktor.',
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    color: Color(0xFF5F6368),
+                    height: 1.55,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 18),
+            child: Column(
+              children: [
+                _buildPersentaseTile(
+                  badge: 'Tinggi',
+                  badgeBg: const Color(0xFFE8F0FE),
+                  badgeColor: const Color(0xFF1565C0),
+                  description:
+                      'Faktor tersebut paling menentukan hasil deteksi gempa ini.',
+                ),
+                const SizedBox(height: 8),
+                _buildPersentaseTile(
+                  badge: 'Rendah',
+                  badgeBg: const Color(0xFFF1F3F4),
+                  badgeColor: const Color(0xFF5F6368),
+                  description:
+                      'Faktor tersebut hanya sedikit memengaruhi hasil deteksi gempa ini.',
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 20),
+          const Divider(height: 1, thickness: 1, color: Color(0xFFF0F1F3)),
+          const SizedBox(height: 18),
+
+          // ---------- 4 faktor yang diperiksa ----------
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 18),
+            child: Text(
+              '4 Faktor yang Diperiksa',
+              style: TextStyle(
+                fontSize: 13.5,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1A1A1A),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 18),
+            child: Column(
+              children: [
+                _buildFactorItem(
+                  icon: Icons.speed,
+                  label: 'Magnitudo',
+                  description: 'Kekuatan gempa dibanding kebiasaan wilayah.',
+                ),
+                _buildFactorItem(
+                  icon: Icons.vertical_align_bottom,
+                  label: 'Kedalaman',
+                  description:
+                      'Seberapa dangkal/dalam dibanding kebiasaan wilayah.',
+                ),
+                _buildFactorItem(
+                  icon: Icons.explore_outlined,
+                  label: 'Lintang & Bujur',
+                  description: 'Seberapa jarang lokasi tersebut mengalami gempa.',
+                  isLast: true,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 18),
+        ],
+      ),
+    );
+  }
+
+  /// Tile perbandingan kondisi (Normal / Anomali) di dalam kartu penjelasan.
+  Widget _buildKondisiTile({
+    required IconData icon,
+    required Color iconColor,
+    required Color bgColor,
+    required Color borderColor,
+    required String title,
+    required Color titleColor,
+    required String description,
+    required Color descColor,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(13),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: borderColor),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 17, color: iconColor),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.bold,
+                    color: titleColor,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  description,
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    color: descColor,
+                    height: 1.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Baris keterangan arti persentase besar/kecil pada hasil deteksi.
+  Widget _buildPersentaseTile({
+    required String badge,
+    required Color badgeBg,
+    required Color badgeColor,
+    required String description,
+  }) {
+    return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Data Normal (ringkas)
-        _buildSectionLabel(
-          icon: Icons.check_circle_outline,
-          iconColor: const Color(0xFF2E7D32),
-          text: 'DATA NORMAL',
-          textColor: const Color(0xFF2E7D32),
-        ),
-        const SizedBox(height: 10),
         Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(14),
+          width: 62,
+          padding: const EdgeInsets.symmetric(vertical: 4),
           decoration: BoxDecoration(
-            color: const Color(0xFFE8F5E9),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: const Color(0xFFA5D6A7)),
+            color: badgeBg,
+            borderRadius: BorderRadius.circular(6),
           ),
-          child: const Text(
-            'Kekuatan dan kedalaman gempa masih sesuai kebiasaan wilayah tersebut.',
-            style: TextStyle(fontSize: 13, color: Color(0xFF33691E), height: 1.5),
-          ),
-        ),
-
-        const SizedBox(height: 20),
-
-        // Data Anomali (ringkas)
-        _buildSectionLabel(
-          icon: Icons.warning_amber_rounded,
-          iconColor: const Color(0xFFE65100),
-          text: 'DATA ANOMALI',
-          textColor: const Color(0xFFE65100),
-        ),
-        const SizedBox(height: 10),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: const Color(0xFFFFF3E0),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: const Color(0xFFFFCC80)),
-          ),
-          child: const Text(
-            'Kombinasi kekuatan (magnitudo) dan kedalaman gempa menyimpang jauh dari kebiasaan wilayah tersebut — perlu kewaspadaan ekstra.',
-            style: TextStyle(fontSize: 13, color: Color(0xFFE65100), height: 1.5),
+          child: Text(
+            badge,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 11.5,
+              fontWeight: FontWeight.w600,
+              color: badgeColor,
+            ),
           ),
         ),
-
-        const SizedBox(height: 20),
-
-        // Cara kerja (ringkas)
-        const Text(
-          'Cara Kerja Model',
-          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A)),
-        ),
-        const SizedBox(height: 8),
-        const Text(
-          'Model Isolation Forest membandingkan tiap gempa baru dengan data historis se-Indonesia. Semakin tidak biasa kombinasi datanya, semakin tinggi skor anomalinya.',
-          style: TextStyle(fontSize: 13, color: Color(0xFF424242), height: 1.5),
-        ),
-
-        const SizedBox(height: 20),
-
-        // 4 Faktor (ringkas)
-        const Text(
-          '4 Faktor yang Diperiksa',
-          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A)),
-        ),
-        const SizedBox(height: 12),
-        _buildFactorItem(
-          icon: Icons.speed,
-          label: 'Magnitudo',
-          description: 'Kekuatan gempa dibanding kebiasaan wilayah.',
-        ),
-        _buildFactorItem(
-          icon: Icons.vertical_align_bottom,
-          label: 'Kedalaman',
-          description: 'Seberapa dangkal/dalam dibanding kebiasaan wilayah.',
-        ),
-        _buildFactorItem(
-          icon: Icons.explore_outlined,
-          label: 'Lintang & Bujur',
-          description: 'Seberapa jarang lokasi tersebut mengalami gempa.',
+        const SizedBox(width: 10),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Text(
+              description,
+              style: const TextStyle(
+                fontSize: 12.5,
+                color: Color(0xFF5F6368),
+                height: 1.5,
+              ),
+            ),
+          ),
         ),
       ],
     );
@@ -285,19 +466,20 @@ class _PanduanAnomaliPageState extends State<PanduanAnomaliPage> {
     required IconData icon,
     required String label,
     required String description,
+    bool isLast = false,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
+      padding: EdgeInsets.only(bottom: isLast ? 0 : 14),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: const Color(0xFFE3F2FD),
+              color: const Color(0xFFF1F5FB),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, size: 18, color: const Color(0xFF1565C0)),
+            child: Icon(icon, size: 17, color: const Color(0xFF1565C0)),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -307,17 +489,17 @@ class _PanduanAnomaliPageState extends State<PanduanAnomaliPage> {
                 Text(
                   label,
                   style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
                     color: Color(0xFF1A1A1A),
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 3),
                 Text(
                   description,
                   style: const TextStyle(
-                    fontSize: 13,
-                    color: Color(0xFF424242),
+                    fontSize: 12.5,
+                    color: Color(0xFF5F6368),
                     height: 1.5,
                   ),
                 ),
@@ -432,15 +614,6 @@ class _AnomaliOutputCardState extends State<AnomaliOutputCard> {
                             fontSize: 12,
                           ),
                         ),
-                        const Spacer(),
-                        Text(
-                          'Skor: ${widget.score.toStringAsFixed(2)}',
-                          style: TextStyle(
-                            color: Colors.grey.shade600,
-                            fontSize: 11,
-                            fontStyle: FontStyle.italic,
-                          ),
-                        ),
                       ],
                     ),
                   ],
@@ -452,38 +625,6 @@ class _AnomaliOutputCardState extends State<AnomaliOutputCard> {
           // Penjelasan awam (ringkasan bahasa manusia dari SHAP)
           if (hasPenjelasan) ...[
             const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: widget.isAnomaly ? const Color(0xFFFFF8E1) : const Color(0xFFE3F2FD),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                  color: widget.isAnomaly ? const Color(0xFFFFE0B2) : const Color(0xFFBBDEFB),
-                ),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(
-                    Icons.lightbulb_outline,
-                    size: 18,
-                    color: widget.isAnomaly ? const Color(0xFFF57C00) : const Color(0xFF1565C0),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      widget.shapExplanation!.summary,
-                      style: TextStyle(
-                        fontSize: 12.5,
-                        color: widget.isAnomaly ? const Color(0xFF5D4037) : const Color(0xFF0D47A1),
-                        height: 1.4,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 8),
             InkWell(
               onTap: () => setState(() => _expanded = !_expanded),
               borderRadius: BorderRadius.circular(8),
@@ -514,17 +655,6 @@ class _AnomaliOutputCardState extends State<AnomaliOutputCard> {
               ...widget.shapExplanation!.contributions.map(
                 (c) => _buildFeatureBar(c),
               ),
-              const SizedBox(height: 4),
-              Text(
-                widget.isAnomaly
-                    ? 'Semakin panjang bar merah, semakin besar pengaruh faktor tersebut dalam menandai gempa ini sebagai anomali.'
-                    : 'Semakin panjang bar hijau, semakin besar pengaruh faktor tersebut dalam menandai gempa ini sebagai normal. Bar merah (jika ada) berarti faktor itu justru sedikit tidak biasa, tapi belum cukup kuat untuk membuat keseluruhan gempa ditandai anomali.',
-                style: TextStyle(
-                  fontSize: 10.5,
-                  color: Colors.grey.shade500,
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
             ],
           ],
         ],
@@ -538,9 +668,6 @@ class _AnomaliOutputCardState extends State<AnomaliOutputCard> {
     final nilaiTeks = c.nilaiAktual != null
         ? '${c.nilaiAktual} ${c.unit}'
         : '-';
-    final rataRataTeks = c.rataRataHistoris != null
-        ? 'rata-rata historis: ${c.rataRataHistoris} ${c.unit}'
-        : null;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -579,15 +706,6 @@ class _AnomaliOutputCardState extends State<AnomaliOutputCard> {
               valueColor: AlwaysStoppedAnimation<Color>(barColor),
             ),
           ),
-          if (c.keterangan != null) ...[
-            const SizedBox(height: 4),
-            Text(
-              rataRataTeks != null
-                  ? '${c.keterangan} ($rataRataTeks)'
-                  : c.keterangan!,
-              style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
-            ),
-          ],
         ],
       ),
     );
