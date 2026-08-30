@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'api_config.dart';
 
 class DailyForecast {
   final String dayName;
@@ -193,8 +194,21 @@ class BmkgService {
     );
   }
 
-  // Mendapatkan gempabumi terbaru (autogempa)
+  // Mendapatkan gempabumi terbaru (autogempa) melalui endpoint backend DB
   static Future<GempaModel> fetchLatestEarthquake() async {
+    try {
+      final response = await http.get(
+        Uri.parse('${ApiConfig.baseUrl}/earthquakes/latest'),
+        headers: _headers,
+      ).timeout(const Duration(seconds: 10));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return GempaModel.fromJson(data['Infogempa']['gempa']);
+      }
+    } catch (e) {
+      print('Backend latest earthquake error, fallback to BMKG API: $e');
+    }
+
     try {
       final response = await http.get(
         Uri.parse(_getUrl('$_baseUrl/autogempa.json')),
@@ -211,8 +225,22 @@ class BmkgService {
     }
   }
 
-  // Mendapatkan daftar 15 gempabumi M 5.0+ (gempaterkini)
+  // Mendapatkan daftar 50 gempabumi (gempaterkini) melalui endpoint backend DB
   static Future<List<GempaModel>> fetchEarthquakeList() async {
+    try {
+      final response = await http.get(
+        Uri.parse('${ApiConfig.baseUrl}/earthquakes/bmkg'),
+        headers: _headers,
+      ).timeout(const Duration(seconds: 10));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final List<dynamic> gempaList = data['Infogempa']['gempa'];
+        return gempaList.map((json) => GempaModel.fromJson(json)).toList();
+      }
+    } catch (e) {
+      print('Backend earthquake list error, fallback to BMKG API: $e');
+    }
+
     try {
       final response = await http.get(
         Uri.parse(_getUrl('$_baseUrl/gempaterkini.json')),
@@ -232,8 +260,22 @@ class BmkgService {
     }
   }
 
-  // Mendapatkan daftar 15 gempabumi dirasakan (gempadirasakan)
+  // Mendapatkan daftar gempabumi dirasakan (gempadirasakan) melalui endpoint backend DB
   static Future<List<GempaModel>> fetchFeltEarthquakeList() async {
+    try {
+      final response = await http.get(
+        Uri.parse('${ApiConfig.baseUrl}/earthquakes/felt'),
+        headers: _headers,
+      ).timeout(const Duration(seconds: 10));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final List<dynamic> gempaList = data['Infogempa']['gempa'];
+        return gempaList.map((json) => GempaModel.fromJson(json)).toList();
+      }
+    } catch (e) {
+      print('Backend felt earthquake list error, fallback to BMKG API: $e');
+    }
+
     try {
       final response = await http.get(
         Uri.parse(_getUrl('$_baseUrl/gempadirasakan.json')),
@@ -297,7 +339,6 @@ class BmkgService {
 
             final code = interval['weather'] as int;
             final desc = interval['weather_desc'] as String;
-            final icon = interval['image'] as String;
 
             condCounts[desc] = (condCounts[desc] ?? 0) + 1;
 

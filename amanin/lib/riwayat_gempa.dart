@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'services/api_config.dart';
 import 'services/bmkg_service.dart';
 import 'services/usgs_service.dart';
 import 'services/anomali_service.dart';
@@ -84,6 +86,28 @@ class _RiwayatGempaPageState extends State<RiwayatGempaPage> {
       return;
     }
 
+    // Mengunduh dataset riwayat gempa langsung ke perangkat via backend endpoint
+    final String urlString =
+        '${ApiConfig.baseUrl}/earthquakes/download-history?filter_type=$_selectedFilterIndex';
+    final Uri url = Uri.parse(urlString);
+
+    try {
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Mengunduh dataset riwayat gempa ke perangkat...'),
+            ),
+          );
+        }
+        return;
+      }
+    } catch (e) {
+      print('Download via backend failed, using fallback: $e');
+    }
+
+    // Fallback lokal jika backend offline
     final buffer = StringBuffer();
     buffer.writeln(
       'Tanggal,Jam,Lintang,Bujur,Magnitude,Kedalaman,Wilayah,Potensi,Dirasakan,Anomali',
